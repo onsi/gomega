@@ -10,58 +10,61 @@ func Equal(expected interface{}) OmegaMatcher {
 	}
 }
 
-func DeepEqual(expected interface{}) OmegaMatcher {
-	return nil
+func BeNil() OmegaMatcher {
+	return &matchers.BeNilMatcher{}
 }
 
 func BeTrue() OmegaMatcher {
-	return &matchers.TrueMatcher{}
+	return &matchers.BeTrueMatcher{}
 }
 
 func BeFalse() OmegaMatcher {
-	return &matchers.FalseMatcher{}
+	return &matchers.BeFalseMatcher{}
 }
 
 func HaveOccured() OmegaMatcher {
 	return &matchers.HaveOccuredMatcher{}
 }
 
-// func Be(comparator string, expected interface{}) *OmegaMatcher {
-// 	return nil
-// }
+func MatchRegexp(regexp string) OmegaMatcher {
+	return &matchers.MatchRegexpMatcher{
+		Regexp: regexp,
+	}
+}
 
-// func BeNil() *OmegaMatcher {
-// 	return nil
-// }
+func ContainSubstring(substr string) OmegaMatcher {
+	return &matchers.ContainSubstringMatcher{
+		Substr: substr,
+	}
+}
 
-// func BeEmpty() *OmegaMatcher {
-// 	return nil
-// }
+func BeEmpty() OmegaMatcher {
+	return &matchers.BeEmptyMatcher{}
+}
 
-// func MatchRegex(matchingRegex string) *OmegaMatcher {
-// 	return nil
-// }
+func HaveLen(count int) OmegaMatcher {
+	return &matchers.HaveLenMatcher{
+		Count: count,
+	}
+}
 
-// func HaveLen(length int) *OmegaMatcher {
-// 	return nil
-// }
+func BeZero() OmegaMatcher {
+	return &matchers.BeZeroMatcher{}
+}
 
-// func HaveKey(key interface{}) *OmegaMatcher {
-// 	return nil
-// }
+func ContainElement(element interface{}) OmegaMatcher {
+	return &matchers.ContainElementMatcher{
+		Element: element,
+	}
+}
 
-// func ContainElement(element interface{}) *OmegaMatcher {
-// 	return nil
-// }
+//HaveSameElementsAs (//order independent)
 
-// func Panic() *OmegaMatcher {
-// 	return nil
-// }
+//BeSameInstanceAs //identical!
+//Be [>=, <=, >, <]
 
-// func HaveType() *OmegaMatcher {
-// 	return nil
-// }
+//HaveKey
+//HaveSameTypeAs
+//ImplementSameInterfaceAs
 
-// func ImplementInterface() *OmegaMatcher {
-// 	return nil
-// }
+//Panic
