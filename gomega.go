@@ -1,7 +1,5 @@
 package gomega
 
-import "fmt"
-
 var globalFailHandler OmegaFailHandler
 
 type OmegaFailHandler func(message string, callerSkip ...int)
