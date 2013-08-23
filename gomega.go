@@ -7,7 +7,6 @@ var globalFailHandler OmegaFailHandler
 type OmegaFailHandler func(message string, callerSkip ...int)
 
 func RegisterFailHandler(handler OmegaFailHandler) {
-	fmt.Println("HI!", handler)
 	globalFailHandler = handler
 }
 
