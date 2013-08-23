@@ -1,7 +1,7 @@
 package gomega
 
 import (
-	. "github.com/onsi/godescribe"
+	. "github.com/onsi/ginkgo"
 	"testing"
 )
 

@@ -2,7 +2,7 @@ package gomega
 
 import (
 	"errors"
-	. "github.com/onsi/godescribe"
+	. "github.com/onsi/ginkgo"
 )
 
 type fakeMatcher struct {
