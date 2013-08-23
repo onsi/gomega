@@ -65,11 +65,12 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
+//TODO:
 //HaveKey
 //Panic
-
-//HaveSameElementsAs? (//order independent)
-//BeSameInstanceAs //identical!
-
 //HaveSameTypeAs
 //ImplementSameInterfaceAs
+
+//MAYBE:
+//HaveSameElementsAs? (//order independent)
+//BeSameInstanceAs? (//pointer identity)
