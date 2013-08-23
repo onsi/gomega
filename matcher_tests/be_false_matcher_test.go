@@ -1,0 +1,20 @@
+package matcher_tests
+
+import (
+	. "github.com/onsi/godescribe"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/matchers"
+)
+
+var _ = Describe("BeFalse", func() {
+	It("should handle true and false correctly", func() {
+		Ω(true).ShouldNot(BeFalse())
+		Ω(false).Should(BeFalse())
+	})
+
+	It("should only support booleans", func() {
+		success, _, err := (&BeFalseMatcher{}).Match("foo")
+		Ω(success).Should(BeFalse())
+		Ω(err).Should(HaveOccured())
+	})
+})

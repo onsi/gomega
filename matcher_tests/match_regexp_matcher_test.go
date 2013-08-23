@@ -1,0 +1,38 @@
+package matcher_tests
+
+import (
+	. "github.com/onsi/godescribe"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/matchers"
+)
+
+var _ = Describe("MatchRegexp", func() {
+	Context("when actual is a string", func() {
+		It("should match against the string", func() {
+			Ω(" a2!bla").Should(MatchRegexp(`\d!`))
+			Ω(" a2!bla").ShouldNot(MatchRegexp(`[A-Z]`))
+		})
+	})
+
+	Context("when actual is a stringer", func() {
+		It("should call the stringer and match agains the returned string", func() {
+			Ω(&myStringer{a: "Abc3"}).Should(MatchRegexp(`[A-Z][a-z]+\d`))
+		})
+	})
+
+	Context("when actual is neither a string nor a stringer", func() {
+		It("should error", func() {
+			success, _, err := (&MatchRegexpMatcher{Regexp: `\d`}).Match(2)
+			Ω(success).Should(BeFalse())
+			Ω(err).Should(HaveOccured())
+		})
+	})
+
+	Context("when the passed in regexp fails to compile", func() {
+		It("should error", func() {
+			success, _, err := (&MatchRegexpMatcher{Regexp: "("}).Match("Foo")
+			Ω(success).Should(BeFalse())
+			Ω(err).Should(HaveOccured())
+		})
+	})
+})
