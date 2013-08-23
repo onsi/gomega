@@ -58,13 +58,18 @@ func ContainElement(element interface{}) OmegaMatcher {
 	}
 }
 
-//HaveSameElementsAs (//order independent)
-
-//BeSameInstanceAs //identical!
-//Be [>=, <=, >, <]
+func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
+	return &matchers.BeNumericallyMatcher{
+		Comparator: comparator,
+		CompareTo:  compareTo,
+	}
+}
 
 //HaveKey
+//Panic
+
+//HaveSameElementsAs? (//order independent)
+//BeSameInstanceAs //identical!
+
 //HaveSameTypeAs
 //ImplementSameInterfaceAs
-
-//Panic
