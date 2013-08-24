@@ -58,6 +58,12 @@ func ContainElement(element interface{}) OmegaMatcher {
 	}
 }
 
+func HaveKey(key interface{}) OmegaMatcher {
+	return &matchers.HaveKeyMatcher{
+		Key: key,
+	}
+}
+
 func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	return &matchers.BeNumericallyMatcher{
 		Comparator: comparator,
@@ -66,7 +72,6 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 }
 
 //TODO:
-//HaveKey
 //Panic
 //HaveSameTypeAs
 //ImplementSameInterfaceAs
