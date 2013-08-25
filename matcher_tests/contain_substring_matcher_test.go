@@ -14,6 +14,12 @@ var _ = Describe("ContainSubstringMatcher", func() {
 		})
 	})
 
+	Context("when the matcher is called with multiple arguments", func() {
+		It("should pass the string and arguments to sprintf", func() {
+			Ω("Marvelous3").Should(ContainSubstring("velous%d", 3))
+		})
+	})
+
 	Context("when actual is a stringer", func() {
 		It("should call the stringer and match agains the returned string", func() {
 			Ω(&myStringer{a: "Abc3"}).Should(ContainSubstring("bc3"))

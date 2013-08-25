@@ -20,6 +20,12 @@ var _ = Describe("MatchRegexp", func() {
 		})
 	})
 
+	Context("when the matcher is called with multiple arguments", func() {
+		It("should pass the string and arguments to sprintf", func() {
+			Ω(" a23!bla").Should(MatchRegexp(`\d%d!`, 3))
+		})
+	})
+
 	Context("when actual is neither a string nor a stringer", func() {
 		It("should error", func() {
 			success, _, err := (&MatchRegexpMatcher{Regexp: `\d`}).Match(2)

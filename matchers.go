@@ -26,15 +26,17 @@ func HaveOccured() OmegaMatcher {
 	return &matchers.HaveOccuredMatcher{}
 }
 
-func MatchRegexp(regexp string) OmegaMatcher {
+func MatchRegexp(regexp string, args ...interface{}) OmegaMatcher {
 	return &matchers.MatchRegexpMatcher{
 		Regexp: regexp,
+		Args:   args,
 	}
 }
 
-func ContainSubstring(substr string) OmegaMatcher {
+func ContainSubstring(substr string, args ...interface{}) OmegaMatcher {
 	return &matchers.ContainSubstringMatcher{
 		Substr: substr,
+		Args:   args,
 	}
 }
 
@@ -71,8 +73,17 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
+// func Panic() OmegaMatcher {
+// 	return &matchers.PanicMatcher{}
+// }
+
+// func Receive(expected interface{}) OmegaMatcher {
+// 	return &matchers.ReceiveMatcher{
+// 		Expected: expected,
+// 	}
+// }
+
 //TODO:
-//Panic
 //HaveSameTypeAs
 //ImplementSameInterfaceAs
 
