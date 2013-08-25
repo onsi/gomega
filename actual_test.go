@@ -89,6 +89,7 @@ func init() {
 				It("should call the failure callback", func() {
 					a.ShouldNot(matcher)
 					Ω(failureMessage).Should(Equal("The negative failure message"))
+					Ω(failureCallerSkip).Should(Equal(2))
 				})
 			})
 		})
@@ -104,6 +105,7 @@ func init() {
 				It("should call the failure callback", func() {
 					a.Should(matcher)
 					Ω(failureMessage).Should(Equal("The positive failure message"))
+					Ω(failureCallerSkip).Should(Equal(2))
 				})
 			})
 
@@ -126,6 +128,7 @@ func init() {
 				It("should append the description to the failure message", func() {
 					a.Should(matcher, "A description")
 					Ω(failureMessage).Should(Equal("A description\nThe positive failure message"))
+					Ω(failureCallerSkip).Should(Equal(2))
 				})
 			})
 
@@ -133,6 +136,7 @@ func init() {
 				It("should append the formatted description to the failure message", func() {
 					a.Should(matcher, "A description of [%d]", 3)
 					Ω(failureMessage).Should(Equal("A description of [3]\nThe positive failure message"))
+					Ω(failureCallerSkip).Should(Equal(2))
 				})
 			})
 		})
@@ -148,6 +152,7 @@ func init() {
 					matcher.messageToReturn = "Ignore me"
 					a.Should(matcher)
 					Ω(failureMessage).Should(Equal("Kaboom!"))
+					Ω(failureCallerSkip).Should(Equal(2))
 				})
 			})
 
@@ -157,6 +162,7 @@ func init() {
 					matcher.messageToReturn = "Ignore me"
 					a.ShouldNot(matcher)
 					Ω(failureMessage).Should(Equal("Kaboom!"))
+					Ω(failureCallerSkip).Should(Equal(2))
 				})
 			})
 		})
