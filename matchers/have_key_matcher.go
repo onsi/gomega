@@ -14,17 +14,29 @@ func (matcher *HaveKeyMatcher) Match(actual interface{}) (success bool, message 
 		return false, "", fmt.Errorf("HaveKey matcher expects a map.  Got: %s", formatObject(actual))
 	}
 
-	if reflect.TypeOf(actual).Key() != reflect.TypeOf(matcher.Key) {
-		return false, "", fmt.Errorf("Mismatch between map key type (%v) and the expected key type (%T)", reflect.TypeOf(actual).Key(), matcher.Key)
+	keyMatcher, keyIsMatcher := matcher.Key.(omegaMatcher)
+	if !keyIsMatcher {
+		keyMatcher = &EqualMatcher{Expected: matcher.Key}
 	}
 
-	//lame that we can't just look up the key...
-	//func (Value) MapIndex(key Value) returns the zero value, not an error, if the key is missing.  boo...
 	keys := reflect.ValueOf(actual).MapKeys()
 	for i := 0; i < len(keys); i++ {
-		if reflect.DeepEqual(keys[i].Interface(), matcher.Key) {
-			return true, formatMessage(actual, "not to have key", matcher.Key), nil
+		success, _, err := keyMatcher.Match(keys[i].Interface())
+
+		if err != nil {
+			return false, "", fmt.Errorf("HaveKey's key matcher failed with:\n\t%s", err.Error())
+		}
+		if success {
+			if keyIsMatcher {
+				return true, formatMessage(actual, "not to have key matching", matcher.Key), nil
+			} else {
+				return true, formatMessage(actual, "not to have key", matcher.Key), nil
+			}
 		}
 	}
-	return false, formatMessage(actual, "to have key", matcher.Key), nil
+	if keyIsMatcher {
+		return false, formatMessage(actual, "to have key matching", matcher.Key), nil
+	} else {
+		return false, formatMessage(actual, "to have key", matcher.Key), nil
+	}
 }

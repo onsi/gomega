@@ -38,9 +38,15 @@ var _ = Describe("HaveKey", func() {
 		})
 	})
 
-	Context("when the passed in key is of a different type from the map's keys", func() {
-		It("should be error and simply not have the key", func() {
-			success, _, err := (&HaveKeyMatcher{Key: 2}).Match(stringKeys)
+	Context("when the passed in key is actually a matcher", func() {
+		It("should pass each element through the matcher", func() {
+			Ω(stringKeys).Should(HaveKey(ContainSubstring("oo")))
+			Ω(stringKeys).ShouldNot(HaveKey(ContainSubstring("foobar")))
+		})
+
+		It("should fail if the matcher ever fails", func() {
+			actual := map[interface{}]string{"foo": "a", 3: "b", "bar": "c"}
+			success, _, err := (&HaveKeyMatcher{Key: ContainSubstring("ar")}).Match(actual)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccured())
 		})

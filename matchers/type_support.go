@@ -5,6 +5,10 @@ import (
 	"reflect"
 )
 
+type omegaMatcher interface {
+	Match(actual interface{}) (success bool, message string, err error)
+}
+
 func isBool(a interface{}) bool {
 	return reflect.TypeOf(a).Kind() == reflect.Bool
 }
