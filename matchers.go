@@ -73,9 +73,9 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
-// func Panic() OmegaMatcher {
-// 	return &matchers.PanicMatcher{}
-// }
+func Panic() OmegaMatcher {
+	return &matchers.PanicMatcher{}
+}
 
 // func Receive(expected interface{}) OmegaMatcher {
 // 	return &matchers.ReceiveMatcher{
