@@ -15,8 +15,10 @@ func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, m
 	}
 
 	elemMatcher, elementIsMatcher := matcher.Element.(omegaMatcher)
+	matchingString := " matching"
 	if !elementIsMatcher {
 		elemMatcher = &EqualMatcher{Expected: matcher.Element}
+		matchingString = ""
 	}
 
 	value := reflect.ValueOf(actual)
@@ -26,16 +28,9 @@ func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, m
 			return false, "", fmt.Errorf("ContainElement's element matcher failed with:\n\t%s", err.Error())
 		}
 		if success {
-			if elementIsMatcher {
-				return true, formatMessage(actual, "not to contain element matching", matcher.Element), nil
-			} else {
-				return true, formatMessage(actual, "not to contain element", matcher.Element), nil
-			}
+			return true, formatMessage(actual, "not to contain element"+matchingString, matcher.Element), nil
 		}
 	}
-	if elementIsMatcher {
-		return false, formatMessage(actual, "to contain element matching", matcher.Element), nil
-	} else {
-		return false, formatMessage(actual, "to contain element", matcher.Element), nil
-	}
+
+	return false, formatMessage(actual, "to contain element"+matchingString, matcher.Element), nil
 }
