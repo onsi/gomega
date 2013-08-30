@@ -76,17 +76,3 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 func Panic() OmegaMatcher {
 	return &matchers.PanicMatcher{}
 }
-
-// func Receive(expected interface{}) OmegaMatcher {
-// 	return &matchers.ReceiveMatcher{
-// 		Expected: expected,
-// 	}
-// }
-
-//TODO:
-//HaveSameTypeAs
-//ImplementSameInterfaceAs
-
-//MAYBE:
-//HaveSameElementsAs? (//order independent)
-//BeSameInstanceAs? (//pointer identity)

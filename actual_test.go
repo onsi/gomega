@@ -5,19 +5,6 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-type fakeMatcher struct {
-	receivedActual  interface{}
-	matchesToReturn bool
-	messageToReturn string
-	errToReturn     error
-}
-
-func (matcher *fakeMatcher) Match(actual interface{}) (bool, string, error) {
-	matcher.receivedActual = actual
-
-	return matcher.matchesToReturn, matcher.messageToReturn, matcher.errToReturn
-}
-
 func init() {
 	Describe("Actual", func() {
 		var (
