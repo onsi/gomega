@@ -99,6 +99,13 @@ func isArrayOrSlice(a interface{}) bool {
 	}
 }
 
+func isString(a interface{}) bool {
+	if a == nil {
+		return false
+	}
+	return reflect.TypeOf(a).Kind() == reflect.String
+}
+
 func toString(a interface{}) (string, bool) {
 	aString, isString := a.(string)
 	if isString {

@@ -11,5 +11,15 @@ func formatMessage(actual interface{}, message string, expected ...interface{}) 
 }
 
 func formatObject(object interface{}) string {
-	return fmt.Sprintf("\n\t<%T> %#v", object, object)
+	hasLength := false
+	length := 0
+	if !isString(object) {
+		length, hasLength = lengthOf(object)
+	}
+
+	if hasLength {
+		return fmt.Sprintf("\n\t<%T> of length %d: %#v", object, length, object)
+	} else {
+		return fmt.Sprintf("\n\t<%T>: %#v", object, object)
+	}
 }
