@@ -7,6 +7,8 @@ import (
 
 var _ = Describe("BeZero", func() {
 	It("should succeed if the passed in object is the zero value for its type", func() {
+		Ω(nil).Should(BeZero())
+
 		Ω("").Should(BeZero())
 		Ω(" ").ShouldNot(BeZero())
 
