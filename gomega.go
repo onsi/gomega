@@ -2,6 +2,8 @@ package gomega
 
 import "time"
 
+const GOMEGA_VERSION = "1.0"
+
 var globalFailHandler OmegaFailHandler
 
 type OmegaFailHandler func(message string, callerSkip ...int)
