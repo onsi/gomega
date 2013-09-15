@@ -1,7 +1,6 @@
 ---
 layout: default
 title: Gomega
-sidebar: Gomega
 ---
 
 #Gomega: Ginkgo's Preferred Matcher Library
@@ -432,4 +431,4 @@ This also offers an example of what using the matcher would look like in your te
 
 Contributions are more than welcome.  Either [open an issue](http://github.com/onsi/gomega/issues) for a matcher you'd like to see or, better yet, test drive the matcher and [send a pull request](https://github.com/onsi/gomega/pulls).
 
-When adding a new matcher please mimic the style use in Gomega's current matchers (you should use the tools in `formatSupport.go` and put your tests in `matcher_tests`).  Also, be sure to update the github-pages documentation and include those changes in a separate pull request.
+When adding a new matcher please mimic the style use in Gomega's current matchers (you should use the tools in `formatSupport.go`, put the matcher in the `matchers` package, the constructor in the `matchers.go` file in the `omega` package, and put your tests in `matcher_tests`).  Also, be sure to update the github-pages documentation and include those changes in a separate pull request.
