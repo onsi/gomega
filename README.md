@@ -1,9 +1,13 @@
-# Gomega
+# Gomega: a matcher library for [Ginkgo](http://github.com/onsi/ginkgo)
 
 [![Build Status](https://travis-ci.org/onsi/gomega.png)](https://travis-ci.org/onsi/gomega)
 
-A matcher library for Ginkgo
+Jump straight to the [docs](http://onsi.github.io/gomega/) to learn about Gomega, including a list of [all available matchers](http://onsi.github.io/gomega/#provided_matchers).
 
-Check out the tests in matcher_tests.  To run them: `go test`
+## [Ginkgo](http://github.com/onsi/ginkgo): a BDD Testing Framework for Golang
 
-Docs coming soon!
+Learn more about Ginkgo [here](http://onsi.github.io/ginkgo/)
+
+## License
+
+Gomega is MIT-Licensed
