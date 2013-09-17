@@ -347,7 +347,7 @@ You might testdrive this matcher while writing it using Ginkgo.  Your test might
         "testing"
     )
 
-    func TestBootstrap(t *testing.T) {
+    func TestCustomMatcher(t *testing.T) {
         RegisterFailHandler(Fail)
         RunSpecs(t, "Custom Matcher Suite")
     }
