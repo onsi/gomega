@@ -45,7 +45,6 @@ func toInteger(a interface{}) int64 {
 		return int64(reflect.ValueOf(a).Float())
 	} else {
 		panic(fmt.Sprintf("Expected a number!  Got <%T> %#v", a, a))
-		return 0
 	}
 }
 
@@ -58,7 +57,6 @@ func toUnsignedInteger(a interface{}) uint64 {
 		return uint64(reflect.ValueOf(a).Float())
 	} else {
 		panic(fmt.Sprintf("Expected a number!  Got <%T> %#v", a, a))
-		return 0
 	}
 }
 
@@ -71,7 +69,6 @@ func toFloat(a interface{}) float64 {
 		return reflect.ValueOf(a).Float()
 	} else {
 		panic(fmt.Sprintf("Expected a number!  Got <%T> %#v", a, a))
-		return 0
 	}
 }
 

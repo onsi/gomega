@@ -18,5 +18,4 @@ func (matcher *EqualMatcher) Match(actual interface{}) (success bool, message st
 	} else {
 		return false, formatMessage(actual, "to equal", matcher.Expected), nil
 	}
-	return
 }
