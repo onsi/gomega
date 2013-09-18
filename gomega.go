@@ -21,8 +21,8 @@ func Expect(actual interface{}) Actual {
 }
 
 func Eventually(actual interface{}, intervals ...float64) AsyncActual {
-	timeoutInterval := time.Duration(5 * time.Second)
-	pollingInterval := time.Duration(100 * time.Millisecond)
+	timeoutInterval := time.Duration(1 * time.Second)
+	pollingInterval := time.Duration(10 * time.Millisecond)
 	if len(intervals) > 0 {
 		timeoutInterval = time.Duration(intervals[0] * float64(time.Second))
 	}
