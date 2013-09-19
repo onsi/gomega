@@ -1,4 +1,4 @@
-package matcher_tests
+package matchers_test
 
 import (
 	. "github.com/onsi/ginkgo"

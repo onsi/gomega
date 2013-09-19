@@ -1,4 +1,4 @@
-package matcher_tests
+package matchers_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -6,14 +6,14 @@ import (
 	. "github.com/onsi/gomega/matchers"
 )
 
-var _ = Describe("BeTrue", func() {
+var _ = Describe("BeFalse", func() {
 	It("should handle true and false correctly", func() {
-		Ω(true).Should(BeTrue())
-		Ω(false).ShouldNot(BeTrue())
+		Ω(true).ShouldNot(BeFalse())
+		Ω(false).Should(BeFalse())
 	})
 
 	It("should only support booleans", func() {
-		success, _, err := (&BeTrueMatcher{}).Match("foo")
+		success, _, err := (&BeFalseMatcher{}).Match("foo")
 		Ω(success).Should(BeFalse())
 		Ω(err).Should(HaveOccured())
 	})
