@@ -332,11 +332,12 @@ Let's break this down:
 
 You might testdrive this matcher while writing it using Ginkgo.  Your test might look like:
 
-    package custom_matcher
+    package json_response_matcher_test
 
     import (
         . "github.com/onsi/ginkgo"
         . "github.com/onsi/gomega"
+        . "jsonresponsematcher"
 
         "bytes"
         "encoding/json"
