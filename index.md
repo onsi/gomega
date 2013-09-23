@@ -37,20 +37,20 @@ Gomega provides two notations for making assertions.  These notations are functi
 
 - When you use the `Ω` notation, your assertions look like this:
 
-    Ω(ACTUAL).Should(Equal(EXPECTED))
-    Ω(ACTUAL).ShouldNot(Equal(EXPECTED))
+        Ω(ACTUAL).Should(Equal(EXPECTED))
+        Ω(ACTUAL).ShouldNot(Equal(EXPECTED))
 
 - When you use the `Expect` notation, your assertions look like this:
 
-    Expect(ACTUAL).To(Equal(EXPECTED))
-    Expect(ACTUAL).NotTo(Equal(EXPECTED))
-    Expect(ACTUAL).ToNot(Equal(EXPECTED))
+        Expect(ACTUAL).To(Equal(EXPECTED))
+        Expect(ACTUAL).NotTo(Equal(EXPECTED))
+        Expect(ACTUAL).ToNot(Equal(EXPECTED))
 
-On OS X the `Ω` character is easy to type.  Just hit option-z: ⌥z
+On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥-z`
 
-On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `OmegaMatcher` interface.  Omega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create an appropriate `OmegaMatcher` object, passing it the `EXPECTED`.
+On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `OmegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `OmegaMatcher` object.
 
-> The `OmegaMatcher` interface is very simple and is discussed [below](#adding-your-own-matchers).
+> The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.
 
 ### Annotating Assertions
 
@@ -154,7 +154,7 @@ succeeds if `ACTUAL` is the zero value for its type *or* if `ACTUAL` is `nil`.
 
 succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error for `ACTUAL` to not be a `bool`.
 
-> Some matcher libraries have a notion of `truthiness` to assert that an object is present.  You can use `Ω(ACTUAL).ShouldNot(BeZero())` or `Ω(ACTUAL).ShouldNot(BeNil())` to achieve a similar effect.
+> Some matcher libraries have a notion of `truthiness` to assert that an object is present.  Gomega is strict, and `BeTrue()` only works with `bool`s.  You can use `Ω(ACTUAL).ShouldNot(BeZero())` or `Ω(ACTUAL).ShouldNot(BeNil())` to verify object presence.
 
 ### BeFalse()
 
