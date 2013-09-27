@@ -10,8 +10,8 @@ type ContainElementMatcher struct {
 }
 
 func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, message string, err error) {
-	if !isArrayOrSlice(actual) {
-		return false, "", fmt.Errorf("ContainElement matcher expects an array/slice/string.  Got:%s", formatObject(actual))
+	if !isArrayOrSlice(actual) && !isMap(actual) {
+		return false, "", fmt.Errorf("ContainElement matcher expects an array/slice/map.  Got:%s", formatObject(actual))
 	}
 
 	elemMatcher, elementIsMatcher := matcher.Element.(omegaMatcher)
@@ -22,8 +22,18 @@ func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, m
 	}
 
 	value := reflect.ValueOf(actual)
+	var keys []reflect.Value
+	if isMap(actual) {
+		keys = value.MapKeys()
+	}
 	for i := 0; i < value.Len(); i++ {
-		success, _, err := elemMatcher.Match(value.Index(i).Interface())
+		var success bool
+		var err error
+		if isMap(actual) {
+			success, _, err = elemMatcher.Match(value.MapIndex(keys[i]).Interface())
+		} else {
+			success, _, err = elemMatcher.Match(value.Index(i).Interface())
+		}
 		if err != nil {
 			return false, "", fmt.Errorf("ContainElement's element matcher failed with:\n\t%s", err.Error())
 		}

@@ -16,6 +16,9 @@ var _ = Describe("ContainElement", func() {
 				Ω([]int{1, 2}).Should(ContainElement(2))
 				Ω([]int{1, 2}).ShouldNot(ContainElement(3))
 
+				Ω(map[string]int{"foo": 1, "bar": 2}).Should(ContainElement(2))
+				Ω(map[int]int{3: 1, 4: 2}).ShouldNot(ContainElement(3))
+
 				arr := make([]myCustomType, 2)
 				arr[0] = myCustomType{s: "foo", n: 3, f: 2.0, arr: []string{"a", "b"}}
 				arr[1] = myCustomType{s: "foo", n: 3, f: 2.0, arr: []string{"a", "c"}}
@@ -28,6 +31,8 @@ var _ = Describe("ContainElement", func() {
 			It("should pass each element through the matcher", func() {
 				Ω([]int{1, 2, 3}).Should(ContainElement(BeNumerically(">=", 3)))
 				Ω([]int{1, 2, 3}).ShouldNot(ContainElement(BeNumerically(">", 3)))
+				Ω(map[string]int{"foo": 1, "bar": 2}).Should(ContainElement(BeNumerically(">=", 2)))
+				Ω(map[string]int{"foo": 1, "bar": 2}).ShouldNot(ContainElement(BeNumerically(">", 2)))
 			})
 
 			It("should fail if the matcher ever fails", func() {
@@ -46,10 +51,6 @@ var _ = Describe("ContainElement", func() {
 			Ω(err).Should(HaveOccured())
 
 			success, _, err = (&ContainElementMatcher{Element: 0}).Match("abc")
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
-
-			success, _, err = (&ContainElementMatcher{Element: 0}).Match(map[string]int{"a": 1, "b": 2})
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccured())
 
