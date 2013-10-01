@@ -3,8 +3,6 @@ layout: default
 title: Gomega
 ---
 
-#Gomega: Ginkgo's Preferred Matcher Library
-
 [Gomega](http://github.com/onsi/gomega) is a matcher/assertion library.  It is best paired with the [Ginkgo](http://github.com/onsi/ginkgo) BDD test framework, but can be adapted for use in other contexts too.
 
 ---
@@ -27,7 +25,7 @@ If you're using Ginkgo, all you need to do is:
 
 before you start your test suite.
 
-If you use the `ginkgo` CLI to `ginkgo bootstrap` a test suite, thie command will be automatically generated for you.
+If you use the `ginkgo` CLI to `ginkgo bootstrap` a test suite, this hookup will be automatically generated for you.
 
 ---
 
@@ -46,7 +44,7 @@ Gomega provides two notations for making assertions.  These notations are functi
         Expect(ACTUAL).NotTo(Equal(EXPECTED))
         Expect(ACTUAL).ToNot(Equal(EXPECTED))
 
-On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥-z`
+On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥z`
 
 On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `OmegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `OmegaMatcher` object.
 
