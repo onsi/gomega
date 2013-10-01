@@ -1,4 +1,4 @@
-# Gomega: a matcher library for [Ginkgo](http://github.com/onsi/ginkgo)
+![Gomega: Ginkgo's Preferred Matcher Library](http://onsi.github.io/gomega/images/gomega.png)
 
 [![Build Status](https://travis-ci.org/onsi/gomega.png)](https://travis-ci.org/onsi/gomega)
 
