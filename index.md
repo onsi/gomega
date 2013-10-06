@@ -99,7 +99,7 @@ Gomega has support for making *asynchronous* assertions.  You do this by passing
 
 `Eventually` will poll the passed in function (which must have zero-arguments and one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
 
-The default value for the timeout is 5 seconds and the default value for the polling interval is 100 milliseconds.  You can change these values by passing in float64s (in seconds) just after your function:
+The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing in float64s (in seconds) just after your function:
 
     Eventually(func() []int {
         return thing.SliceImMonitoring
