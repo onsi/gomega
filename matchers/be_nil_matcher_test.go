@@ -10,6 +10,11 @@ var _ = Describe("BeNil", func() {
 		Ω(nil).Should(BeNil())
 	})
 
+	It("should succeed when passing nil pointer", func() {
+		var f *struct{}
+		Ω(f).Should(BeNil())
+	})
+
 	It("should not succeed when not passed nil", func() {
 		Ω(0).ShouldNot(BeNil())
 		Ω(false).ShouldNot(BeNil())
