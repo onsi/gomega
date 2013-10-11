@@ -117,6 +117,12 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
+func FitTypeOf(expected interface{}) OmegaMatcher {
+	return &matchers.FitsTypeMatcher{
+		Expected: expected,
+	}
+}
+
 //Panic succeeds if actual is a function that, when invoked, panics.
 //Actual must be a function that takes no arguments and returns no results.
 func Panic() OmegaMatcher {
