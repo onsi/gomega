@@ -5,15 +5,6 @@ import (
 	"reflect"
 )
 
-type FooInsterface interface {
-	Foo()
-}
-
-type ConcreteTypeThatImplementsFooInterface struct{}
-
-func (c *ConcreteTypeThatImplementsFooInterface) Foo() {
-}
-
 type AssignableToMatcher struct {
 	Expected interface{}
 }
