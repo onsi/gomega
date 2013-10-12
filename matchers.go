@@ -117,6 +117,12 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
+//BeAssignableTo succeeds if actual is assignable to the type of actual.
+//It will return an error when one of the values is nil.
+//
+//	Ω(0).Should(BeAssignableTo(0))         // Same values
+//	Ω(5).Should(BeAssignableTo(-1))        // different values same type
+//	Ω("foo").Should(BeAssignableTo("bar")) // different values same type
 func BeAssignableTo(expected interface{}) OmegaMatcher {
 	return &matchers.AssignableToMatcher{
 		Expected: expected,
