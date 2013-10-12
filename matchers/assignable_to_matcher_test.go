@@ -9,9 +9,13 @@ import (
 var _ = Describe("AssignableTo", func() {
 	Context("When asserting equality between types", func() {
 		It("should do the right thing", func() {
-			Ω(0).Should(FitTypeOf(0))
-			Ω(5).Should(FitTypeOf(-1))
-			Ω("foo").Should(FitTypeOf("bar"))
+			Ω(0).Should(BeAssignableTo(0))
+			Ω(5).Should(BeAssignableTo(-1))
+			Ω("foo").Should(BeAssignableTo("bar"))
+
+			Ω(0).ShouldNot(BeAssignableTo("bar"))
+			Ω(5).ShouldNot(BeAssignableTo(struct{ Foo string }{}))
+			Ω("foo").ShouldNot(BeAssignableTo(42))
 		})
 	})
 
