@@ -117,8 +117,8 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
-func FitTypeOf(expected interface{}) OmegaMatcher {
-	return &matchers.FitsTypeMatcher{
+func BeAssignableTo(expected interface{}) OmegaMatcher {
+	return &matchers.AssignableToMatcher{
 		Expected: expected,
 	}
 }

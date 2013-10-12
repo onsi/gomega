@@ -14,11 +14,11 @@ type ConcreteTypeThatImplementsFooInterface struct{}
 func (c *ConcreteTypeThatImplementsFooInterface) Foo() {
 }
 
-type FitsTypeMatcher struct {
+type AssignableToMatcher struct {
 	Expected interface{}
 }
 
-func (matcher *FitsTypeMatcher) Match(actual interface{}) (success bool, message string, err error) {
+func (matcher *AssignableToMatcher) Match(actual interface{}) (success bool, message string, err error) {
 	if actual == nil || matcher.Expected == nil {
 		return false, "", fmt.Errorf("Refusing to compare <nil> to <nil>.")
 	}

@@ -13,7 +13,7 @@ type Embeder struct {
 	ToEmbed
 }
 
-var _ = Describe("FitsType", func() {
+var _ = Describe("AssignableTo", func() {
 	Context("When asserting equality between types", func() {
 		It("should do the right thing", func() {
 			Ω(0).Should(FitTypeOf(0))         // Same values
@@ -24,7 +24,7 @@ var _ = Describe("FitsType", func() {
 
 	Context("When asserting nil values", func() {
 		It("should error", func() {
-			success, _, err := (&FitsTypeMatcher{Expected: nil}).Match(nil)
+			success, _, err := (&AssignableToMatcher{Expected: nil}).Match(nil)
 
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccured())
