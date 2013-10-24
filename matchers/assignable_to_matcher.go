@@ -18,8 +18,8 @@ func (matcher *AssignableToMatcher) Match(actual interface{}) (success bool, mes
 	expectedType := reflect.TypeOf(matcher.Expected)
 
 	if actualType.AssignableTo(expectedType) {
-		return true, formatMessage(actual, "not fitting type", matcher.Expected), nil
+		return true, formatMessage(actual, fmt.Sprintf("not to be assignable to the type: %T", matcher.Expected)), nil
 	} else {
-		return false, formatMessage(actual, "fitting type", matcher.Expected), nil
+		return false, formatMessage(actual, fmt.Sprintf("to be assignable to the type: %T", matcher.Expected)), nil
 	}
 }
