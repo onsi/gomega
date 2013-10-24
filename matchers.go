@@ -117,6 +117,19 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
+//BeAssignableToTypeOf succeeds if actual is assignable to the type of actual.
+//It will return an error when one of the values is nil.
+//
+//	Ω(0).Should(BeAssignableToTypeOf(0))         // Same values
+//	Ω(5).Should(BeAssignableToTypeOf(-1))        // different values same type
+//	Ω("foo").Should(BeAssignableToTypeOf("bar")) // different values same type
+//  Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
+func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
+	return &matchers.AssignableToTypeOfMatcher{
+		Expected: expected,
+	}
+}
+
 //Panic succeeds if actual is a function that, when invoked, panics.
 //Actual must be a function that takes no arguments and returns no results.
 func Panic() OmegaMatcher {
