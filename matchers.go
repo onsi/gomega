@@ -123,6 +123,7 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 //	Ω(0).Should(BeAssignableToTypeOf(0))         // Same values
 //	Ω(5).Should(BeAssignableToTypeOf(-1))        // different values same type
 //	Ω("foo").Should(BeAssignableToTypeOf("bar")) // different values same type
+//  Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
 func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
 	return &matchers.AssignableToTypeOfMatcher{
 		Expected: expected,

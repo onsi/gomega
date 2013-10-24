@@ -12,6 +12,7 @@ var _ = Describe("AssignableTo", func() {
 			Ω(0).Should(BeAssignableToTypeOf(0))
 			Ω(5).Should(BeAssignableToTypeOf(-1))
 			Ω("foo").Should(BeAssignableToTypeOf("bar"))
+			Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
 
 			Ω(0).ShouldNot(BeAssignableToTypeOf("bar"))
 			Ω(5).ShouldNot(BeAssignableToTypeOf(struct{ Foo string }{}))
