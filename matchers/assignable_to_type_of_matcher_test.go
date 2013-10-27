@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/gomega/matchers"
 )
 
-var _ = Describe("AssignableTo", func() {
-	Context("When asserting equality between types", func() {
+var _ = Describe("AssignableToTypeOf", func() {
+	Context("When asserting assignability between types", func() {
 		It("should do the right thing", func() {
 			Ω(0).Should(BeAssignableToTypeOf(0))
 			Ω(5).Should(BeAssignableToTypeOf(-1))

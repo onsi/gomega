@@ -29,16 +29,16 @@ func (matcher *BeNumericallyMatcher) Match(actual interface{}) (success bool, me
 		return false, "", fmt.Errorf("Unknown comparator: %s", matcher.Comparator)
 	}
 
-	if isInteger(actual) {
-		success = matcher.matchIntegers(toInteger(actual), toInteger(matcher.CompareTo[0]))
-	} else if isUnsignedInteger(actual) {
-		success = matcher.matchUnsignedIntegers(toUnsignedInteger(actual), toUnsignedInteger(matcher.CompareTo[0]))
-	} else if isFloat(actual) {
+	if isFloat(actual) || isFloat(matcher.CompareTo[0]) {
 		var secondOperand float64 = 1e-8
 		if len(matcher.CompareTo) == 2 {
 			secondOperand = toFloat(matcher.CompareTo[1])
 		}
 		success = matcher.matchFloats(toFloat(actual), toFloat(matcher.CompareTo[0]), secondOperand)
+	} else if isInteger(actual) {
+		success = matcher.matchIntegers(toInteger(actual), toInteger(matcher.CompareTo[0]))
+	} else if isUnsignedInteger(actual) {
+		success = matcher.matchUnsignedIntegers(toUnsignedInteger(actual), toUnsignedInteger(matcher.CompareTo[0]))
 	} else {
 		return false, "", fmt.Errorf("Failed to compare:%s\n%s:%s", formatObject(actual), matcher.Comparator, formatObject(matcher.CompareTo[0]))
 	}

@@ -14,6 +14,8 @@ func (s *myStringer) String() string {
 	return s.a
 }
 
+type StringAlias string
+
 type myCustomType struct {
 	s   string
 	n   int

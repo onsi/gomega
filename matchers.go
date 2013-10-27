@@ -4,10 +4,21 @@ import (
 	"github.com/onsi/gomega/matchers"
 )
 
-//Equal uses reflect.DeepEqual to compare actual with expected
+//Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
+//types when performing comparisons.
 //It is an error for both actual and expected to be nil.  Use BeNil() instead.
 func Equal(expected interface{}) OmegaMatcher {
 	return &matchers.EqualMatcher{
+		Expected: expected,
+	}
+}
+
+//BeEquivalentTo is more lax than Equal, allowing equality between different types.
+//This is done by converting actual to have the type of expected before
+//attempting equality with reflect.DeepEqual.
+//It is an error for actual and expected to be nil.  Use BeNil() instead.
+func BeEquivalentTo(expected interface{}) OmegaMatcher {
+	return &matchers.BeEquivalentToMatcher{
 		Expected: expected,
 	}
 }
@@ -117,7 +128,7 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
-//BeAssignableToTypeOf succeeds if actual is assignable to the type of actual.
+//BeAssignableToTypeOf succeeds if actual is assignable to the type of expected.
 //It will return an error when one of the values is nil.
 //
 //	Ω(0).Should(BeAssignableToTypeOf(0))         // Same values

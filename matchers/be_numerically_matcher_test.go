@@ -14,6 +14,11 @@ var _ = Describe("BeNumerically", func() {
 			Ω(int8(5)).Should(BeNumerically("==", 5))
 		})
 
+		It("should not have false positives", func() {
+			Ω(5.1).ShouldNot(BeNumerically("==", 5))
+			Ω(5).ShouldNot(BeNumerically("==", 5.1))
+		})
+
 		It("should support >", func() {
 			Ω(uint32(5)).Should(BeNumerically(">", 4))
 			Ω(float64(5.0)).Should(BeNumerically(">", 4.9))
