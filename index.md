@@ -128,11 +128,33 @@ These docs only go over the positive assertion case (`Should`), the negative cas
 
 uses [`reflect.DeepEqual`](http://golang.org/pkg/reflect#deepequal) to compare `ACTUAL` with `EXPECTED`.
 
-`reflect.DeepEqual` is awesome.  It will use `==` when appropriate (e.g. when comparing primitives) but will recursively dig into maps, slices, arrays, and even your own structs to ensure deep equality.
+`reflect.DeepEqual` is awesome.  It will use `==` when appropriate (e.g. when comparing primitives) but will recursively dig into maps, slices, arrays, and even your own structs to ensure deep equality.  `reflect.DeepEqual`, however, is strict about comparing types.  Both `ACTUAL` and `EXPECTED` *must* have the same type.  If you want to compare across different types (e.g. if you've defined a type alias) you should use `BeEquivalentTo`
 
 It is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
 
-> For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumerically) matcher
+> For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator_string_compareto_interface) matcher
+
+### BeEquivalentTo(expected interface)
+
+    Ω(ACTUAL).Should(BeEquivalentTo(EXPECTED))
+
+Like `Equal`, `BeEquivalentTo` uses `reflect.DeepEqual` to compare `ACTUAL` with `EXPECTED`.  Unlike `Equal`, however, `BeEquivalentTo` will first convert `ACTUAL`s type to that of `EXPECTED` before making the comparison with `reflect.DeepEqual`.
+
+This means that `BeEquivalentTo` will succesfully match equivalent values of different type.  This is particularly useful, for example, with type aliases:
+
+    type FoodSource string
+
+    Ω(FoodSource("Cheeseboard Pizza")).Should(Equal("Cheeseboard Pizza")) //will fail
+    Ω(FoodSource("Cheeseboard Pizza")).Should(BeEquivalentTo("Cheeseboard Pizza")) //will pass
+
+As with `Equal` it is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
+
+As a rule, you **should not** use `BeEquivalentTo` with numbers.  Both of the following assertions are true:
+
+    Ω(5.1).Should(BeEquivalentTo(5))
+    Ω(5).ShouldNot(BeEquivalentTo(5.1))
+
+the first assertion passes because 5.1 will be cast to an integer and will get rounded down!  Such false positives are terrible and should be avoided.  Use [`BeNumerically()`](#benumericallycomparator_string_compareto_interface) to compare numbers instead.
 
 ### BeNil()
 
@@ -252,6 +274,12 @@ There are six supported comparators:
     Asserts that `ACTUAL` is less than or equal to `EXPECTED`
 
 Any other comparator is an error.
+
+### BeAssignableToTypeOf(expected interface)
+
+    Ω(ACTUAL).Should(BeAssignableToTypeOf(EXPECTED interface))
+
+succeeds if `ACTUAL` is a type that can be assigned to a variable with the same type as `EXPECTED`.  It is an error for either `ACTUAL` or `EXPECTED` to be `nil`.
 
 ### Panic()
 
