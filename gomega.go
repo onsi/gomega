@@ -77,12 +77,14 @@ func Eventually(actual interface{}, intervals ...float64) AsyncActual {
 //fmt.Sprintf() and is used to annotate failure messages.  This allows you to make your failure messages more
 //descriptive
 //
+//Both Should and ShouldNot return a boolean that is true if the assertion passed and false if it failed.
+//
 //Example:
 //
 //  Eventually(myChannel).Should(HaveLen(1), "Something should have come down the pipe.")
 type AsyncActual interface {
-	Should(matcher OmegaMatcher, optionalDescription ...interface{})
-	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{})
+	Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool
 }
 
 //Actual is returned by Ω and Expect and compares the actual value to the matcher
@@ -94,16 +96,18 @@ type AsyncActual interface {
 //All methods take a variadic optionalDescription argument.  This is passed on to fmt.Sprintf()
 //and is used to annotate failure messages.
 //
+//All methods return a bool that is true if hte assertion passed and false if it failed.
+//
 //Example:
 //
 //   Ω(farm.HasCow()).Should(BeTrue(), "Farm %v should have a cow", farm)
 type Actual interface {
-	Should(matcher OmegaMatcher, optionalDescription ...interface{})
-	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{})
+	Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool
 
-	To(matcher OmegaMatcher, optionalDescription ...interface{})
-	ToNot(matcher OmegaMatcher, optionalDescription ...interface{})
-	NotTo(matcher OmegaMatcher, optionalDescription ...interface{})
+	To(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	ToNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	NotTo(matcher OmegaMatcher, optionalDescription ...interface{}) bool
 }
 
 //All Gomega matchers must implement the OmegaMatcher interface

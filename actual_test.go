@@ -70,6 +70,10 @@ func init() {
 					a.Should(matcher)
 					Ω(failureMessage).Should(Equal(""))
 				})
+
+				It("should be true", func() {
+					Ω(a.Should(matcher)).Should(BeTrue())
+				})
 			})
 
 			Context("and a negative assertion is being made", func() {
@@ -77,6 +81,10 @@ func init() {
 					a.ShouldNot(matcher)
 					Ω(failureMessage).Should(Equal("The negative failure message"))
 					Ω(failureCallerSkip).Should(Equal(2))
+				})
+
+				It("should be false", func() {
+					Ω(a.ShouldNot(matcher)).Should(BeFalse())
 				})
 			})
 		})
@@ -94,12 +102,20 @@ func init() {
 					Ω(failureMessage).Should(Equal("The positive failure message"))
 					Ω(failureCallerSkip).Should(Equal(2))
 				})
+
+				It("should be false", func() {
+					Ω(a.Should(matcher)).Should(BeFalse())
+				})
 			})
 
 			Context("and a negative assertion is being made", func() {
 				It("should not call the failure callback", func() {
 					a.ShouldNot(matcher)
 					Ω(failureMessage).Should(Equal(""))
+				})
+
+				It("should be true", func() {
+					Ω(a.ShouldNot(matcher)).Should(BeTrue())
 				})
 			})
 		})
@@ -151,6 +167,11 @@ func init() {
 					Ω(failureMessage).Should(Equal("Kaboom!"))
 					Ω(failureCallerSkip).Should(Equal(2))
 				})
+			})
+
+			It("should always be false", func() {
+				Ω(a.Should(matcher)).Should(BeFalse())
+				Ω(a.ShouldNot(matcher)).Should(BeFalse())
 			})
 		})
 	})
