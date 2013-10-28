@@ -50,6 +50,17 @@ On the left hand side, you can pass anything you want in to `Ω` and `Expect` fo
 
 > The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.
 
+Each assertion returns a `bool` denoting whether or not the assertion passed.  This is useful for bailing out of a test early if an assertion fails:
+
+        goodToGo := Ω(WeAreSetUp()).Should(BeTrue())
+        if !goodToGo {
+            return
+        }
+        doSomethingExpensive()
+
+> With Ginkgo, a failed assertion does *not* bail out of the current test.  It is generally unnecessary to do so, but in cases where bailing out is necessary, use the `bool` return value and pattern outlined above.
+
+
 ### Annotating Assertions
 
 You can annotate any assertion by passing a format string (and optional inputs to format) after the `OmegaMatcher`:
