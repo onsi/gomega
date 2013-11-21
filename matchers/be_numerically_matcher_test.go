@@ -87,10 +87,20 @@ var _ = Describe("BeNumerically", func() {
 			})
 
 			Context("when passed an int/uint", func() {
-				It("should just do strict equality", func() {
-					Ω(5).Should(BeNumerically("~", 5, 10))
-					Ω(5).ShouldNot(BeNumerically("~", 6, 10))
-					Ω(5.0).Should(BeNumerically("~", 6.0, 10))
+				Context("and there is no precision parameter", func() {
+					It("should just do strict equality", func() {
+						Ω(5).Should(BeNumerically("~", 5))
+						Ω(5).ShouldNot(BeNumerically("~", 6))
+						Ω(uint(5)).ShouldNot(BeNumerically("~", 6))
+					})
+				})
+
+				Context("and there is a precision parameter", func() {
+					It("should use precision paramter", func() {
+						Ω(5).Should(BeNumerically("~", 6, 2))
+						Ω(5).ShouldNot(BeNumerically("~", 8, 2))
+						Ω(uint(5)).Should(BeNumerically("~", 6, 1))
+					})
 				})
 			})
 		})
