@@ -36,9 +36,17 @@ func (matcher *BeNumericallyMatcher) Match(actual interface{}) (success bool, me
 		}
 		success = matcher.matchFloats(toFloat(actual), toFloat(matcher.CompareTo[0]), secondOperand)
 	} else if isInteger(actual) {
-		success = matcher.matchIntegers(toInteger(actual), toInteger(matcher.CompareTo[0]))
+		var secondOperand int64 = 0
+		if len(matcher.CompareTo) == 2 {
+			secondOperand = toInteger(matcher.CompareTo[1])
+		}
+		success = matcher.matchIntegers(toInteger(actual), toInteger(matcher.CompareTo[0]), secondOperand)
 	} else if isUnsignedInteger(actual) {
-		success = matcher.matchUnsignedIntegers(toUnsignedInteger(actual), toUnsignedInteger(matcher.CompareTo[0]))
+		var secondOperand uint64 = 0
+		if len(matcher.CompareTo) == 2 {
+			secondOperand = toUnsignedInteger(matcher.CompareTo[1])
+		}
+		success = matcher.matchUnsignedIntegers(toUnsignedInteger(actual), toUnsignedInteger(matcher.CompareTo[0]), secondOperand)
 	} else {
 		return false, "", fmt.Errorf("Failed to compare:%s\n%s:%s", formatObject(actual), matcher.Comparator, formatObject(matcher.CompareTo[0]))
 	}
@@ -50,10 +58,11 @@ func (matcher *BeNumericallyMatcher) Match(actual interface{}) (success bool, me
 	}
 }
 
-func (matcher *BeNumericallyMatcher) matchIntegers(actual, compareTo int64) (success bool) {
+func (matcher *BeNumericallyMatcher) matchIntegers(actual, compareTo, threshold int64) (success bool) {
 	switch matcher.Comparator {
 	case "==", "~":
-		return (actual == compareTo)
+		diff := actual - compareTo
+		return -threshold <= diff && diff <= threshold
 	case ">":
 		return (actual > compareTo)
 	case ">=":
@@ -66,10 +75,13 @@ func (matcher *BeNumericallyMatcher) matchIntegers(actual, compareTo int64) (suc
 	return false
 }
 
-func (matcher *BeNumericallyMatcher) matchUnsignedIntegers(actual, compareTo uint64) (success bool) {
+func (matcher *BeNumericallyMatcher) matchUnsignedIntegers(actual, compareTo, threshold uint64) (success bool) {
 	switch matcher.Comparator {
 	case "==", "~":
-		return (actual == compareTo)
+		if actual < compareTo {
+			actual, compareTo = compareTo, actual
+		}
+		return actual-compareTo <= threshold
 	case ">":
 		return (actual > compareTo)
 	case ">=":
