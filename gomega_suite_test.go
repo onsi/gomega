@@ -10,6 +10,11 @@ func Test(t *testing.T) {
 	RunSpecs(t, "Gomega")
 }
 
+func TestTestingT(t *testing.T) {
+	RegisterTestingT(t)
+	Ω(true).Should(BeTrue())
+}
+
 type fakeMatcher struct {
 	receivedActual  interface{}
 	matchesToReturn bool
