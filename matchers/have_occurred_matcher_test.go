@@ -7,22 +7,22 @@ import (
 	. "github.com/onsi/gomega/matchers"
 )
 
-var _ = Describe("HaveOccured", func() {
+var _ = Describe("HaveOccurred", func() {
 	It("should succeed if matching an error", func() {
-		Ω(errors.New("Foo")).Should(HaveOccured())
+		Ω(errors.New("Foo")).Should(HaveOccurred())
 	})
 
 	It("should not succeed with nil", func() {
-		Ω(nil).ShouldNot(HaveOccured())
+		Ω(nil).ShouldNot(HaveOccurred())
 	})
 
 	It("should only support errors and nil", func() {
-		success, _, err := (&HaveOccuredMatcher{}).Match("foo")
+		success, _, err := (&HaveOccurredMatcher{}).Match("foo")
 		Ω(success).Should(BeFalse())
-		Ω(err).Should(HaveOccured())
+		Ω(err).Should(HaveOccurred())
 
-		success, _, err = (&HaveOccuredMatcher{}).Match("")
+		success, _, err = (&HaveOccurredMatcher{}).Match("")
 		Ω(success).Should(BeFalse())
-		Ω(err).Should(HaveOccured())
+		Ω(err).Should(HaveOccurred())
 	})
 })
