@@ -215,14 +215,14 @@ succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error f
 
 succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.
 
-### HaveOccured()
+### HaveOccurred()
 
-    Ω(ERROR).Should(HaveOccured())
+    Ω(ERROR).Should(HaveOccurred())
 
 succeeds if `ACTUAL` is a non-nil `error`.  Thus, the typical Go error checking pattern looks like:
 
     err := SomethingThatMightFail()
-    Ω(err).ShouldNot(HaveOccured())
+    Ω(err).ShouldNot(HaveOccurred())
 
 ### BeEmpty()
 
@@ -432,13 +432,13 @@ You might testdrive this matcher while writing it using Ginkgo.  Your test might
 
             var err error
             bookJSON, err = json.Marshal(book)
-            Ω(err).ShouldNot(HaveOccured())
+            Ω(err).ShouldNot(HaveOccurred())
         })
 
         Context("when actual is not an http response", func() {
             It("should error", func() {
                 _, _, err := RepresentJSONifiedObject(book).Match("not a response")
-                Ω(err).Should(HaveOccured())
+                Ω(err).Should(HaveOccurred())
             })
         })
 
@@ -479,7 +479,7 @@ You might testdrive this matcher while writing it using Ginkgo.  Your test might
 
                 It("should error", func() {
                     _, _, err := RepresentJSONifiedObject(book).Match(response)
-                    Ω(err).Should(HaveOccured())
+                    Ω(err).Should(HaveOccurred())
                 })
             })
         })
