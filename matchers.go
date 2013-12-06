@@ -55,7 +55,7 @@ func HaveOccurred() OmegaMatcher {
 //Legacy misspelling, provided for backwards compatibility.
 func HaveOccured() OmegaMatcher {
 	if !deprecationWarnings["HaveOccured"] {
-		fmt.Println("\nWARNING: Matcher deprecated!")
+		fmt.Println("\nWARNING: The HaveOccured matcher is deprecated!")
 		fmt.Println(`We've corrected the spelling of "HaveOccured" to "HaveOccurred".`)
 		fmt.Println(`Update your package by running "gofmt -r 'HaveOccured() -> HaveOccurred()' -w *.go".`)
 		deprecationWarnings["HaveOccured"] = true
