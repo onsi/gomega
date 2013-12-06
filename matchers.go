@@ -1,8 +1,13 @@
 package gomega
 
 import (
+	"fmt"
+
 	"github.com/onsi/gomega/matchers"
 )
+
+//Track whether we've already warned about a deprecated feature. Nobody likes a nag.
+var deprecationWarnings map[string]bool = make(map[string]bool)
 
 //Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
 //types when performing comparisons.
@@ -38,13 +43,24 @@ func BeFalse() OmegaMatcher {
 	return &matchers.BeFalseMatcher{}
 }
 
-//HaveOccured succeeds if actual is a non-nil error
+//HaveOccurred succeeds if actual is a non-nil error
 //The typical Go error checking pattern looks like:
 //
 //  err := SomethingThatMightFail()
-//  Ω(err).ShouldNot(HaveOccured())
+//  Ω(err).ShouldNot(HaveOccurred())
+func HaveOccurred() OmegaMatcher {
+	return &matchers.HaveOccurredMatcher{}
+}
+
+//Legacy misspelling, provided for backwards compatibility.
 func HaveOccured() OmegaMatcher {
-	return &matchers.HaveOccuredMatcher{}
+	if !deprecationWarnings["HaveOccured"] {
+		fmt.Println("\nWARNING: Matcher deprecated!")
+		fmt.Println(`We've corrected the spelling of "HaveOccured" to "HaveOccurred".`)
+		fmt.Println(`Update your package by running "gofmt -r 'HaveOccured() -> HaveOccurred()' -w *.go".`)
+		deprecationWarnings["HaveOccured"] = true
+	}
+	return &matchers.HaveOccurredMatcher{}
 }
 
 //MatchRegexp succeeds if actual is a string or stringer that matches the

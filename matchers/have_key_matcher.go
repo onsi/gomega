@@ -31,6 +31,6 @@ func (matcher *HaveKeyMatcher) Match(actual interface{}) (success bool, message 
 			return true, formatMessage(actual, "not to have key"+matchingString, matcher.Key), nil
 		}
 	}
-	
+
 	return false, formatMessage(actual, "to have key"+matchingString, matcher.Key), nil
 }
