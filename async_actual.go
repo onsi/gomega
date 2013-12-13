@@ -63,12 +63,7 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 	matches, message, err := matcher.Match(actual.pollActual())
 
 	for {
-		if err != nil {
-			actual.fail(description+err.Error(), 2)
-			return false
-		}
-
-		if matches == desiredMatch {
+		if err == nil && matches == desiredMatch {
 			return true
 		}
 
