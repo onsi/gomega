@@ -86,14 +86,14 @@ func isError(a interface{}) bool {
 }
 
 func isMap(a interface{}) bool {
-	if a == nil {
+	if isNil(a) {
 		return false
 	}
 	return reflect.TypeOf(a).Kind() == reflect.Map
 }
 
 func isArrayOrSlice(a interface{}) bool {
-	if a == nil {
+	if isNil(a) {
 		return false
 	}
 	switch reflect.TypeOf(a).Kind() {
@@ -125,7 +125,7 @@ func toString(a interface{}) (string, bool) {
 }
 
 func lengthOf(a interface{}) (int, bool) {
-	if a == nil {
+	if isNil(a) {
 		return 0, false
 	}
 	switch reflect.TypeOf(a).Kind() {
@@ -134,4 +134,17 @@ func lengthOf(a interface{}) (int, bool) {
 	default:
 		return 0, false
 	}
+}
+
+func isNil(a interface{}) bool {
+	if a == nil {
+		return true
+	}
+
+	switch reflect.TypeOf(a).Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return reflect.ValueOf(a).IsNil()
+	}
+
+	return false
 }

@@ -31,6 +31,10 @@ var _ = Describe("ContainSubstringMatcher", func() {
 			success, _, err := (&ContainSubstringMatcher{Substr: "2"}).Match(2)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccured())
+
+			success, _, err = (&ContainSubstringMatcher{Substr: "2"}).Match(nil)
+			Ω(success).Should(BeFalse())
+			Ω(err).Should(HaveOccured())
 		})
 	})
 })

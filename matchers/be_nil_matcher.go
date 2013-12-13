@@ -8,7 +8,7 @@ type BeNilMatcher struct {
 }
 
 func (matcher *BeNilMatcher) Match(actual interface{}) (success bool, message string, err error) {
-	if actual == nil {
+	if isNil(actual) {
 		return true, formatMessage(actual, "not to be nil"), nil
 	} else {
 		t := reflect.ValueOf(actual)
