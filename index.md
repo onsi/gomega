@@ -211,7 +211,7 @@ succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error f
 
 ### BeFalse()
 
-    Ω(ACTUAL).Should(BeTrue())
+    Ω(ACTUAL).Should(BeFalse())
 
 succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.
 
