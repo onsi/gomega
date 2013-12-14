@@ -71,7 +71,11 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 		case <-time.After(actual.pollingInterval):
 			matches, message, err = matcher.Match(actual.pollActual())
 		case <-timeout:
-			actual.fail(fmt.Sprintf("Timed out after %.3fs.\n%s%s", time.Since(timer).Seconds(), description, message), 2)
+			errMsg := ""
+			if err != nil {
+				errMsg = "Error: " + err.Error()
+			}
+			actual.fail(fmt.Sprintf("Timed out after %.3fs.\n%s%s%s", time.Since(timer).Seconds(), description, message, errMsg), 2)
 			return false
 		}
 	}
