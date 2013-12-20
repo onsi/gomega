@@ -29,16 +29,12 @@ var _ = Describe("BeEmpty", func() {
 	})
 
 	Context("when passed a typed nil", func() {
-		It("should error", func() {
+		It("should succeed", func() {
 			var nilMap map[string]int
-			success, _, err := (&BeEmptyMatcher{}).Match(nilMap)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(nilMap).Should(BeEmpty())
 
 			var nilSlice []int
-			success, _, err = (&BeEmptyMatcher{}).Match(nilSlice)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(nilSlice).Should(BeEmpty())
 		})
 	})
 

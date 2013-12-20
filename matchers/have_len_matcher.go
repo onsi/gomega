@@ -9,7 +9,7 @@ type HaveLenMatcher struct {
 }
 
 func (matcher *HaveLenMatcher) Match(actual interface{}) (success bool, message string, err error) {
-	length, ok := lengthOf(actual)
+	length, ok := lengthOf(actual, false)
 	if ok {
 		if length == matcher.Count {
 			return true, fmt.Sprintf("Expected%s\n (length: %d) not to have length %d", formatObject(actual), length, matcher.Count), nil

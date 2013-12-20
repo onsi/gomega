@@ -124,8 +124,11 @@ func toString(a interface{}) (string, bool) {
 	return "", false
 }
 
-func lengthOf(a interface{}) (int, bool) {
-	if isNil(a) {
+func lengthOf(a interface{}, allowTypedNil bool) (int, bool) {
+	if allowTypedNil && a == nil {
+		return 0, false
+	}
+	if !allowTypedNil && isNil(a) {
 		return 0, false
 	}
 	switch reflect.TypeOf(a).Kind() {
