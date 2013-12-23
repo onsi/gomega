@@ -44,6 +44,16 @@ var _ = Describe("ContainElement", func() {
 		})
 	})
 
+	Context("when passed a correctly typed nil", func() {
+		It("should operate succesfully on the passed in value", func() {
+			var nilSlice []int
+			Ω(nilSlice).ShouldNot(ContainElement(1))
+
+			var nilMap map[int]string
+			Ω(nilMap).ShouldNot(ContainElement("foo"))
+		})
+	})
+
 	Context("when passed an unsupported type", func() {
 		It("should error", func() {
 			success, _, err := (&ContainElementMatcher{Element: 0}).Match(0)

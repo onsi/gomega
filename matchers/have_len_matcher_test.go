@@ -29,6 +29,16 @@ var _ = Describe("HaveLen", func() {
 		})
 	})
 
+	Context("when passed a correctly typed nil", func() {
+		It("should operate succesfully on the passed in value", func() {
+			var nilSlice []int
+			Ω(nilSlice).Should(HaveLen(0))
+
+			var nilMap map[int]string
+			Ω(nilMap).Should(HaveLen(0))
+		})
+	})
+
 	Context("when passed an unsupported type", func() {
 		It("should error", func() {
 			success, _, err := (&HaveLenMatcher{Count: 0}).Match(0)

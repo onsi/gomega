@@ -38,6 +38,13 @@ var _ = Describe("HaveKey", func() {
 		})
 	})
 
+	Context("when passed a correctly typed nil", func() {
+		It("should operate succesfully on the passed in value", func() {
+			var nilMap map[int]string
+			Ω(nilMap).ShouldNot(HaveKey("foo"))
+		})
+	})
+
 	Context("when the passed in key is actually a matcher", func() {
 		It("should pass each element through the matcher", func() {
 			Ω(stringKeys).Should(HaveKey(ContainSubstring("oo")))

@@ -28,6 +28,16 @@ var _ = Describe("BeEmpty", func() {
 		})
 	})
 
+	Context("when passed a correctly typed nil", func() {
+		It("should be true", func() {
+			var nilSlice []int
+			Ω(nilSlice).Should(BeEmpty())
+
+			var nilMap map[int]string
+			Ω(nilMap).Should(BeEmpty())
+		})
+	})
+
 	Context("when passed an unsupported type", func() {
 		It("should error", func() {
 			success, _, err := (&BeEmptyMatcher{}).Match(0)
