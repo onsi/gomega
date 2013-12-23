@@ -52,15 +52,6 @@ var _ = Describe("HaveKey", func() {
 		})
 	})
 
-	Context("when passed a typed nil", func() {
-		It("should error", func() {
-			var nilMap map[string]int
-			success, _, err := (&HaveKeyMatcher{Key: "foo"}).Match(nilMap)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
-		})
-	})
-
 	Context("when passed something that is not a map", func() {
 		It("should error", func() {
 			success, _, err := (&HaveKeyMatcher{Key: "foo"}).Match([]string{"foo"})

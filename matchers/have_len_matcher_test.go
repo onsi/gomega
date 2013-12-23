@@ -29,20 +29,6 @@ var _ = Describe("HaveLen", func() {
 		})
 	})
 
-	Context("when passed a typed nil", func() {
-		It("should error", func() {
-			var nilMap map[string]int
-			success, _, err := (&HaveLenMatcher{Count: 0}).Match(nilMap)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
-
-			var nilSlice []int
-			success, _, err = (&HaveLenMatcher{Count: 0}).Match(nilSlice)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
-		})
-	})
-
 	Context("when passed an unsupported type", func() {
 		It("should error", func() {
 			success, _, err := (&HaveLenMatcher{Count: 0}).Match(0)

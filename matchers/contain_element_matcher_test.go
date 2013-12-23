@@ -44,20 +44,6 @@ var _ = Describe("ContainElement", func() {
 		})
 	})
 
-	Context("when passed a correctly typed nil", func() {
-		It("should error", func() {
-			var nilArray []int
-			success, _, err := (&ContainElementMatcher{Element: 0}).Match(nilArray)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
-
-			var nilHash map[string]int
-			success, _, err = (&ContainElementMatcher{Element: 0}).Match(nilHash)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
-		})
-	})
-
 	Context("when passed an unsupported type", func() {
 		It("should error", func() {
 			success, _, err := (&ContainElementMatcher{Element: 0}).Match(0)

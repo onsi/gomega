@@ -84,20 +84,11 @@ func ContainSubstring(substr string, args ...interface{}) OmegaMatcher {
 }
 
 //BeEmpty succeeds if actual is empty.  Actual must be of type string, array, map, chan, or slice.
-//If BeEmpty is passed a typed nil, it will fail:
-//
-//   var nilSlice []int
-//   Expect(nilSlice).To(BeEmpty()) //will always fail
 func BeEmpty() OmegaMatcher {
 	return &matchers.BeEmptyMatcher{}
 }
 
 //HaveLen succeeds if actual has the passed-in length.  Actual must be of type string, array, map, chan, or slice.
-//If HaveLen is passed a typed nil, it will fail:
-//
-//   var nilMap map[string]int
-//   Expect(nilMap).To(HaveLen(0)) //will always fail
-//   Expect(nilMap).NotTo(HaveLen(1)) //will always fail
 func HaveLen(count int) OmegaMatcher {
 	return &matchers.HaveLenMatcher{
 		Count: count,
