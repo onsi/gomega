@@ -14,7 +14,7 @@ func formatObject(object interface{}) string {
 	hasLength := false
 	length := 0
 	if !isString(object) {
-		length, hasLength = lengthOf(object, true)
+		length, hasLength = lengthOf(object)
 	}
 
 	if hasLength {

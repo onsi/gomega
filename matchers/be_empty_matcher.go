@@ -8,7 +8,7 @@ type BeEmptyMatcher struct {
 }
 
 func (matcher *BeEmptyMatcher) Match(actual interface{}) (success bool, message string, err error) {
-	length, ok := lengthOf(actual, true)
+	length, ok := lengthOf(actual)
 	if ok {
 		if length == 0 {
 			return true, formatMessage(actual, "not to be empty"), nil
