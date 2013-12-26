@@ -34,7 +34,7 @@ func init() {
 					Ω(failureMessage).Should(BeZero())
 				})
 
-				It("should fail when the matcher errors", func() {
+				It("should continue when the matcher errors", func() {
 					var arr = []int{}
 					a := newAsyncActual(func() interface{} {
 						arr = append(arr, 1)
@@ -46,7 +46,7 @@ func init() {
 
 					a.Should(HaveLen(4), "My description %d", 2)
 
-					Ω(arr).Should(HaveLen(4))
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
 					Ω(failureMessage).Should(ContainSubstring("My description 2"))
 				})
 
@@ -83,13 +83,15 @@ func init() {
 					Ω(failureMessage).Should(BeZero())
 				})
 
-				It("should fail when the matcher errors", func() {
+				It("should timeout when the matcher errors", func() {
 					a := newAsyncActual(func() interface{} {
 						return 0 //this should cause the matcher to error
 					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)))
 
 					a.ShouldNot(HaveLen(0), "My description %d", 2)
 
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("Error:"))
 					Ω(failureMessage).Should(ContainSubstring("My description 2"))
 				})
 
