@@ -70,7 +70,7 @@ On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥z`
 
 On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `OmegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `OmegaMatcher` object.
 
-> The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.
+> The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding_your_own_matchers) section.
 
 Each assertion returns a `bool` denoting whether or not the assertion passed.  This is useful for bailing out of a test early if an assertion fails:
 
@@ -146,6 +146,47 @@ The default value for the timeout is 1 second and the default value for the poll
     }).Should(BeTrue())
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
+
+---
+
+##Making Assertions in Helper Functions
+
+While writing [custom matchers](#adding_your_own_matchers) is an expressive way to make assertions against your code, it is often more convenient to write one-off helper functions like so:
+
+    var _ = Describe("Turboencabulator", func() {
+        ...
+        assertTurboencabulatorContains(components ...string) {
+            components, err := turboEncabulator.GetComponents()
+            Expect(err).NotTo(HaveOccurred())
+
+            Expect(components).To(HaveLen(components))
+            for _, component := range components {
+                Expect(components).To(ContainElement(component))
+            }
+        }
+
+        It("should have components", func() {
+            assertTurboEncabulatorContains("semi-boloid slots", "grammeters")
+        })
+    })
+
+This makes your tests more expressive and reduces boilerplate.  However, when an assertion in the helper fails the line numbers provided by Gomega are unhelpful.  Instead of pointing you to the line in your test that failed, they point you the line in the helper.
+
+To get around this, Gomega provides versions of `Expect` and `Eventually` named `ExpectWithOffset` and `EventuallyWithOffset` that allow you to specify an *offset* in the callstack.  The offset is the first argument to these functions.
+
+With this, we can rewrite our helper as:
+
+    assertTurboencabulatorContains(components ...string) {
+        components, err := turboEncabulator.GetComponents()
+        ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+        ExpectWithOffset(1, components).To(HaveLen(components))
+        for _, component := range components {
+            ExpectWithOffset(1, components).To(ContainElement(component))
+        }
+    }
+
+now, failed assertions will point to the correct call to the helper in the test.
 
 ---
 
