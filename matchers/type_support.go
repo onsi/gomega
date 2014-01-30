@@ -85,6 +85,13 @@ func isError(a interface{}) bool {
 	return ok
 }
 
+func isChan(a interface{}) bool {
+	if isNil(a) {
+		return false
+	}
+	return reflect.TypeOf(a).Kind() == reflect.Chan
+}
+
 func isMap(a interface{}) bool {
 	if a == nil {
 		return false

@@ -63,6 +63,18 @@ func HaveOccured() OmegaMatcher {
 	return &matchers.HaveOccurredMatcher{}
 }
 
+//BeClosed succeeds if actual is a closed channel.
+//It is an error to pass a non-channel to BeClosed, it is also an error to pass nil
+//
+//In order to check whether or not the channel is closed, Gomega must try to read from the channel
+//(even in the not-closed case).  You should keep this in mind if you which to make subsequent assertions about
+//values coming down the channel.
+//
+//Finally, as a corollary: it is an error to check whether or not a send-only channel is closed.
+func BeClosed() OmegaMatcher {
+	return &matchers.BeClosedMatcher{}
+}
+
 //MatchRegexp succeeds if actual is a string or stringer that matches the
 //passed-in regexp.  Optional arguments can be provided to construct a regexp
 //via fmt.Sprintf().
