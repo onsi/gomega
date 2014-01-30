@@ -67,7 +67,7 @@ func HaveOccured() OmegaMatcher {
 //It is an error to pass a non-channel to BeClosed, it is also an error to pass nil
 //
 //In order to check whether or not the channel is closed, Gomega must try to read from the channel
-//(even in the not-closed case).  You should keep this in mind if you which to make subsequent assertions about
+//(even in the `ShouldNot(BeClosed())` case).  You should keep this in mind if you wish to make subsequent assertions about
 //values coming down the channel.
 //
 //Finally, as a corollary: it is an error to check whether or not a send-only channel is closed.
