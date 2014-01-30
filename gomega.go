@@ -32,7 +32,7 @@ func RegisterFailHandler(handler OmegaFailHandler) {
 //
 //Ω and Expect are identical
 func Ω(actual interface{}) Actual {
-	return newActual(actual, globalFailHandler)
+	return ExpectWithOffset(0, actual)
 }
 
 //Expect wraps an actual value allowing assertions to be made on it:
@@ -40,7 +40,20 @@ func Ω(actual interface{}) Actual {
 //
 //Expect and Ω are identical
 func Expect(actual interface{}) Actual {
-	return newActual(actual, globalFailHandler)
+	return ExpectWithOffset(0, actual)
+}
+
+//ExpectWithOffset wraps an actual value allowing assertions to be made on it:
+//	ExpectWithOffset(1, "foo").To(Equal("foo"))
+//
+//Unlike `Expect` and `Ω`, `ExpectWithOffset` takes an additional integer argument
+//this is used to modify the call-stack offset when computing line numbers.
+//
+//This is most useful in helper functions that make assertions.  If you want Gomega's
+//error message to refer to the calling line in the test (as opposed to the line in the helper function)
+//set the first argument of `ExpectWithOffset` appropriately.
+func ExpectWithOffset(offset int, actual interface{}) Actual {
+	return newActual(actual, globalFailHandler, offset)
 }
 
 //Eventually wraps an actual value allowing assertions to be made on it.
@@ -59,6 +72,13 @@ func Expect(actual interface{}) Actual {
 //    return thingImPolling.Count()
 //  }).Should(BeNumerically(">=", 17))
 func Eventually(actual interface{}, intervals ...float64) AsyncActual {
+	return EventuallyWithOffset(0, actual, intervals...)
+}
+
+//EventuallyWithOffset operates like Eventually but takes an additional
+//initial argument to indicate an offset in the call stack.  This is useful when building helper
+//functions that contain matchers.  To learn more, read about `ExpectWithOffset`.
+func EventuallyWithOffset(offset int, actual interface{}, intervals ...float64) AsyncActual {
 	timeoutInterval := time.Duration(1 * time.Second)
 	pollingInterval := time.Duration(10 * time.Millisecond)
 	if len(intervals) > 0 {
@@ -67,7 +87,7 @@ func Eventually(actual interface{}, intervals ...float64) AsyncActual {
 	if len(intervals) > 1 {
 		pollingInterval = time.Duration(intervals[1] * float64(time.Second))
 	}
-	return newAsyncActual(actual, globalFailHandler, timeoutInterval, pollingInterval)
+	return newAsyncActual(actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
 }
 
 //AsyncActual is returned by Eventually and polls the actual value passed into Eventually against

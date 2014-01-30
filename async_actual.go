@@ -11,9 +11,10 @@ type asyncActual struct {
 	timeoutInterval time.Duration
 	pollingInterval time.Duration
 	fail            OmegaFailHandler
+	offset          int
 }
 
-func newAsyncActual(actualInput interface{}, fail OmegaFailHandler, timeoutInterval time.Duration, pollingInterval time.Duration) *asyncActual {
+func newAsyncActual(actualInput interface{}, fail OmegaFailHandler, timeoutInterval time.Duration, pollingInterval time.Duration, offset int) *asyncActual {
 	actualType := reflect.TypeOf(actualInput)
 	if actualType.Kind() == reflect.Func {
 		if actualType.NumIn() != 0 || actualType.NumOut() != 1 {
@@ -26,6 +27,7 @@ func newAsyncActual(actualInput interface{}, fail OmegaFailHandler, timeoutInter
 		fail:            fail,
 		timeoutInterval: timeoutInterval,
 		pollingInterval: pollingInterval,
+		offset:          offset,
 	}
 }
 
@@ -75,7 +77,7 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 			if err != nil {
 				errMsg = "Error: " + err.Error()
 			}
-			actual.fail(fmt.Sprintf("Timed out after %.3fs.\n%s%s%s", time.Since(timer).Seconds(), description, message, errMsg), 2)
+			actual.fail(fmt.Sprintf("Timed out after %.3fs.\n%s%s%s", time.Since(timer).Seconds(), description, message, errMsg), 2+actual.offset)
 			return false
 		}
 	}

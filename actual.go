@@ -7,12 +7,14 @@ import (
 type actual struct {
 	actualInput interface{}
 	fail        OmegaFailHandler
+	offset      int
 }
 
-func newActual(actualInput interface{}, fail OmegaFailHandler) *actual {
+func newActual(actualInput interface{}, fail OmegaFailHandler, offset int) *actual {
 	return &actual{
 		actualInput: actualInput,
 		fail:        fail,
+		offset:      offset,
 	}
 }
 
@@ -49,11 +51,11 @@ func (actual *actual) match(matcher OmegaMatcher, desiredMatch bool, optionalDes
 	matches, message, err := matcher.Match(actual.actualInput)
 	description := actual.buildDescription(optionalDescription...)
 	if err != nil {
-		actual.fail(description+err.Error(), 2)
+		actual.fail(description+err.Error(), 2+actual.offset)
 		return false
 	}
 	if matches != desiredMatch {
-		actual.fail(description+message, 2)
+		actual.fail(description+message, 2+actual.offset)
 		return false
 	}
 
