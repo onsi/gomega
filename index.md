@@ -224,6 +224,16 @@ succeeds if `ACTUAL` is a non-nil `error`.  Thus, the typical Go error checking 
     err := SomethingThatMightFail()
     Ω(err).ShouldNot(HaveOccurred())
 
+### BeClosed()
+
+    Ω(ACTUAL).Should(BeClosed())
+
+succeeds if actual is a closed channel. It is an error to pass a non-channel to `BeClosed`, it is also an error to pass `nil`.
+
+In order to check whether or not the channel is closed, Gomega must try to read from the channel (even in the `ShouldNot(BeClosed())` case).  You should keep this in mind if you wish to make subsequent assertions about values coming down the channel.
+
+Finally, as a corollary: it is an error to check whether or not a send-only channel is closed.
+
 ### BeEmpty()
 
     Ω(ACTUAL).Should(BeEmpty())
