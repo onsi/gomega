@@ -145,6 +145,11 @@ The default value for the timeout is 1 second and the default value for the poll
         return somethingAmazingHappened()
     }).Should(BeTrue())
 
+`Eventually` also works really well with the Gomega matchers geared towards working with channels:
+
+    Eventually(channel).Should(BeClosed())
+    Eventually(channel).Should(Receive())
+
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
 
 ---
@@ -273,7 +278,41 @@ succeeds if actual is a closed channel. It is an error to pass a non-channel to 
 
 In order to check whether or not the channel is closed, Gomega must try to read from the channel (even in the `ShouldNot(BeClosed())` case).  You should keep this in mind if you wish to make subsequent assertions about values coming down the channel.
 
+Also, if you are testing that a *buffered* channel is closed you must first read all values out of the channel before asserting that it is closed (it is not possible to detect that a buffered-channel has been closed until all its buffered values are read).
+
 Finally, as a corollary: it is an error to check whether or not a send-only channel is closed.
+
+### Receive()
+
+    Ω(ACTUAL).Should(Receive(<optionalPointer>))
+
+succeeds if there is a message to be received on actual. Actual must be a channel (and cannot be a send-only channel) -- anything else is an error.
+
+`Receive` returns *immediately*.  It *never* blocks:
+
+- If there is nothing on the channel `c` then `Ω(c).Should(Receive())` will fail and `Ω(c).ShouldNot(Receive())` will pass.
+- If there is something on the channel `c` ready to be read, then `Ω(c).Should(Receive())` will pass and `Ω(c).ShouldNot(Receive())` will fail.
+- If the channel `c` is closed then *both* `Ω(c).Should(Receive())` and `Ω(c).ShouldNot(Receive())` will error.
+
+If you have a go-routine running in the background that will write to channel `c`, for example:
+    
+    go func() {
+        time.Sleep(100 * time.Millisecond)
+        c <- true
+    }()
+
+you can assert that `c` receives something eventually:
+
+    Eventually(c).Should(Receive())
+
+This will timeout if nothing gets sent to `c` (you can modify the timeout interval as you normally do with `Eventually`).
+
+Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the `Receive` matcher for the value passed
+to the channel by passing it a pointer to a variable of the appropriate type:
+
+    var receivedString string
+    Eventually(stringChan).Should(Receive(&receivedString))
+    Ω(receivedString).Shoudl(Equal("foo"))
 
 ### BeEmpty()
 
