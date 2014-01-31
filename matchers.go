@@ -70,6 +70,9 @@ func HaveOccured() OmegaMatcher {
 //(even in the `ShouldNot(BeClosed())` case).  You should keep this in mind if you wish to make subsequent assertions about
 //values coming down the channel.
 //
+//Also, if you are testing that a *buffered* channel is closed you must first read all values out of the channel before
+//asserting that it is closed (it is not possible to detect that a buffered-channel has been closed until all its buffered values are read).
+//
 //Finally, as a corollary: it is an error to check whether or not a send-only channel is closed.
 func BeClosed() OmegaMatcher {
 	return &matchers.BeClosedMatcher{}
