@@ -71,6 +71,8 @@ func ExpectWithOffset(offset int, actual interface{}) Actual {
 //  Eventually(func() int {
 //    return thingImPolling.Count()
 //  }).Should(BeNumerically(">=", 17))
+//
+//Eventually's default timeout is 1 second, and its default polling interval is 10ms
 func Eventually(actual interface{}, intervals ...float64) AsyncActual {
 	return EventuallyWithOffset(0, actual, intervals...)
 }
@@ -87,10 +89,45 @@ func EventuallyWithOffset(offset int, actual interface{}, intervals ...float64) 
 	if len(intervals) > 1 {
 		pollingInterval = time.Duration(intervals[1] * float64(time.Second))
 	}
-	return newAsyncActual(actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
+	return newAsyncActual(asyncActualTypeEventually, actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
 }
 
-//AsyncActual is returned by Eventually and polls the actual value passed into Eventually against
+//Consistently wraps an actual value allowing assertions to be made on it.
+//The assertion is tried periodically and is required to pass for a period of time.
+//
+//Both the total time and polling interval are configurable as optional arguments:
+//The first optional argument is the duration, in seconds expressed as a float64, that Consistently will run for.
+//The second optional argument is the polling interval in seconds expressd as a float64.
+//
+//If Consistently is passed an actual that is a function taking no arguments and returning one value,
+//then Consistently will call the function periodically and try the matcher against the function's return value.
+//
+//Consistently is useful in cases where you want to assert that something *does not happen* over a period of tiem.
+//For example, you want to assert that a goroutine does *not* send data down a channel.  In this case, you could:
+//
+//  Consistently(channel).ShouldNot(Receive())
+//
+//Consistently's default duration is 100ms, and its default polling interval is 10ms
+func Consistently(actual interface{}, intervals ...float64) AsyncActual {
+	return ConsistentlyWithOffset(0, actual, intervals...)
+}
+
+//ConsistentlyWithOffset operates like Consistnetly but takes an additional
+//initial argument to indicate an offset in the call stack.  This is useful when building helper
+//functions that contain matchers.  To learn more, read about `ExpectWithOffset`.
+func ConsistentlyWithOffset(offset int, actual interface{}, intervals ...float64) AsyncActual {
+	timeoutInterval := time.Duration(100 * time.Millisecond)
+	pollingInterval := time.Duration(10 * time.Millisecond)
+	if len(intervals) > 0 {
+		timeoutInterval = time.Duration(intervals[0] * float64(time.Second))
+	}
+	if len(intervals) > 1 {
+		pollingInterval = time.Duration(intervals[1] * float64(time.Second))
+	}
+	return newAsyncActual(asyncActualTypeConsistently, actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
+}
+
+//AsyncActual is returned by Eventually and Consistently and polls the actual value passed into Eventually against
 //the matcher passed to the Should and ShouldNot methods.
 //
 //Both Should and ShouldNot take a variadic optionalDescription argument.  This is passed on to
@@ -101,7 +138,8 @@ func EventuallyWithOffset(offset int, actual interface{}, intervals ...float64) 
 //
 //Example:
 //
-//  Eventually(myChannel).Should(HaveLen(1), "Something should have come down the pipe.")
+//  Eventually(myChannel).Should(Receive(), "Something should have come down the pipe.")
+//  Consistently(myChannel).ShouldNot(Receive(), "Nothing should have come down the pipe.")
 type AsyncActual interface {
 	Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool
 	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool

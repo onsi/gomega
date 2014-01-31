@@ -92,6 +92,10 @@ func BeClosed() OmegaMatcher {
 //
 //This will timeout if nothing gets sent to `c` (you can modify the timeout interval as you normally do with `Eventually`)
 //
+//A similar use-case is to assert that no go-routine writes to a channel (for a period of time).  You can do this with `Consistently`:
+//
+//    Consistently(c).ShouldNot(Receive())
+//
 //Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the Receive matcher for the value passed
 //to the channel by passing it a pointer to a variable of the appropriate type:
 //

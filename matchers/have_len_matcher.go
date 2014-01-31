@@ -17,6 +17,6 @@ func (matcher *HaveLenMatcher) Match(actual interface{}) (success bool, message 
 			return false, fmt.Sprintf("Expected%s\n (length: %d) to have length %d", formatObject(actual), length, matcher.Count), nil
 		}
 	} else {
-		return false, "", fmt.Errorf("BeEmpty matcher expects a string/array/map/channel/slice.  Got:%s", formatObject(actual))
+		return false, "", fmt.Errorf("HaveLen matcher expects a string/array/map/channel/slice.  Got:%s", formatObject(actual))
 	}
 }

@@ -6,7 +6,15 @@ import (
 	"time"
 )
 
+type asyncActualType uint
+
+const (
+	asyncActualTypeEventually asyncActualType = iota
+	asyncActualTypeConsistently
+)
+
 type asyncActual struct {
+	asyncType       asyncActualType
 	actualInput     interface{}
 	timeoutInterval time.Duration
 	pollingInterval time.Duration
@@ -14,7 +22,7 @@ type asyncActual struct {
 	offset          int
 }
 
-func newAsyncActual(actualInput interface{}, fail OmegaFailHandler, timeoutInterval time.Duration, pollingInterval time.Duration, offset int) *asyncActual {
+func newAsyncActual(asyncType asyncActualType, actualInput interface{}, fail OmegaFailHandler, timeoutInterval time.Duration, pollingInterval time.Duration, offset int) *asyncActual {
 	actualType := reflect.TypeOf(actualInput)
 	if actualType.Kind() == reflect.Func {
 		if actualType.NumIn() != 0 || actualType.NumOut() != 1 {
@@ -23,6 +31,7 @@ func newAsyncActual(actualInput interface{}, fail OmegaFailHandler, timeoutInter
 	}
 
 	return &asyncActual{
+		asyncType:       asyncType,
 		actualInput:     actualInput,
 		fail:            fail,
 		timeoutInterval: timeoutInterval,
@@ -64,21 +73,43 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 	description := actual.buildDescription(optionalDescription...)
 	matches, message, err := matcher.Match(actual.pollActual())
 
-	for {
-		if err == nil && matches == desiredMatch {
-			return true
+	fail := func(preamble string) {
+		errMsg := ""
+		if err != nil {
+			errMsg = "Error: " + err.Error()
 		}
+		actual.fail(fmt.Sprintf("%s after %.3fs.\n%s%s%s", preamble, time.Since(timer).Seconds(), description, message, errMsg), 2+actual.offset)
+	}
 
-		select {
-		case <-time.After(actual.pollingInterval):
-			matches, message, err = matcher.Match(actual.pollActual())
-		case <-timeout:
-			errMsg := ""
-			if err != nil {
-				errMsg = "Error: " + err.Error()
+	if actual.asyncType == asyncActualTypeEventually {
+		for {
+			if err == nil && matches == desiredMatch {
+				return true
 			}
-			actual.fail(fmt.Sprintf("Timed out after %.3fs.\n%s%s%s", time.Since(timer).Seconds(), description, message, errMsg), 2+actual.offset)
-			return false
+
+			select {
+			case <-time.After(actual.pollingInterval):
+				matches, message, err = matcher.Match(actual.pollActual())
+			case <-timeout:
+				fail("Timed out")
+				return false
+			}
+		}
+	} else if actual.asyncType == asyncActualTypeConsistently {
+		for {
+			if !(err == nil && matches == desiredMatch) {
+				fail("Failed")
+				return false
+			}
+
+			select {
+			case <-time.After(actual.pollingInterval):
+				matches, message, err = matcher.Match(actual.pollActual())
+			case <-timeout:
+				return true
+			}
 		}
 	}
+
+	return false
 }
