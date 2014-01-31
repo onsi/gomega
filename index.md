@@ -122,7 +122,7 @@ Will offer the more helpful output:
 
 Gomega has support for making *asynchronous* assertions.  There are two functions that provide this support `Eventually` and `Consistently`.
 
-###`Eventually`
+###Eventually
 
 `Eventually` checks that an assertion *eventually* passes.  It does this by polling its argument until the matcher succeeds.
 
@@ -158,7 +158,7 @@ If the argument to `Eventually` is *not* a function, `Eventually` will simply ru
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
 
-###`Consistently`
+###Consistently
 
 `Consistently` checks that an assertion passes or a period of time.  It does this by polling its argument for the fixed period of time and fails if the matcher ever fails during that period of time.
 
