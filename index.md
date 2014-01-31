@@ -120,7 +120,13 @@ Will offer the more helpful output:
 
 ##Making Asynchronous Assertions
 
-Gomega has support for making *asynchronous* assertions.  You do this by passing a function to `Eventually`:
+Gomega has support for making *asynchronous* assertions.  There are two functions that provide this support `Eventually` and `Consistently`.
+
+###`Eventually`
+
+`Eventually` checks that an assertion *eventually* passes.  It does this by polling its argument until the matcher succeeds.
+
+For example:
 
     Eventually(func() []int {
         return thing.SliceImMonitoring
@@ -145,12 +151,37 @@ The default value for the timeout is 1 second and the default value for the poll
         return somethingAmazingHappened()
     }).Should(BeTrue())
 
-`Eventually` also works really well with the Gomega matchers geared towards working with channels:
+If the argument to `Eventually` is *not* a function, `Eventually` will simply run the matcher against the argument.  This works really well with the Gomega matchers geared towards working with channels:
 
     Eventually(channel).Should(BeClosed())
     Eventually(channel).Should(Receive())
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
+
+###`Consistently`
+
+`Consistently` checks that an assertion passes or a period of time.  It does this by polling its argument for the fixed period of time and fails if the matcher ever fails during that period of time.
+
+For example:
+
+    Consistently(func() []int {
+        return thing.MemoryUsage()
+    }).Should(BeNumerically("<", 10))
+
+`Consistently` will poll the passed in function (which must have zero-arguments and one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing in float64s (in seconds) just after your function:
+
+
+    Consistently(func() []int {
+        return thing.MemoryUsage()
+    }, DURATION_IN_SECONDS, POLLING_INTERVAL_IN_SECONDS).Should(BeNumerically("<", 10))
+
+`Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can asser that:
+
+    Consistently(channel).ShouldNot(Receive())
+
+To assert that nothing gets sent to a channel.
+
+> Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests....  Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
 ---
 
@@ -177,7 +208,7 @@ While writing [custom matchers](#adding_your_own_matchers) is an expressive way 
 
 This makes your tests more expressive and reduces boilerplate.  However, when an assertion in the helper fails the line numbers provided by Gomega are unhelpful.  Instead of pointing you to the line in your test that failed, they point you the line in the helper.
 
-To get around this, Gomega provides versions of `Expect` and `Eventually` named `ExpectWithOffset` and `EventuallyWithOffset` that allow you to specify an *offset* in the callstack.  The offset is the first argument to these functions.
+To get around this, Gomega provides versions of `Expect`, `Eventually` and `Consistently` named `ExpectWithOffset`, `EventuallyWithOffset` and `ConsistentlyWithOffset` that allow you to specify an *offset* in the callstack.  The offset is the first argument to these functions.
 
 With this, we can rewrite our helper as:
 
@@ -306,6 +337,10 @@ you can assert that `c` receives something eventually:
     Eventually(c).Should(Receive())
 
 This will timeout if nothing gets sent to `c` (you can modify the timeout interval as you normally do with `Eventually`).
+
+A similar use-case is to assert that no go-routine writes to a channel (for a period of time).  You can do this with `Consistently`:
+
+    Consistently(c).ShouldNot(Receive())
 
 Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the `Receive` matcher for the value passed
 to the channel by passing it a pointer to a variable of the appropriate type:
