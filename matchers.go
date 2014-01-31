@@ -75,6 +75,37 @@ func BeClosed() OmegaMatcher {
 	return &matchers.BeClosedMatcher{}
 }
 
+//Receive succeeds if there is a message to be received on actual.
+//Actual must be a channel (and cannot be a send-only channel) -- anything else is an error.
+//
+//Receive returns immediately and never blocks:
+//    - If there is nothing on the channel `c` then Ω(c).Should(Receive()) will fail and Ω(c).ShouldNot(Receive()) will pass.
+//    - If the channel `c` is closed then *both* Ω(c).Should(Receive()) and Ω(c).ShouldNot(Receive()) will error.
+//	  - If there is something on the channel `c` ready to be read, then Ω(c).Should(Receive()) will pass and Ω(c).ShouldNot(Receive()) will fail.
+//
+//If you have a go-routine running in the background that will write to channel `c` you can:
+//
+//    Eventually(c).Should(Receive())
+//
+//This will timeout if nothing gets sent to `c` (you can modify the timeout interval as you normally do with `Eventually`)
+//
+//Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the Receive matcher for the value passed
+//to the channel by passing it a pointer to a variable of the appropriate type:
+//
+//    var receivedString string
+//    Eventually(stringChan).Should(Receive(&receivedString))
+//    Ω(receivedString).Shoudl(Equal("foo"))
+func Receive(args ...interface{}) OmegaMatcher {
+	var arg interface{}
+	if len(args) > 0 {
+		arg = args[0]
+	}
+
+	return &matchers.ReceiveMatcher{
+		Arg: arg,
+	}
+}
+
 //MatchRegexp succeeds if actual is a string or stringer that matches the
 //passed-in regexp.  Optional arguments can be provided to construct a regexp
 //via fmt.Sprintf().
