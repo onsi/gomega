@@ -133,6 +133,15 @@ func ContainSubstring(substr string, args ...interface{}) OmegaMatcher {
 	}
 }
 
+//MatchJSON succeeds if actual is a string or stringer of JSON that matches
+//the expected JSON.  The JSONs are decoded and the resulting objects is compared via
+//reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
+func MatchJSON(json interface{}) OmegaMatcher {
+	return &matchers.MatchJSONMatcher{
+		JSONToMatch: json,
+	}
+}
+
 //BeEmpty succeeds if actual is empty.  Actual must be of type string, array, map, chan, or slice.
 func BeEmpty() OmegaMatcher {
 	return &matchers.BeEmptyMatcher{}
