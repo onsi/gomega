@@ -78,7 +78,7 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 		if err != nil {
 			errMsg = "Error: " + err.Error()
 		}
-		actual.fail(fmt.Sprintf("%s after %.3fs.\n%s%s%s", preamble, time.Since(timer).Seconds(), description, message, errMsg), 2+actual.offset)
+		actual.fail(fmt.Sprintf("%s after %.3fs.\n%s%s%s", preamble, time.Since(timer).Seconds(), description, message, errMsg), 3+actual.offset)
 	}
 
 	if actual.asyncType == asyncActualTypeEventually {

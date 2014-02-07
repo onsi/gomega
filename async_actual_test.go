@@ -52,7 +52,7 @@ func init() {
 
 						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
 						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 
 					It("should be able to timeout", func() {
@@ -67,7 +67,7 @@ func init() {
 						Ω(arr).Should(HaveLen(10))
 						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
 						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 				})
 
@@ -99,7 +99,7 @@ func init() {
 						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
 						Ω(failureMessage).Should(ContainSubstring("Error:"))
 						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 
 					It("should be able to timeout", func() {
@@ -111,7 +111,7 @@ func init() {
 
 						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
 						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 				})
 			})
@@ -146,7 +146,7 @@ func init() {
 
 						a.Should(Equal("foo"))
 						Ω(failureMessage).Should(ContainSubstring("to equal"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 				})
 
@@ -163,7 +163,7 @@ func init() {
 
 						a.Should(HaveLen(3))
 						Ω(failureMessage).Should(ContainSubstring("HaveLen matcher expects"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 				})
 			})
@@ -204,7 +204,7 @@ func init() {
 
 						a.ShouldNot(BeNumerically(">", 5))
 						Ω(failureMessage).Should(ContainSubstring("not to be >"))
-						Ω(callerSkip).Should(Equal(3))
+						Ω(callerSkip).Should(Equal(4))
 					})
 				})
 			})
