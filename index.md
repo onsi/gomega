@@ -179,7 +179,7 @@ If the argument to `Eventually` is *not* a function, `Eventually` will simply ru
     Eventually(channel).Should(BeClosed())
     Eventually(channel).Should(Receive())
 
-> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: slice := append(slice, ...)`) then Go may (or may not) change the pointer address of the slice.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
+> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) then Go may (or may not) change the pointer address of the slice.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
 
 ###Consistently
