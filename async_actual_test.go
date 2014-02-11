@@ -1,6 +1,7 @@
 package gomega
 
 import (
+	"errors"
 	. "github.com/onsi/ginkgo"
 	"time"
 )
@@ -23,96 +24,118 @@ func init() {
 		})
 
 		Describe("Eventually", func() {
-			Context("when passed a function", func() {
-				Context("the positive case", func() {
-					It("should poll the function and matcher", func() {
-						arr := []int{}
-						a := newAsyncActual(asyncActualTypeEventually, func() []int {
-							arr = append(arr, 1)
-							return arr
-						}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+			Context("the positive case", func() {
+				It("should poll the function and matcher", func() {
+					arr := []int{}
+					a := newAsyncActual(asyncActualTypeEventually, func() []int {
+						arr = append(arr, 1)
+						return arr
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
-						a.Should(HaveLen(10))
+					a.Should(HaveLen(10))
 
-						Ω(arr).Should(HaveLen(10))
-						Ω(failureMessage).Should(BeZero())
-					})
-
-					It("should continue when the matcher errors", func() {
-						var arr = []int{}
-						a := newAsyncActual(asyncActualTypeEventually, func() interface{} {
-							arr = append(arr, 1)
-							if len(arr) == 4 {
-								return 0 //this should cause the matcher to error
-							}
-							return arr
-						}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
-
-						a.Should(HaveLen(4), "My description %d", 2)
-
-						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
-						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(4))
-					})
-
-					It("should be able to timeout", func() {
-						arr := []int{}
-						a := newAsyncActual(asyncActualTypeEventually, func() []int {
-							arr = append(arr, 1)
-							return arr
-						}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
-
-						a.Should(HaveLen(11), "My description %d", 2)
-
-						Ω(arr).Should(HaveLen(10))
-						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
-						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(4))
-					})
+					Ω(arr).Should(HaveLen(10))
+					Ω(failureMessage).Should(BeZero())
 				})
 
-				Context("the negative case", func() {
-					It("should poll the function and matcher", func() {
-						counter := 0
-						arr := []int{}
-						a := newAsyncActual(asyncActualTypeEventually, func() []int {
-							counter += 1
-							if counter >= 10 {
-								arr = append(arr, 1)
-							}
-							return arr
-						}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
-
-						a.ShouldNot(HaveLen(0))
-
-						Ω(arr).Should(HaveLen(1))
-						Ω(failureMessage).Should(BeZero())
-					})
-
-					It("should timeout when the matcher errors", func() {
-						a := newAsyncActual(asyncActualTypeEventually, func() interface{} {
+				It("should continue when the matcher errors", func() {
+					var arr = []int{}
+					a := newAsyncActual(asyncActualTypeEventually, func() interface{} {
+						arr = append(arr, 1)
+						if len(arr) == 4 {
 							return 0 //this should cause the matcher to error
-						}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+						}
+						return arr
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
-						a.ShouldNot(HaveLen(0), "My description %d", 2)
+					a.Should(HaveLen(4), "My description %d", 2)
 
-						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
-						Ω(failureMessage).Should(ContainSubstring("Error:"))
-						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(4))
-					})
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("My description 2"))
+					Ω(callerSkip).Should(Equal(4))
+				})
 
-					It("should be able to timeout", func() {
-						a := newAsyncActual(asyncActualTypeEventually, func() []int {
-							return []int{}
-						}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				It("should be able to timeout", func() {
+					arr := []int{}
+					a := newAsyncActual(asyncActualTypeEventually, func() []int {
+						arr = append(arr, 1)
+						return arr
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
-						a.ShouldNot(HaveLen(0), "My description %d", 2)
+					a.Should(HaveLen(11), "My description %d", 2)
 
-						Ω(failureMessage).Should(ContainSubstring("Timed out after"))
-						Ω(failureMessage).Should(ContainSubstring("My description 2"))
-						Ω(callerSkip).Should(Equal(4))
-					})
+					Ω(arr).Should(HaveLen(10))
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("My description 2"))
+					Ω(callerSkip).Should(Equal(4))
+				})
+			})
+
+			Context("the negative case", func() {
+				It("should poll the function and matcher", func() {
+					counter := 0
+					arr := []int{}
+					a := newAsyncActual(asyncActualTypeEventually, func() []int {
+						counter += 1
+						if counter >= 10 {
+							arr = append(arr, 1)
+						}
+						return arr
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+
+					a.ShouldNot(HaveLen(0))
+
+					Ω(arr).Should(HaveLen(1))
+					Ω(failureMessage).Should(BeZero())
+				})
+
+				It("should timeout when the matcher errors", func() {
+					a := newAsyncActual(asyncActualTypeEventually, func() interface{} {
+						return 0 //this should cause the matcher to error
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+
+					a.ShouldNot(HaveLen(0), "My description %d", 2)
+
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("Error:"))
+					Ω(failureMessage).Should(ContainSubstring("My description 2"))
+					Ω(callerSkip).Should(Equal(4))
+				})
+
+				It("should be able to timeout", func() {
+					a := newAsyncActual(asyncActualTypeEventually, func() []int {
+						return []int{}
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+
+					a.ShouldNot(HaveLen(0), "My description %d", 2)
+
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("My description 2"))
+					Ω(callerSkip).Should(Equal(4))
+				})
+			})
+
+			Context("with a function that returns multiple values", func() {
+				It("should eventually succeed if the additional arguments are nil", func() {
+					i := 0
+					Eventually(func() (int, error) {
+						i++
+						return i, nil
+					}).Should(Equal(10))
+				})
+
+				It("should eventually timeout if the additional arguments are not nil", func() {
+					i := 0
+					a := newAsyncActual(asyncActualTypeEventually, func() (int, error) {
+						i++
+						return i, errors.New("bam")
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					a.Should(Equal(2))
+
+					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("Error:"))
+					Ω(failureMessage).Should(ContainSubstring("bam"))
+					Ω(callerSkip).Should(Equal(4))
 				})
 			})
 		})
@@ -208,6 +231,29 @@ func init() {
 					})
 				})
 			})
+
+			Context("with a function that returns multiple values", func() {
+				It("should consistently succeed if the additional arguments are nil", func() {
+					i := 2
+					Consistently(func() (int, error) {
+						i++
+						return i, nil
+					}).Should(BeNumerically(">=", 2))
+				})
+
+				It("should eventually timeout if the additional arguments are not nil", func() {
+					i := 2
+					a := newAsyncActual(asyncActualTypeEventually, func() (int, error) {
+						i++
+						return i, errors.New("bam")
+					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					a.Should(BeNumerically(">=", 2))
+
+					Ω(failureMessage).Should(ContainSubstring("Error:"))
+					Ω(failureMessage).Should(ContainSubstring("bam"))
+					Ω(callerSkip).Should(Equal(4))
+				})
+			})
 		})
 
 		Context("when passed a function with the wrong # or arguments & returns", func() {
@@ -222,6 +268,10 @@ func init() {
 
 				Ω(func() {
 					newAsyncActual(asyncActualTypeEventually, func() int { return 0 }, fakeFailHandler, 0, 0, 1)
+				}).ShouldNot(Panic())
+
+				Ω(func() {
+					newAsyncActual(asyncActualTypeEventually, func() (int, error) { return 0, nil }, fakeFailHandler, 0, 0, 1)
 				}).ShouldNot(Panic())
 			})
 		})

@@ -45,9 +45,8 @@ func BeFalse() OmegaMatcher {
 
 //HaveOccurred succeeds if actual is a non-nil error
 //The typical Go error checking pattern looks like:
-//
-//  err := SomethingThatMightFail()
-//  Ω(err).ShouldNot(HaveOccurred())
+//    err := SomethingThatMightFail()
+//    Ω(err).ShouldNot(HaveOccurred())
 func HaveOccurred() OmegaMatcher {
 	return &matchers.HaveOccurredMatcher{}
 }
@@ -82,23 +81,23 @@ func BeClosed() OmegaMatcher {
 //Actual must be a channel (and cannot be a send-only channel) -- anything else is an error.
 //
 //Receive returns immediately and never blocks:
-//    - If there is nothing on the channel `c` then Ω(c).Should(Receive()) will fail and Ω(c).ShouldNot(Receive()) will pass.
-//    - If the channel `c` is closed then *both* Ω(c).Should(Receive()) and Ω(c).ShouldNot(Receive()) will error.
-//	  - If there is something on the channel `c` ready to be read, then Ω(c).Should(Receive()) will pass and Ω(c).ShouldNot(Receive()) will fail.
+//
+//- If there is nothing on the channel `c` then Ω(c).Should(Receive()) will fail and Ω(c).ShouldNot(Receive()) will pass.
+//
+//- If the channel `c` is closed then *both* Ω(c).Should(Receive()) and Ω(c).ShouldNot(Receive()) will error.
+//
+//- If there is something on the channel `c` ready to be read, then Ω(c).Should(Receive()) will pass and Ω(c).ShouldNot(Receive()) will fail.
 //
 //If you have a go-routine running in the background that will write to channel `c` you can:
-//
 //    Eventually(c).Should(Receive())
 //
 //This will timeout if nothing gets sent to `c` (you can modify the timeout interval as you normally do with `Eventually`)
 //
 //A similar use-case is to assert that no go-routine writes to a channel (for a period of time).  You can do this with `Consistently`:
-//
 //    Consistently(c).ShouldNot(Receive())
 //
 //Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the Receive matcher for the value passed
 //to the channel by passing it a pointer to a variable of the appropriate type:
-//
 //    var receivedString string
 //    Eventually(stringChan).Should(Receive(&receivedString))
 //    Ω(receivedString).Shoudl(Equal("foo"))
@@ -162,8 +161,7 @@ func BeZero() OmegaMatcher {
 //ContainElement succeeds if actual contains the passed in element.
 //By default ContainElement() uses Equal() to perform the match, however a
 //matcher can be passed in instead:
-//
-//  Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
+//    Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 //
 //Actual must be an array, slice or map.
 //For maps, containElement searches through the map's values.
@@ -176,8 +174,7 @@ func ContainElement(element interface{}) OmegaMatcher {
 //HaveKey succeeds if actual is a map with the passed in key.
 //By default HaveKey uses Equal() to perform the match, however a
 //matcher can be passed in instead:
-//
-//  Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
+//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
 func HaveKey(key interface{}) OmegaMatcher {
 	return &matchers.HaveKeyMatcher{
 		Key: key,
@@ -189,13 +186,12 @@ func HaveKey(key interface{}) OmegaMatcher {
 //number is irrelevant (floa32, float64, uint8, etc...).
 //
 //There are six, self-explanatory, supported comparators:
-//
-//  Ω(1.0).Should(BeNumerically("==", 1))
-//  Ω(1.0).Should(BeNumerically("~", 0.999, 0.01))
-//  Ω(1.0).Should(BeNumerically(">", 0.9))
-//  Ω(1.0).Should(BeNumerically(">=", 1.0))
-//  Ω(1.0).Should(BeNumerically("<", 3))
-//  Ω(1.0).Should(BeNumerically("<=", 1.0))
+//    Ω(1.0).Should(BeNumerically("==", 1))
+//    Ω(1.0).Should(BeNumerically("~", 0.999, 0.01))
+//    Ω(1.0).Should(BeNumerically(">", 0.9))
+//    Ω(1.0).Should(BeNumerically(">=", 1.0))
+//    Ω(1.0).Should(BeNumerically("<", 3))
+//    Ω(1.0).Should(BeNumerically("<=", 1.0))
 func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	return &matchers.BeNumericallyMatcher{
 		Comparator: comparator,
@@ -205,11 +201,10 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 
 //BeAssignableToTypeOf succeeds if actual is assignable to the type of expected.
 //It will return an error when one of the values is nil.
-//
-//	Ω(0).Should(BeAssignableToTypeOf(0))         // Same values
-//	Ω(5).Should(BeAssignableToTypeOf(-1))        // different values same type
-//	Ω("foo").Should(BeAssignableToTypeOf("bar")) // different values same type
-//  Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
+//	  Ω(0).Should(BeAssignableToTypeOf(0))         // Same values
+//	  Ω(5).Should(BeAssignableToTypeOf(-1))        // different values same type
+//	  Ω("foo").Should(BeAssignableToTypeOf("bar")) // different values same type
+//    Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
 func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
 	return &matchers.AssignableToTypeOfMatcher{
 		Expected: expected,
