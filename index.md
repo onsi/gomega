@@ -82,6 +82,25 @@ Each assertion returns a `bool` denoting whether or not the assertion passed.  T
 
 > With Ginkgo, a failed assertion does *not* bail out of the current test.  It is generally unnecessary to do so, but in cases where bailing out is necessary, use the `bool` return value and pattern outlined above.
 
+### Handling Errors
+
+It is a common pattern, in Golang, for functions and methods to return two things - a value and an error.  For example:
+
+    func DoSomethingHard() (string, error) {
+        ...
+    }
+
+To assert on the return value of such a method you might write a test that looks like this:
+
+    result, err := DoSomethingHard()
+    Ω(err).ShouldNot(HaveOccurred())
+    Ω(result).Should(Equal("foo"))
+
+This is a very common use case so Gomega streamlines it for you.  Both `Ω` and `Expect` accept *multiple* arguments.  The first argument is passed to the matcher, and the match only succeeds if *all* subsequent arguments are required to be `nil` or zero-valued.  With this, we can rewrite the above example as:
+
+    Ω(DoSomethingHard()).Should(Equal("foo"))
+
+This will only pass if the return value of `DoSomethingHard()` is `("foo", nil)`.
 
 ### Annotating Assertions
 
@@ -136,7 +155,7 @@ For example:
         return thing.Status
     }).ShouldNot(Equal("Stuck Waiting"))
 
-`Eventually` will poll the passed in function (which must have zero-arguments and one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
+`Eventually` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
 
 The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing in float64s (in seconds) just after your function:
 
@@ -151,11 +170,16 @@ The default value for the timeout is 1 second and the default value for the poll
         return somethingAmazingHappened()
     }).Should(BeTrue())
 
+The function that you pass to `Eventually` can have more than one return value.  In that case, `Eventually` passes the first return value to the matcher and asserts that all other return values are `nil` or zero-valued.  This allows you to use `Eventually` with functions that return a value and an error -- a common pattern in Go.  For example, say you have a method on an object named `FetchNameFromNetwork()` that returns a string value and an error.  Given an instance then you could simply write:
+
+    Eventually(myInstance.FetchNameFromNetwork).Should(Equal("archibald"))
+
 If the argument to `Eventually` is *not* a function, `Eventually` will simply run the matcher against the argument.  This works really well with the Gomega matchers geared towards working with channels:
 
     Eventually(channel).Should(BeClosed())
     Eventually(channel).Should(Receive())
 
+> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: slice := append(slice, ...)`) then Go may (or may not) change the pointer address of the slice.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
 
 ###Consistently
@@ -168,7 +192,7 @@ For example:
         return thing.MemoryUsage()
     }).Should(BeNumerically("<", 10))
 
-`Consistently` will poll the passed in function (which must have zero-arguments and one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing in float64s (in seconds) just after your function:
+`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing in float64s (in seconds) just after your function:
 
 
     Consistently(func() []int {
@@ -180,6 +204,8 @@ For example:
     Consistently(channel).ShouldNot(Receive())
 
 To assert that nothing gets sent to a channel.
+
+As with `Eventually`, if you pass `Consistently` a function that returns more than one value, it will pass the first value to the matcher and assert that all other values are `nil` or zero-valued.
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests....  Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
