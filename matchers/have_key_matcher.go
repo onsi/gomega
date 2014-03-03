@@ -3,6 +3,7 @@ package matchers
 import (
 	"fmt"
 	"reflect"
+	"github.com/onsi/gomega/format"
 )
 
 type HaveKeyMatcher struct {
@@ -11,7 +12,7 @@ type HaveKeyMatcher struct {
 
 func (matcher *HaveKeyMatcher) Match(actual interface{}) (success bool, message string, err error) {
 	if !isMap(actual) {
-		return false, "", fmt.Errorf("HaveKey matcher expects a map.  Got: %s", formatObject(actual))
+		return false, "", fmt.Errorf("HaveKey matcher expects a map.  Got: %s", format.Object(actual))
 	}
 
 	keyMatcher, keyIsMatcher := matcher.Key.(omegaMatcher)
@@ -28,9 +29,9 @@ func (matcher *HaveKeyMatcher) Match(actual interface{}) (success bool, message 
 			return false, "", fmt.Errorf("HaveKey's key matcher failed with:\n\t%s", err.Error())
 		}
 		if success {
-			return true, formatMessage(actual, "not to have key"+matchingString, matcher.Key), nil
+			return true, format.Message(actual, "not to have key"+matchingString, matcher.Key), nil
 		}
 	}
 
-	return false, formatMessage(actual, "to have key"+matchingString, matcher.Key), nil
+	return false, format.Message(actual, "to have key"+matchingString, matcher.Key), nil
 }

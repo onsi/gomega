@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/onsi/gomega/format"
 	"reflect"
 )
 
@@ -19,11 +20,11 @@ func (matcher *MatchJSONMatcher) Match(actual interface{}) (success bool, messag
 		abuf := new(bytes.Buffer)
 		ebuf := new(bytes.Buffer)
 
-		if err := json.Indent(abuf, []byte(actualString), "", ""); err != nil {
+		if err := json.Indent(abuf, []byte(actualString), "", "  "); err != nil {
 			return false, "", err
 		}
 
-		if err := json.Indent(ebuf, []byte(expectedString), "", ""); err != nil {
+		if err := json.Indent(ebuf, []byte(expectedString), "", "  "); err != nil {
 			return false, "", err
 		}
 
@@ -34,12 +35,12 @@ func (matcher *MatchJSONMatcher) Match(actual interface{}) (success bool, messag
 		json.Unmarshal([]byte(expectedString), &eval)
 
 		if reflect.DeepEqual(aval, eval) {
-			return true, formatMessage(abuf.String(), "not to match JSON of", ebuf.String()), nil
+			return true, format.Message(abuf.String(), "not to match JSON of", ebuf.String()), nil
 		} else {
-			return false, formatMessage(abuf.String(), "to match JSON of", ebuf.String()), nil
+			return false, format.Message(abuf.String(), "to match JSON of", ebuf.String()), nil
 		}
 	} else {
-		return false, "", fmt.Errorf("MatchJSONMatcher matcher requires a string or stringer.  Got:%s", formatObject(actual))
+		return false, "", fmt.Errorf("MatchJSONMatcher matcher requires a string or stringer.  Got:%s", format.Object(actual))
 	}
 	return false, "", nil
 }

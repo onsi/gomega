@@ -12,9 +12,8 @@ var _ = Describe("MatchJSONMatcher", func() {
 			Ω("{}").Should(MatchJSON("{}"))
 			Ω(`{"a":1}`).Should(MatchJSON(`{"a":1}`))
 			Ω(`{
-                "a":1
-            }`).Should(MatchJSON(`{"a":1}`))
-
+			             "a":1
+			         }`).Should(MatchJSON(`{"a":1}`))
 			Ω(`{"a":1, "b":2}`).Should(MatchJSON(`{"b":2, "a":1}`))
 			Ω(`{"a":1}`).ShouldNot(MatchJSON(`{"b":2, "a":1}`))
 		})

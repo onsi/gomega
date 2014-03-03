@@ -3,6 +3,7 @@ package matchers
 import (
 	"fmt"
 	"reflect"
+	"github.com/onsi/gomega/format"
 )
 
 type EqualMatcher struct {
@@ -14,8 +15,8 @@ func (matcher *EqualMatcher) Match(actual interface{}) (success bool, message st
 		return false, "", fmt.Errorf("Refusing to compare <nil> to <nil>.")
 	}
 	if reflect.DeepEqual(actual, matcher.Expected) {
-		return true, formatMessage(actual, "not to equal", matcher.Expected), nil
+		return true, format.Message(actual, "not to equal", matcher.Expected), nil
 	} else {
-		return false, formatMessage(actual, "to equal", matcher.Expected), nil
+		return false, format.Message(actual, "to equal", matcher.Expected), nil
 	}
 }

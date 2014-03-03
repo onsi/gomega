@@ -3,6 +3,7 @@ package matchers
 import (
 	"fmt"
 	"reflect"
+	"github.com/onsi/gomega/format"
 )
 
 type ReceiveMatcher struct {
@@ -11,25 +12,25 @@ type ReceiveMatcher struct {
 
 func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, message string, err error) {
 	if !isChan(actual) {
-		return false, "", fmt.Errorf("ReceiveMatcher expects a channel.  Got: %s", formatObject(actual))
+		return false, "", fmt.Errorf("ReceiveMatcher expects a channel.  Got: %s", format.Object(actual))
 	}
 
 	channelType := reflect.TypeOf(actual)
 	channelValue := reflect.ValueOf(actual)
 
 	if channelType.ChanDir() == reflect.SendDir {
-		return false, "", fmt.Errorf("ReceiveMatcher matcher cannot be passed a send-only channel.  Got: %s", formatObject(actual))
+		return false, "", fmt.Errorf("ReceiveMatcher matcher cannot be passed a send-only channel.  Got: %s", format.Object(actual))
 	}
 
 	if matcher.Arg != nil {
 		argType := reflect.TypeOf(matcher.Arg)
 		if argType.Kind() != reflect.Ptr {
-			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n\t%s\nTo:\n\t%s\nYou need to pass a pointer!", formatObject(actual), formatObject(matcher.Arg))
+			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n\t%s\nTo:\n\t%s\nYou need to pass a pointer!", format.Object(actual), format.Object(matcher.Arg))
 		}
 
 		assignable := channelType.Elem().AssignableTo(argType.Elem())
 		if !assignable {
-			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n\t%s\nTo:\n\t%s", formatObject(actual), formatObject(matcher.Arg))
+			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n\t%s\nTo:\n\t%s", format.Object(actual), format.Object(matcher.Arg))
 		}
 	}
 
@@ -50,7 +51,7 @@ func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, message 
 	}
 
 	if closed {
-		return false, "", fmt.Errorf("ReceiveMatcher was given a closed channel: %s", formatObject(actual))
+		return false, "", fmt.Errorf("ReceiveMatcher was given a closed channel: %s", format.Object(actual))
 	}
 
 	if didReceive {
@@ -58,8 +59,8 @@ func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, message 
 			outValue := reflect.ValueOf(matcher.Arg)
 			reflect.Indirect(outValue).Set(value)
 		}
-		return true, formatMessage(actual, "not to receive anything"), nil
+		return true, format.Message(actual, "not to receive anything"), nil
 	} else {
-		return false, formatMessage(actual, "to receive something"), nil
+		return false, format.Message(actual, "to receive something"), nil
 	}
 }

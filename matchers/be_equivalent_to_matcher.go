@@ -2,6 +2,7 @@ package matchers
 
 import (
 	"fmt"
+	"github.com/onsi/gomega/format"
 	"reflect"
 )
 
@@ -21,8 +22,8 @@ func (matcher *BeEquivalentToMatcher) Match(actual interface{}) (success bool, m
 	}
 
 	if reflect.DeepEqual(convertedActual, matcher.Expected) {
-		return true, formatMessage(actual, "not to equal", matcher.Expected), nil
+		return true, format.Message(actual, "not to be equivalent to", matcher.Expected), nil
 	} else {
-		return false, formatMessage(actual, "to equal", matcher.Expected), nil
+		return false, format.Message(actual, "to be equivalent to", matcher.Expected), nil
 	}
 }

@@ -3,6 +3,7 @@ package matchers
 import (
 	"fmt"
 	"reflect"
+	"github.com/onsi/gomega/format"
 )
 
 type AssignableToTypeOfMatcher struct {
@@ -18,8 +19,8 @@ func (matcher *AssignableToTypeOfMatcher) Match(actual interface{}) (success boo
 	expectedType := reflect.TypeOf(matcher.Expected)
 
 	if actualType.AssignableTo(expectedType) {
-		return true, formatMessage(actual, fmt.Sprintf("not to be assignable to the type: %T", matcher.Expected)), nil
+		return true, format.Message(actual, fmt.Sprintf("not to be assignable to the type: %T", matcher.Expected)), nil
 	} else {
-		return false, formatMessage(actual, fmt.Sprintf("to be assignable to the type: %T", matcher.Expected)), nil
+		return false, format.Message(actual, fmt.Sprintf("to be assignable to the type: %T", matcher.Expected)), nil
 	}
 }
