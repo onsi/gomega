@@ -13,11 +13,11 @@ func (matcher *HaveLenMatcher) Match(actual interface{}) (success bool, message 
 	length, ok := lengthOf(actual)
 	if ok {
 		if length == matcher.Count {
-			return true, fmt.Sprintf("Expected%s\n not to have length %d", format.Object(actual), matcher.Count), nil
+			return true, fmt.Sprintf("Expected\n%s\nnot to have length %d", format.Object(actual, 1), matcher.Count), nil
 		} else {
-			return false, fmt.Sprintf("Expected%s\n to have length %d", format.Object(actual), matcher.Count), nil
+			return false, fmt.Sprintf("Expected\n%s\nto have length %d", format.Object(actual, 1), matcher.Count), nil
 		}
 	} else {
-		return false, "", fmt.Errorf("HaveLen matcher expects a string/array/map/channel/slice.  Got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("HaveLen matcher expects a string/array/map/channel/slice.  Got:\n%s", format.Object(actual, 1))
 	}
 }

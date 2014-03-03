@@ -2,8 +2,8 @@ package matchers
 
 import (
 	"fmt"
-	"reflect"
 	"github.com/onsi/gomega/format"
+	"reflect"
 )
 
 type ReceiveMatcher struct {
@@ -12,25 +12,25 @@ type ReceiveMatcher struct {
 
 func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, message string, err error) {
 	if !isChan(actual) {
-		return false, "", fmt.Errorf("ReceiveMatcher expects a channel.  Got: %s", format.Object(actual))
+		return false, "", fmt.Errorf("ReceiveMatcher expects a channel.  Got:\n%s", format.Object(actual, 1))
 	}
 
 	channelType := reflect.TypeOf(actual)
 	channelValue := reflect.ValueOf(actual)
 
 	if channelType.ChanDir() == reflect.SendDir {
-		return false, "", fmt.Errorf("ReceiveMatcher matcher cannot be passed a send-only channel.  Got: %s", format.Object(actual))
+		return false, "", fmt.Errorf("ReceiveMatcher matcher cannot be passed a send-only channel.  Got:\n%s", format.Object(actual, 1))
 	}
 
 	if matcher.Arg != nil {
 		argType := reflect.TypeOf(matcher.Arg)
 		if argType.Kind() != reflect.Ptr {
-			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n\t%s\nTo:\n\t%s\nYou need to pass a pointer!", format.Object(actual), format.Object(matcher.Arg))
+			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n%s\nTo:\n%s\nYou need to pass a pointer!", format.Object(actual, 1), format.Object(matcher.Arg, 1))
 		}
 
 		assignable := channelType.Elem().AssignableTo(argType.Elem())
 		if !assignable {
-			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n\t%s\nTo:\n\t%s", format.Object(actual), format.Object(matcher.Arg))
+			return false, "", fmt.Errorf("Cannot assign a value from the channel:\n%s\nTo:\n%s", format.Object(actual, 1), format.Object(matcher.Arg, 1))
 		}
 	}
 
@@ -51,7 +51,7 @@ func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, message 
 	}
 
 	if closed {
-		return false, "", fmt.Errorf("ReceiveMatcher was given a closed channel: %s", format.Object(actual))
+		return false, "", fmt.Errorf("ReceiveMatcher was given a closed channel:\n%s", format.Object(actual, 1))
 	}
 
 	if didReceive {

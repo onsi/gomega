@@ -2,8 +2,8 @@ package matchers
 
 import (
 	"fmt"
-	"regexp"
 	"github.com/onsi/gomega/format"
+	"regexp"
 )
 
 type MatchRegexpMatcher struct {
@@ -29,6 +29,6 @@ func (matcher *MatchRegexpMatcher) Match(actual interface{}) (success bool, mess
 			return false, format.Message(actual, "to match regular expression", re), nil
 		}
 	} else {
-		return false, "", fmt.Errorf("RegExp matcher requires a string or stringer.  Got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("RegExp matcher requires a string or stringer.\nGot:%s", format.Object(actual, 1))
 	}
 }

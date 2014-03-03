@@ -11,14 +11,29 @@ var longFormThreshold = 20
 
 func Message(actual interface{}, message string, expected ...interface{}) string {
 	if len(expected) == 0 {
-		return fmt.Sprintf("Expected%s\n%s", Object(actual), message)
+		return fmt.Sprintf("Expected\n%s\n%s", Object(actual, 1), message)
 	} else {
-		return fmt.Sprintf("Expected%s\n%s%s", Object(actual), message, Object(expected[0]))
+		return fmt.Sprintf("Expected\n%s\n%s\n%s", Object(actual, 1), message, Object(expected[0], 1))
 	}
 }
 
-func Object(object interface{}) string {
-	return fmt.Sprintf("\n%s<%s>: %s", Indent, formatType(object), formatValue(object, 1))
+func Object(object interface{}, indentation uint) string {
+	indent := strings.Repeat(Indent, int(indentation))
+	return fmt.Sprintf("%s<%s>: %s", indent, formatType(object), formatValue(object, indentation))
+}
+
+func IndentString(s string, indentation uint) string {
+	components := strings.Split(s, "\n")
+	result := ""
+	indent := strings.Repeat(Indent, int(indentation))
+	for i, component := range components {
+		result += indent + component
+		if i < len(components)-1 {
+			result += "\n"
+		}
+	}
+
+	return result
 }
 
 func formatType(object interface{}) string {
@@ -43,7 +58,7 @@ func formatType(object interface{}) string {
 	}
 }
 
-func formatValue(object interface{}, indentation int) string {
+func formatValue(object interface{}, indentation uint) string {
 	if isNil(object) {
 		return "nil"
 	}
@@ -82,7 +97,7 @@ func formatValue(object interface{}, indentation int) string {
 	}
 }
 
-func formatString(object interface{}, indentation int) string {
+func formatString(object interface{}, indentation uint) string {
 	if indentation == 1 {
 		s := fmt.Sprintf("%s", object)
 		components := strings.Split(s, "\n")
@@ -104,7 +119,7 @@ func formatString(object interface{}, indentation int) string {
 	}
 }
 
-func formatSlice(object interface{}, indentation int) string {
+func formatSlice(object interface{}, indentation uint) string {
 	v := reflect.ValueOf(object)
 
 	l := v.Len()
@@ -118,14 +133,14 @@ func formatSlice(object interface{}, indentation int) string {
 	}
 
 	if longest > longFormThreshold {
-		indenter := strings.Repeat(Indent, indentation)
+		indenter := strings.Repeat(Indent, int(indentation))
 		return fmt.Sprintf("[\n%s%s,\n%s]", indenter+Indent, strings.Join(result, ",\n"+indenter+Indent), indenter)
 	} else {
 		return fmt.Sprintf("[%s]", strings.Join(result, ", "))
 	}
 }
 
-func formatMap(object interface{}, indentation int) string {
+func formatMap(object interface{}, indentation uint) string {
 	v := reflect.ValueOf(object)
 
 	l := v.Len()
@@ -141,14 +156,14 @@ func formatMap(object interface{}, indentation int) string {
 	}
 
 	if longest > longFormThreshold {
-		indenter := strings.Repeat(Indent, indentation)
+		indenter := strings.Repeat(Indent, int(indentation))
 		return fmt.Sprintf("{\n%s%s,\n%s}", indenter+Indent, strings.Join(result, ",\n"+indenter+Indent), indenter)
 	} else {
 		return fmt.Sprintf("{%s}", strings.Join(result, ", "))
 	}
 }
 
-func formatStruct(object interface{}, indentation int) string {
+func formatStruct(object interface{}, indentation uint) string {
 	v := reflect.ValueOf(object)
 	t := reflect.TypeOf(object)
 
@@ -167,7 +182,7 @@ func formatStruct(object interface{}, indentation int) string {
 		}
 	}
 	if longest > longFormThreshold {
-		indenter := strings.Repeat(Indent, indentation)
+		indenter := strings.Repeat(Indent, int(indentation))
 		return fmt.Sprintf("{\n%s%s,\n%s}", indenter+Indent, strings.Join(result, ",\n"+indenter+Indent), indenter)
 	} else {
 		return fmt.Sprintf("{%s}", strings.Join(result, ", "))

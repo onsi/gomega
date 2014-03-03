@@ -2,8 +2,8 @@ package matchers
 
 import (
 	"fmt"
-	"strings"
 	"github.com/onsi/gomega/format"
+	"strings"
 )
 
 type ContainSubstringMatcher struct {
@@ -25,6 +25,6 @@ func (matcher *ContainSubstringMatcher) Match(actual interface{}) (success bool,
 			return false, format.Message(actual, "to contain substring", stringToMatch), nil
 		}
 	} else {
-		return false, "", fmt.Errorf("ContainSubstring matcher requires a string or stringer.  Got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("ContainSubstring matcher requires a string or stringer.  Got:\n%s", format.Object(actual, 1))
 	}
 }

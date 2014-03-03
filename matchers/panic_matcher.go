@@ -2,8 +2,8 @@ package matchers
 
 import (
 	"fmt"
-	"reflect"
 	"github.com/onsi/gomega/format"
+	"reflect"
 )
 
 type PanicMatcher struct{}
@@ -14,10 +14,10 @@ func (matcher *PanicMatcher) Match(actual interface{}) (success bool, message st
 	}
 	actualType := reflect.TypeOf(actual)
 	if actualType.Kind() != reflect.Func {
-		return false, "", fmt.Errorf("PanicMatcher expects a function. Got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("PanicMatcher expects a function.  Got:\n%s", format.Object(actual, 1))
 	}
 	if !(actualType.NumIn() == 0 && actualType.NumOut() == 0) {
-		return false, "", fmt.Errorf("PanicMatcher expects a function with no arguments and no return value. Got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("PanicMatcher expects a function with no arguments and no return value.  Got:\n%s", format.Object(actual, 1))
 	}
 
 	success = false

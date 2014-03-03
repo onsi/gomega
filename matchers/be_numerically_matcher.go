@@ -2,8 +2,8 @@ package matchers
 
 import (
 	"fmt"
-	"math"
 	"github.com/onsi/gomega/format"
+	"math"
 )
 
 type BeNumericallyMatcher struct {
@@ -13,16 +13,16 @@ type BeNumericallyMatcher struct {
 
 func (matcher *BeNumericallyMatcher) Match(actual interface{}) (success bool, message string, err error) {
 	if len(matcher.CompareTo) == 0 || len(matcher.CompareTo) > 2 {
-		return false, "", fmt.Errorf("BeNumerically requires 1 or 2 CompareTo arguments.  Got:%s", format.Object(matcher.CompareTo))
+		return false, "", fmt.Errorf("BeNumerically requires 1 or 2 CompareTo arguments.  Got:\n%s", format.Object(matcher.CompareTo, 1))
 	}
 	if !isNumber(actual) {
-		return false, "", fmt.Errorf("Expected a number, got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("Expected a number.  Got:\n%s", format.Object(actual, 1))
 	}
 	if !isNumber(matcher.CompareTo[0]) {
-		return false, "", fmt.Errorf("Expected a number, got:%s", format.Object(matcher.CompareTo[0]))
+		return false, "", fmt.Errorf("Expected a number.  Got:\n%s", format.Object(matcher.CompareTo[0], 1))
 	}
 	if len(matcher.CompareTo) == 2 && !isNumber(matcher.CompareTo[1]) {
-		return false, "", fmt.Errorf("Expected a number, got:%s", format.Object(matcher.CompareTo[0]))
+		return false, "", fmt.Errorf("Expected a number.  Got:\n%s", format.Object(matcher.CompareTo[0], 1))
 	}
 	switch matcher.Comparator {
 	case "==", "~", ">", ">=", "<", "<=":
@@ -49,7 +49,7 @@ func (matcher *BeNumericallyMatcher) Match(actual interface{}) (success bool, me
 		}
 		success = matcher.matchUnsignedIntegers(toUnsignedInteger(actual), toUnsignedInteger(matcher.CompareTo[0]), secondOperand)
 	} else {
-		return false, "", fmt.Errorf("Failed to compare:%s\n%s:%s", format.Object(actual), matcher.Comparator, format.Object(matcher.CompareTo[0]))
+		return false, "", fmt.Errorf("Failed to compare:\n%s\n%s:\n%s", format.Object(actual, 1), matcher.Comparator, format.Object(matcher.CompareTo[0], 1))
 	}
 
 	if success {

@@ -13,9 +13,9 @@ func (matcher *HaveOccurredMatcher) Match(actual interface{}) (success bool, mes
 		return false, format.Message(actual, "to have occurred"), nil
 	} else {
 		if isError(actual) {
-			return true, fmt.Sprintf("Expected error:%s\n    %s\n%s", format.Object(actual), actual.(error).Error(), "not to have occurred"), nil
+			return true, fmt.Sprintf("Expected error:\n%s\n%s\n%s", format.Object(actual, 1), format.IndentString(actual.(error).Error(), 1), "not to have occurred"), nil
 		} else {
-			return false, "", fmt.Errorf("Expected an error, got%s", format.Object(actual))
+			return false, "", fmt.Errorf("Expected an error.  Got:\n%s", format.Object(actual, 1))
 		}
 	}
 }

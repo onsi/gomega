@@ -2,8 +2,8 @@ package matchers
 
 import (
 	"fmt"
-	"reflect"
 	"github.com/onsi/gomega/format"
+	"reflect"
 )
 
 type BeClosedMatcher struct {
@@ -11,7 +11,7 @@ type BeClosedMatcher struct {
 
 func (matcher *BeClosedMatcher) Match(actual interface{}) (success bool, message string, err error) {
 	if !isChan(actual) {
-		return false, "", fmt.Errorf("BeClosed matcher expects a channel.  Got: %s", format.Object(actual))
+		return false, "", fmt.Errorf("BeClosed matcher expects a channel.  Got:\n%s", format.Object(actual, 1))
 	}
 
 	channelType := reflect.TypeOf(actual)
@@ -20,7 +20,7 @@ func (matcher *BeClosedMatcher) Match(actual interface{}) (success bool, message
 	var closed bool
 
 	if channelType.ChanDir() == reflect.SendDir {
-		return false, "", fmt.Errorf("BeClosed matcher cannot determine if a send-only channel is closed or open.  Got: %s", format.Object(actual))
+		return false, "", fmt.Errorf("BeClosed matcher cannot determine if a send-only channel is closed or open.  Got:\n%s", format.Object(actual, 1))
 	} else {
 		winnerIndex, _, open := reflect.Select([]reflect.SelectCase{
 			reflect.SelectCase{Dir: reflect.SelectRecv, Chan: channelValue},

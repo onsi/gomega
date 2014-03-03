@@ -40,7 +40,7 @@ func (matcher *MatchJSONMatcher) Match(actual interface{}) (success bool, messag
 			return false, format.Message(abuf.String(), "to match JSON of", ebuf.String()), nil
 		}
 	} else {
-		return false, "", fmt.Errorf("MatchJSONMatcher matcher requires a string or stringer.  Got:%s", format.Object(actual))
+		return false, "", fmt.Errorf("MatchJSONMatcher matcher requires a string or stringer.  Got:\n%s", format.Object(actual, 1))
 	}
 	return false, "", nil
 }
