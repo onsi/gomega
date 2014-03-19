@@ -270,7 +270,7 @@ It is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil
 
 > For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator_string_compareto_interface) matcher
 
-### BeEquivalentTo(expected interface)
+### BeEquivalentTo(expected interface{})
 
     Ω(ACTUAL).Should(BeEquivalentTo(EXPECTED))
 
@@ -320,12 +320,18 @@ succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error 
 
 ### HaveOccurred()
 
-    Ω(ERROR).Should(HaveOccurred())
+    Ω(ACTUAL).Should(HaveOccurred())
 
 succeeds if `ACTUAL` is a non-nil `error`.  Thus, the typical Go error checking pattern looks like:
 
     err := SomethingThatMightFail()
     Ω(err).ShouldNot(HaveOccurred())
+
+### MatchError(expected interface{})
+
+    Ω(ACTUAL).Should(MatchError(EXPECTED))
+
+succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  Alternatively, `EXPECTED` can be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`.  Any other type for `EXPECTED` is an error.
 
 ### BeClosed()
 
