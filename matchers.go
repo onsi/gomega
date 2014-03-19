@@ -62,6 +62,19 @@ func HaveOccured() OmegaMatcher {
 	return &matchers.HaveOccurredMatcher{}
 }
 
+//MatchError succeeds if actual is a non-nil error that matches the passed in string/error.
+//
+//These are valid use-cases:
+//  Ω(err).Should(MatchError("an error")) //asserts that err.Error() == "an error"
+//  Ω(err).Should(MatchError(SomeError)) //asserts that err == SomeError (via reflect.DeepEqual)
+//
+//It is an error for err to be nil or an object that does not implement the Error interface
+func MatchError(expected interface{}) OmegaMatcher {
+	return &matchers.MatchErrorMatcher{
+		Expected: expected,
+	}
+}
+
 //BeClosed succeeds if actual is a closed channel.
 //It is an error to pass a non-channel to BeClosed, it is also an error to pass nil
 //
