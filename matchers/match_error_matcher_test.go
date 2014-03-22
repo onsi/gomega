@@ -23,6 +23,8 @@ var _ = Describe("MatchErrorMatcher", func() {
 			customErr := CustomError{}
 
 			Ω(err).Should(MatchError(errors.New("an error")))
+			Ω(err).ShouldNot(MatchError(errors.New("another error")))
+
 			Ω(fmtErr).Should(MatchError(errors.New("an error")))
 			Ω(customErr).Should(MatchError(CustomError{}))
 		})
@@ -33,6 +35,8 @@ var _ = Describe("MatchErrorMatcher", func() {
 			customErr := CustomError{}
 
 			Ω(err).Should(MatchError("an error"))
+			Ω(err).ShouldNot(MatchError("another error"))
+
 			Ω(fmtErr).Should(MatchError("an error"))
 			Ω(customErr).Should(MatchError("an error"))
 		})

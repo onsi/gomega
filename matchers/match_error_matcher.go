@@ -25,7 +25,7 @@ func (matcher *MatchErrorMatcher) Match(actual interface{}) (success bool, messa
 		if reflect.DeepEqual(actualErr.Error(), matcher.Expected) {
 			return true, format.Message(actual, "not to match error", matcher.Expected), nil
 		} else {
-			return true, format.Message(actual, "to match error", matcher.Expected), nil
+			return false, format.Message(actual, "to match error", matcher.Expected), nil
 		}
 	}
 
@@ -33,7 +33,7 @@ func (matcher *MatchErrorMatcher) Match(actual interface{}) (success bool, messa
 		if reflect.DeepEqual(actualErr, matcher.Expected) {
 			return true, format.Message(actual, "not to match error", matcher.Expected), nil
 		} else {
-			return true, format.Message(actual, "to match error", matcher.Expected), nil
+			return false, format.Message(actual, "to match error", matcher.Expected), nil
 		}
 	}
 
