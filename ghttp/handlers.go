@@ -86,3 +86,18 @@ func RespondWithPtr(statusCode *int, body *string) http.HandlerFunc {
 		w.Write([]byte(*body))
 	}
 }
+
+func RespondWithJSONEncoded(statusCode int, object interface{}) http.HandlerFunc {
+	data, err := json.Marshal(object)
+	Ω(err).ShouldNot(HaveOccurred())
+	return RespondWith(statusCode, string(data))
+}
+
+func RespondWithJSONEncodedPtr(statusCode *int, object *interface{}) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		data, err := json.Marshal(*object)
+		Ω(err).ShouldNot(HaveOccurred())
+		w.WriteHeader(*statusCode)
+		w.Write(data)
+	}
+}

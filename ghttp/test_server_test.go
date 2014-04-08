@@ -355,5 +355,52 @@ var _ = Describe("TestServer", func() {
 				Ω(body).Should(Equal([]byte("tasty")))
 			})
 		})
+
+		Describe("RespondWithJSON", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(CombineHandlers(
+					VerifyRequest("POST", "/foo"),
+					RespondWithJSONEncoded(http.StatusCreated, []int{1, 2, 3}),
+				))
+			})
+
+			It("should return the response", func() {
+				resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(resp.StatusCode).Should(Equal(http.StatusCreated))
+
+				body, err := ioutil.ReadAll(resp.Body)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(body).Should(MatchJSON("[1,2,3]"))
+			})
+		})
+
+		Describe("RespondWithJSONPtr", func() {
+			var code int
+			var object interface{}
+			BeforeEach(func() {
+				code = http.StatusOK
+				object = []int{1, 2, 3}
+
+				s.AppendHandlers(CombineHandlers(
+					VerifyRequest("POST", "/foo"),
+					RespondWithJSONEncodedPtr(&code, &object),
+				))
+			})
+
+			It("should return the response", func() {
+				code = http.StatusCreated
+				object = []int{4, 5, 6}
+				resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(resp.StatusCode).Should(Equal(http.StatusCreated))
+
+				body, err := ioutil.ReadAll(resp.Body)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(body).Should(MatchJSON("[4,5,6]"))
+			})
+		})
 	})
 })
