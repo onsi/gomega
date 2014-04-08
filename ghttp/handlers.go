@@ -2,6 +2,7 @@ package ghttp
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	. "github.com/onsi/gomega"
 	"io/ioutil"
@@ -60,6 +61,15 @@ func VerifyJSON(expectedJSON string) http.HandlerFunc {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(body).Should(MatchJSON(expectedJSON), "JSON Mismatch")
 		},
+	)
+}
+
+func VerifyJSONRepresenting(object interface{}) http.HandlerFunc {
+	data, err := json.Marshal(object)
+	Ω(err).ShouldNot(HaveOccurred())
+	return CombineHandlers(
+		VerifyContentType("application/json"),
+		VerifyJSON(string(data)),
 	)
 }
 

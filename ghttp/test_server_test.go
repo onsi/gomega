@@ -279,6 +279,34 @@ var _ = Describe("TestServer", func() {
 				})
 				Ω(failures).Should(HaveLen(1))
 			})
+
+			It("should verify the json body and the content type", func() {
+				failures := interceptFailures(func() {
+					http.Post(s.URL()+"/foo", "application/not-json", bytes.NewReader([]byte(`{"b":2, "a":3}`)))
+				})
+				Ω(failures).Should(HaveLen(1))
+			})
+		})
+
+		Describe("VerifyJSONRepresenting", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(CombineHandlers(
+					VerifyRequest("POST", "/foo"),
+					VerifyJSONRepresenting([]int{1, 3, 5}),
+				))
+			})
+
+			It("should verify the json body and the content type", func() {
+				resp, err = http.Post(s.URL()+"/foo", "application/json", bytes.NewReader([]byte(`[1,3,5]`)))
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("should verify the json body and the content type", func() {
+				failures := interceptFailures(func() {
+					http.Post(s.URL()+"/foo", "application/json", bytes.NewReader([]byte(`[1,3]`)))
+				})
+				Ω(failures).Should(HaveLen(1))
+			})
 		})
 
 		Describe("RespondWith", func() {
