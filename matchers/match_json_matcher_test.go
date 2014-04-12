@@ -29,11 +29,11 @@ var _ = Describe("MatchJSONMatcher", func() {
 		It("should error", func() {
 			success, _, err := (&MatchJSONMatcher{JSONToMatch: `oops`}).Match(`{}`)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&MatchJSONMatcher{JSONToMatch: `{}`}).Match(`oops`)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 
@@ -41,19 +41,19 @@ var _ = Describe("MatchJSONMatcher", func() {
 		It("should error", func() {
 			success, _, err := (&MatchJSONMatcher{JSONToMatch: "{}"}).Match(2)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&MatchJSONMatcher{JSONToMatch: 2}).Match("{}")
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&MatchJSONMatcher{JSONToMatch: nil}).Match("{}")
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&MatchJSONMatcher{JSONToMatch: 2}).Match(nil)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 })

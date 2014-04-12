@@ -13,7 +13,7 @@ var _ = Describe("Equal", func() {
 			success, _, err := (&EqualMatcher{Expected: nil}).Match(nil)
 
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 

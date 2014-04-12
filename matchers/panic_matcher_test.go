@@ -11,19 +11,19 @@ var _ = Describe("Panic", func() {
 		It("should error", func() {
 			success, _, err := (&PanicMatcher{}).Match("foo")
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&PanicMatcher{}).Match(nil)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&PanicMatcher{}).Match(func(foo string) {})
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&PanicMatcher{}).Match(func() string { return "bar" })
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 

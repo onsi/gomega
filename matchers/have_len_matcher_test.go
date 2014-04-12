@@ -43,11 +43,11 @@ var _ = Describe("HaveLen", func() {
 		It("should error", func() {
 			success, _, err := (&HaveLenMatcher{Count: 0}).Match(0)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&HaveLenMatcher{Count: 0}).Match(nil)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 })

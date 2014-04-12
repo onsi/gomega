@@ -30,7 +30,7 @@ var _ = Describe("MatchRegexp", func() {
 		It("should error", func() {
 			success, _, err := (&MatchRegexpMatcher{Regexp: `\d`}).Match(2)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 
@@ -38,7 +38,7 @@ var _ = Describe("MatchRegexp", func() {
 		It("should error", func() {
 			success, _, err := (&MatchRegexpMatcher{Regexp: "("}).Match("Foo")
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 })

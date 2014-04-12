@@ -15,6 +15,6 @@ var _ = Describe("BeFalse", func() {
 	It("should only support booleans", func() {
 		success, _, err := (&BeFalseMatcher{}).Match("foo")
 		Ω(success).Should(BeFalse())
-		Ω(err).Should(HaveOccured())
+		Ω(err).Should(HaveOccurred())
 	})
 })

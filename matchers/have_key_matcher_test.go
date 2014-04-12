@@ -55,7 +55,7 @@ var _ = Describe("HaveKey", func() {
 			actual := map[interface{}]string{"foo": "a", 3: "b", "bar": "c"}
 			success, _, err := (&HaveKeyMatcher{Key: ContainSubstring("ar")}).Match(actual)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 
@@ -63,11 +63,11 @@ var _ = Describe("HaveKey", func() {
 		It("should error", func() {
 			success, _, err := (&HaveKeyMatcher{Key: "foo"}).Match([]string{"foo"})
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&HaveKeyMatcher{Key: "foo"}).Match(nil)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 })

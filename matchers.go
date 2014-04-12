@@ -1,13 +1,8 @@
 package gomega
 
 import (
-	"fmt"
-
 	"github.com/onsi/gomega/matchers"
 )
-
-//Track whether we've already warned about a deprecated feature. Nobody likes a nag.
-var deprecationWarnings map[string]bool = make(map[string]bool)
 
 //Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
 //types when performing comparisons.
@@ -48,17 +43,6 @@ func BeFalse() OmegaMatcher {
 //    err := SomethingThatMightFail()
 //    Ω(err).ShouldNot(HaveOccurred())
 func HaveOccurred() OmegaMatcher {
-	return &matchers.HaveOccurredMatcher{}
-}
-
-//Legacy misspelling, provided for backwards compatibility.
-func HaveOccured() OmegaMatcher {
-	if !deprecationWarnings["HaveOccured"] {
-		fmt.Println("\nWARNING: The HaveOccured matcher is deprecated!")
-		fmt.Println(`We've corrected the spelling of "HaveOccured" to "HaveOccurred".`)
-		fmt.Println(`Update your package by running "gofmt -r 'HaveOccured() -> HaveOccurred()' -w *.go".`)
-		deprecationWarnings["HaveOccured"] = true
-	}
 	return &matchers.HaveOccurredMatcher{}
 }
 

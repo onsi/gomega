@@ -39,7 +39,7 @@ var _ = Describe("ContainElement", func() {
 				actual := []interface{}{1, 2, "3", 4}
 				success, _, err := (&ContainElementMatcher{Element: BeNumerically(">=", 3)}).Match(actual)
 				Ω(success).Should(BeFalse())
-				Ω(err).Should(HaveOccured())
+				Ω(err).Should(HaveOccurred())
 			})
 		})
 	})
@@ -58,15 +58,15 @@ var _ = Describe("ContainElement", func() {
 		It("should error", func() {
 			success, _, err := (&ContainElementMatcher{Element: 0}).Match(0)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&ContainElementMatcher{Element: 0}).Match("abc")
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
 			success, _, err = (&ContainElementMatcher{Element: 0}).Match(nil)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 })
