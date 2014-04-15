@@ -8,14 +8,22 @@ import (
 type HaveOccurredMatcher struct {
 }
 
-func (matcher *HaveOccurredMatcher) Match(actual interface{}) (success bool, message string, err error) {
+func (matcher *HaveOccurredMatcher) Match(actual interface{}) (success bool, err error) {
 	if actual == nil {
-		return false, format.Message(actual, "to have occurred"), nil
-	} else {
-		if isError(actual) {
-			return true, fmt.Sprintf("Expected error:\n%s\n%s\n%s", format.Object(actual, 1), format.IndentString(actual.(error).Error(), 1), "not to have occurred"), nil
-		} else {
-			return false, "", fmt.Errorf("Expected an error.  Got:\n%s", format.Object(actual, 1))
-		}
+		return false, nil
 	}
+
+	if isError(actual) {
+		return true, nil
+	}
+
+	return false, fmt.Errorf("Expected an error.  Got:\n%s", format.Object(actual, 1))
+}
+
+func (matcher *HaveOccurredMatcher) FailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected error:\n%s\n%s\n%s", format.Object(actual, 1), format.IndentString(actual.(error).Error(), 1), "to have occurred")
+}
+
+func (matcher *HaveOccurredMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected error:\n%s\n%s\n%s", format.Object(actual, 1), format.IndentString(actual.(error).Error(), 1), "not to have occurred")
 }

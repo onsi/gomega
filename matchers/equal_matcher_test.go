@@ -10,7 +10,7 @@ import (
 var _ = Describe("Equal", func() {
 	Context("when asserting that nil equals nil", func() {
 		It("should error", func() {
-			success, _, err := (&EqualMatcher{Expected: nil}).Match(nil)
+			success, err := (&EqualMatcher{Expected: nil}).Match(nil)
 
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())

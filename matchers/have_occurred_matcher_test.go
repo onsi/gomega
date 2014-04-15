@@ -17,11 +17,11 @@ var _ = Describe("HaveOccurred", func() {
 	})
 
 	It("should only support errors and nil", func() {
-		success, _, err := (&HaveOccurredMatcher{}).Match("foo")
+		success, err := (&HaveOccurredMatcher{}).Match("foo")
 		Ω(success).Should(BeFalse())
 		Ω(err).Should(HaveOccurred())
 
-		success, _, err = (&HaveOccurredMatcher{}).Match("")
+		success, err = (&HaveOccurredMatcher{}).Match("")
 		Ω(success).Should(BeFalse())
 		Ω(err).Should(HaveOccurred())
 	})

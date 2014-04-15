@@ -10,16 +10,14 @@ type ContainElementMatcher struct {
 	Element interface{}
 }
 
-func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, message string, err error) {
+func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, err error) {
 	if !isArrayOrSlice(actual) && !isMap(actual) {
-		return false, "", fmt.Errorf("ContainElement matcher expects an array/slice/map.  Got:\n%s", format.Object(actual, 1))
+		return false, fmt.Errorf("ContainElement matcher expects an array/slice/map.  Got:\n%s", format.Object(actual, 1))
 	}
 
 	elemMatcher, elementIsMatcher := matcher.Element.(omegaMatcher)
-	matchingString := " matching"
 	if !elementIsMatcher {
 		elemMatcher = &EqualMatcher{Expected: matcher.Element}
-		matchingString = ""
 	}
 
 	value := reflect.ValueOf(actual)
@@ -31,17 +29,25 @@ func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, m
 		var success bool
 		var err error
 		if isMap(actual) {
-			success, _, err = elemMatcher.Match(value.MapIndex(keys[i]).Interface())
+			success, err = elemMatcher.Match(value.MapIndex(keys[i]).Interface())
 		} else {
-			success, _, err = elemMatcher.Match(value.Index(i).Interface())
+			success, err = elemMatcher.Match(value.Index(i).Interface())
 		}
 		if err != nil {
-			return false, "", fmt.Errorf("ContainElement's element matcher failed with:\n\t%s", err.Error())
+			return false, fmt.Errorf("ContainElement's element matcher failed with:\n\t%s", err.Error())
 		}
 		if success {
-			return true, format.Message(actual, "not to contain element"+matchingString, matcher.Element), nil
+			return true, nil
 		}
 	}
 
-	return false, format.Message(actual, "to contain element"+matchingString, matcher.Element), nil
+	return false, nil
+}
+
+func (matcher *ContainElementMatcher) FailureMessage(actual interface{}) (message string) {
+	return format.Message(actual, "to contain element matching", matcher.Element)
+}
+
+func (matcher *ContainElementMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+	return format.Message(actual, "not to contain element matching", matcher.Element)
 }

@@ -43,12 +43,12 @@ var _ = Describe("MatchErrorMatcher", func() {
 
 		It("should fail when passed anything else", func() {
 			actualErr := errors.New("an error")
-			_, _, err := (&MatchErrorMatcher{
+			_, err := (&MatchErrorMatcher{
 				Expected: []byte("an error"),
 			}).Match(actualErr)
 			Ω(err).Should(HaveOccurred())
 
-			_, _, err = (&MatchErrorMatcher{
+			_, err = (&MatchErrorMatcher{
 				Expected: 3,
 			}).Match(actualErr)
 			Ω(err).Should(HaveOccurred())
@@ -57,7 +57,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 
 	Context("when passed nil", func() {
 		It("should fail", func() {
-			_, _, err := (&MatchErrorMatcher{
+			_, err := (&MatchErrorMatcher{
 				Expected: "an error",
 			}).Match(nil)
 			Ω(err).Should(HaveOccurred())
@@ -66,12 +66,12 @@ var _ = Describe("MatchErrorMatcher", func() {
 
 	Context("when passed a non-error", func() {
 		It("should fail", func() {
-			_, _, err := (&MatchErrorMatcher{
+			_, err := (&MatchErrorMatcher{
 				Expected: "an error",
 			}).Match("an error")
 			Ω(err).Should(HaveOccurred())
 
-			_, _, err = (&MatchErrorMatcher{
+			_, err = (&MatchErrorMatcher{
 				Expected: "an error",
 			}).Match(3)
 			Ω(err).Should(HaveOccurred())

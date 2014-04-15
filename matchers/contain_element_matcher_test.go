@@ -37,7 +37,7 @@ var _ = Describe("ContainElement", func() {
 
 			It("should fail if the matcher ever fails", func() {
 				actual := []interface{}{1, 2, "3", 4}
-				success, _, err := (&ContainElementMatcher{Element: BeNumerically(">=", 3)}).Match(actual)
+				success, err := (&ContainElementMatcher{Element: BeNumerically(">=", 3)}).Match(actual)
 				Ω(success).Should(BeFalse())
 				Ω(err).Should(HaveOccurred())
 			})
@@ -56,15 +56,15 @@ var _ = Describe("ContainElement", func() {
 
 	Context("when passed an unsupported type", func() {
 		It("should error", func() {
-			success, _, err := (&ContainElementMatcher{Element: 0}).Match(0)
+			success, err := (&ContainElementMatcher{Element: 0}).Match(0)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&ContainElementMatcher{Element: 0}).Match("abc")
+			success, err = (&ContainElementMatcher{Element: 0}).Match("abc")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&ContainElementMatcher{Element: 0}).Match(nil)
+			success, err = (&ContainElementMatcher{Element: 0}).Match(nil)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})

@@ -22,8 +22,16 @@ type fakeMatcher struct {
 	errToReturn     error
 }
 
-func (matcher *fakeMatcher) Match(actual interface{}) (bool, string, error) {
+func (matcher *fakeMatcher) Match(actual interface{}) (bool, error) {
 	matcher.receivedActual = actual
 
-	return matcher.matchesToReturn, matcher.messageToReturn, matcher.errToReturn
+	return matcher.matchesToReturn, matcher.errToReturn
+}
+
+func (matcher *fakeMatcher) FailureMessage(actual interface{}) string {
+	return matcher.messageToReturn
+}
+
+func (matcher *fakeMatcher) NegatedFailureMessage(actual interface{}) string {
+	return matcher.messageToReturn
 }

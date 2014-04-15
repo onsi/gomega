@@ -9,19 +9,19 @@ import (
 var _ = Describe("Panic", func() {
 	Context("when passed something that's not a function that takes zero arguments and returns nothing", func() {
 		It("should error", func() {
-			success, _, err := (&PanicMatcher{}).Match("foo")
+			success, err := (&PanicMatcher{}).Match("foo")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&PanicMatcher{}).Match(nil)
+			success, err = (&PanicMatcher{}).Match(nil)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&PanicMatcher{}).Match(func(foo string) {})
+			success, err = (&PanicMatcher{}).Match(func(foo string) {})
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&PanicMatcher{}).Match(func() string { return "bar" })
+			success, err = (&PanicMatcher{}).Match(func() string { return "bar" })
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})

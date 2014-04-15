@@ -108,31 +108,31 @@ var _ = Describe("BeNumerically", func() {
 
 	Context("when passed a non-number", func() {
 		It("should error", func() {
-			success, _, err := (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{5}}).Match("foo")
+			success, err := (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{5}}).Match("foo")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&BeNumericallyMatcher{Comparator: "=="}).Match(5)
+			success, err = (&BeNumericallyMatcher{Comparator: "=="}).Match(5)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&BeNumericallyMatcher{Comparator: "~", CompareTo: []interface{}{3.0, "foo"}}).Match(5.0)
+			success, err = (&BeNumericallyMatcher{Comparator: "~", CompareTo: []interface{}{3.0, "foo"}}).Match(5.0)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match(5)
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match(5)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match("foo")
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match("foo")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{nil}}).Match(0)
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{nil}}).Match(0)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{0}}).Match(nil)
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{0}}).Match(nil)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})
@@ -140,7 +140,7 @@ var _ = Describe("BeNumerically", func() {
 
 	Context("when passed an unsupported comparator", func() {
 		It("should error", func() {
-			success, _, err := (&BeNumericallyMatcher{Comparator: "!=", CompareTo: []interface{}{5}}).Match(4)
+			success, err := (&BeNumericallyMatcher{Comparator: "!=", CompareTo: []interface{}{5}}).Match(4)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})
