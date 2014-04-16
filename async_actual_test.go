@@ -66,6 +66,7 @@ func init() {
 
 					Ω(arr).Should(HaveLen(10))
 					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("<[]int | len:10"), "Should pass the correct value to the matcher message formatter.")
 					Ω(failureMessage).Should(ContainSubstring("My description 2"))
 					Ω(callerSkip).Should(Equal(4))
 				})
@@ -110,6 +111,7 @@ func init() {
 					a.ShouldNot(HaveLen(0), "My description %d", 2)
 
 					Ω(failureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(failureMessage).Should(ContainSubstring("<[]int | len:0"), "Should pass the correct value to the matcher message formatter.")
 					Ω(failureMessage).Should(ContainSubstring("My description 2"))
 					Ω(callerSkip).Should(Equal(4))
 				})

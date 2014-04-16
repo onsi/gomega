@@ -61,7 +61,6 @@ func init() {
 		Context("when the matcher succeeds", func() {
 			BeforeEach(func() {
 				matcher.matchesToReturn = true
-				matcher.messageToReturn = "The negative failure message"
 				matcher.errToReturn = nil
 			})
 
@@ -79,7 +78,7 @@ func init() {
 			Context("and a negative assertion is being made", func() {
 				It("should call the failure callback", func() {
 					a.ShouldNot(matcher)
-					Ω(failureMessage).Should(Equal("The negative failure message"))
+					Ω(failureMessage).Should(Equal("negative: The thing I'm testing"))
 					Ω(failureCallerSkip).Should(Equal(3))
 				})
 
@@ -92,14 +91,13 @@ func init() {
 		Context("when the matcher fails", func() {
 			BeforeEach(func() {
 				matcher.matchesToReturn = false
-				matcher.messageToReturn = "The positive failure message"
 				matcher.errToReturn = nil
 			})
 
 			Context("and a positive assertion is being made", func() {
 				It("should call the failure callback", func() {
 					a.Should(matcher)
-					Ω(failureMessage).Should(Equal("The positive failure message"))
+					Ω(failureMessage).Should(Equal("positive: The thing I'm testing"))
 					Ω(failureCallerSkip).Should(Equal(3))
 				})
 
@@ -123,14 +121,13 @@ func init() {
 		Context("When reporting a failure", func() {
 			BeforeEach(func() {
 				matcher.matchesToReturn = false
-				matcher.messageToReturn = "The positive failure message"
 				matcher.errToReturn = nil
 			})
 
 			Context("and there is an optional description", func() {
 				It("should append the description to the failure message", func() {
 					a.Should(matcher, "A description")
-					Ω(failureMessage).Should(Equal("A description\nThe positive failure message"))
+					Ω(failureMessage).Should(Equal("A description\npositive: The thing I'm testing"))
 					Ω(failureCallerSkip).Should(Equal(3))
 				})
 			})
@@ -138,7 +135,7 @@ func init() {
 			Context("and there are multiple arguments to the optional description", func() {
 				It("should append the formatted description to the failure message", func() {
 					a.Should(matcher, "A description of [%d]", 3)
-					Ω(failureMessage).Should(Equal("A description of [3]\nThe positive failure message"))
+					Ω(failureMessage).Should(Equal("A description of [3]\npositive: The thing I'm testing"))
 					Ω(failureCallerSkip).Should(Equal(3))
 				})
 			})
@@ -152,7 +149,6 @@ func init() {
 			Context("and a positive assertion is being made", func() {
 				It("should call the failure callback", func() {
 					matcher.matchesToReturn = true
-					matcher.messageToReturn = "Ignore me"
 					a.Should(matcher)
 					Ω(failureMessage).Should(Equal("Kaboom!"))
 					Ω(failureCallerSkip).Should(Equal(3))
@@ -162,7 +158,6 @@ func init() {
 			Context("and a negative assertion is being made", func() {
 				It("should call the failure callback", func() {
 					matcher.matchesToReturn = false
-					matcher.messageToReturn = "Ignore me"
 					a.ShouldNot(matcher)
 					Ω(failureMessage).Should(Equal("Kaboom!"))
 					Ω(failureCallerSkip).Should(Equal(3))
@@ -185,7 +180,6 @@ func init() {
 			Context("when the parameters are all nil or zero", func() {
 				It("should invoke the matcher", func() {
 					matcher.matchesToReturn = true
-					matcher.messageToReturn = "The negative failure message"
 					matcher.errToReturn = nil
 
 					var typedNil []string
@@ -202,7 +196,6 @@ func init() {
 			Context("when any of the parameters are not nil or zero", func() {
 				It("should call the failure callback", func() {
 					matcher.matchesToReturn = false
-					matcher.messageToReturn = "The negative failure message"
 					matcher.errToReturn = nil
 
 					a = newActual(input, fakeFailHandler, 1, errors.New("foo"))

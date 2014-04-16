@@ -101,9 +101,9 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 
 		var message string
 		if desiredMatch {
-			message = matcher.FailureMessage(actual.actualInput)
+			message = matcher.FailureMessage(value)
 		} else {
-			message = matcher.NegatedFailureMessage(actual.actualInput)
+			message = matcher.NegatedFailureMessage(value)
 		}
 		actual.fail(fmt.Sprintf("%s after %.3fs.\n%s%s%s", preamble, time.Since(timer).Seconds(), description, message, errMsg), 3+actual.offset)
 	}
