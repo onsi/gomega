@@ -187,8 +187,8 @@ func ConsistentlyWithOffset(offset int, actual interface{}, intervals ...float64
 //  Eventually(myChannel).Should(Receive(), "Something should have come down the pipe.")
 //  Consistently(myChannel).ShouldNot(Receive(), "Nothing should have come down the pipe.")
 type AsyncActual interface {
-	Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool
-	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	Should(matcher interface{}, optionalDescription ...interface{}) bool
+	ShouldNot(matcher interface{}, optionalDescription ...interface{}) bool
 }
 
 //Actual is returned by Ω and Expect and compares the actual value to the matcher
@@ -206,12 +206,12 @@ type AsyncActual interface {
 //
 //   Ω(farm.HasCow()).Should(BeTrue(), "Farm %v should have a cow", farm)
 type Actual interface {
-	Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool
-	ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	Should(matcher interface{}, optionalDescription ...interface{}) bool
+	ShouldNot(matcher interface{}, optionalDescription ...interface{}) bool
 
-	To(matcher OmegaMatcher, optionalDescription ...interface{}) bool
-	ToNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool
-	NotTo(matcher OmegaMatcher, optionalDescription ...interface{}) bool
+	To(matcher interface{}, optionalDescription ...interface{}) bool
+	ToNot(matcher interface{}, optionalDescription ...interface{}) bool
+	NotTo(matcher interface{}, optionalDescription ...interface{}) bool
 }
 
 //All Gomega matchers must implement the OmegaMatcher interface
@@ -221,4 +221,8 @@ type OmegaMatcher interface {
 	Match(actual interface{}) (success bool, err error)
 	FailureMessage(actual interface{}) (message string)
 	NegatedFailureMessage(actual interface{}) (message string)
+}
+
+type DeprecatedOmegaMatcher interface {
+	Match(actual interface{}) (success bool, message string, err error)
 }

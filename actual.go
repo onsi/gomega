@@ -21,24 +21,24 @@ func newActual(actualInput interface{}, fail OmegaFailHandler, offset int, extra
 	}
 }
 
-func (actual *actual) Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.vetExtras(optionalDescription...) && actual.match(matcher, true, optionalDescription...)
+func (actual *actual) Should(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.vetExtras(optionalDescription...) && actual.match(shimIfNecessary(matcher), true, optionalDescription...)
 }
 
-func (actual *actual) ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.vetExtras(optionalDescription...) && actual.match(matcher, false, optionalDescription...)
+func (actual *actual) ShouldNot(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.vetExtras(optionalDescription...) && actual.match(shimIfNecessary(matcher), false, optionalDescription...)
 }
 
-func (actual *actual) To(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.vetExtras(optionalDescription...) && actual.match(matcher, true, optionalDescription...)
+func (actual *actual) To(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.vetExtras(optionalDescription...) && actual.match(shimIfNecessary(matcher), true, optionalDescription...)
 }
 
-func (actual *actual) ToNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.vetExtras(optionalDescription...) && actual.match(matcher, false, optionalDescription...)
+func (actual *actual) ToNot(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.vetExtras(optionalDescription...) && actual.match(shimIfNecessary(matcher), false, optionalDescription...)
 }
 
-func (actual *actual) NotTo(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.vetExtras(optionalDescription...) && actual.match(matcher, false, optionalDescription...)
+func (actual *actual) NotTo(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.vetExtras(optionalDescription...) && actual.match(shimIfNecessary(matcher), false, optionalDescription...)
 }
 
 func (actual *actual) buildDescription(optionalDescription ...interface{}) string {

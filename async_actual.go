@@ -41,12 +41,12 @@ func newAsyncActual(asyncType asyncActualType, actualInput interface{}, fail Ome
 	}
 }
 
-func (actual *asyncActual) Should(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.match(matcher, true, optionalDescription...)
+func (actual *asyncActual) Should(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.match(shimIfNecessary(matcher), true, optionalDescription...)
 }
 
-func (actual *asyncActual) ShouldNot(matcher OmegaMatcher, optionalDescription ...interface{}) bool {
-	return actual.match(matcher, false, optionalDescription...)
+func (actual *asyncActual) ShouldNot(matcher interface{}, optionalDescription ...interface{}) bool {
+	return actual.match(shimIfNecessary(matcher), false, optionalDescription...)
 }
 
 func (actual *asyncActual) buildDescription(optionalDescription ...interface{}) string {
