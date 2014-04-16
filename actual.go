@@ -60,9 +60,9 @@ func (actual *actual) match(matcher OmegaMatcher, desiredMatch bool, optionalDes
 	if matches != desiredMatch {
 		var message string
 		if desiredMatch {
-			message = matcher.FailureMessage(actual)
+			message = matcher.FailureMessage(actual.actualInput)
 		} else {
-			message = matcher.NegatedFailureMessage(actual)
+			message = matcher.NegatedFailureMessage(actual.actualInput)
 		}
 		actual.fail(description+message, 2+actual.offset)
 		return false

@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
+	"time"
 )
 
 var _ = Describe("BeNumerically", func() {
@@ -12,6 +13,8 @@ var _ = Describe("BeNumerically", func() {
 			Ω(uint32(5)).Should(BeNumerically("==", 5))
 			Ω(float64(5.0)).Should(BeNumerically("==", 5))
 			Ω(int8(5)).Should(BeNumerically("==", 5))
+
+			Ω(time.Duration(100)).Should(BeNumerically(">=", 101))
 		})
 
 		It("should not have false positives", func() {

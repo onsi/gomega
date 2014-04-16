@@ -12,7 +12,7 @@ type BeNumericallyMatcher struct {
 }
 
 func (matcher *BeNumericallyMatcher) FailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, fmt.Sprintf("to be %s", matcher.Comparator))
+	return format.Message(actual, fmt.Sprintf("to be %s", matcher.Comparator), matcher.CompareTo[0])
 }
 
 func (matcher *BeNumericallyMatcher) NegatedFailureMessage(actual interface{}) (message string) {
