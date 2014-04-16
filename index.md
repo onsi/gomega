@@ -493,6 +493,8 @@ A matcher, in Gomega, is any type that satisfies the `OmegaMatcher` interface:
 
     type OmegaMatcher interface {
         Match(actual interface{}) (success bool, message string, err error)
+        FailureMessage(actual interface{}) (message string)
+        NegatedFailureMessage(actual interface{}) (message string)
     }
 
 Writing domain-specific custom matchers is trivial and highly encouraged.  Let's work through an example.
@@ -558,6 +560,7 @@ Let's break this down:
     - Similarly, if the `actual` and `expected` values do not match, `Match` should return `false`.
     - If the `OmegaMatcher` was testing the `Should` case, and `Match` returned false, `FailureMessage` will be called to print a message explaining the failure.
     - Likewise, if the `OmegaMatcher` was testing the `ShouldNot` case, and `Match` returned false, `NegatedFailureMessage` will be called.
+    - It is guaranteed that `FailureMessage` and `NegatedFailureMessage` will only be called *after* `Match`, so you can save off any state you need to compute the messages in `Match`.
 - Finally, it is common for matchers to make extensive use of the `reflect` library to interpret the generic inputs they receive.  In this case, the `representJSONMatcher` goes through some `reflect` gymnastics to create a pointer to a new object with the same type as the `expected` object, read and decode JSON from `actual` into that pointer, and then deference the pointer and compare the result to the `expected` object.
 
 You might testdrive this matcher while writing it using Ginkgo.  Your test might look like:
