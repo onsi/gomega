@@ -95,15 +95,15 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 
 	fail := func(preamble string) {
 		errMsg := ""
+		message := ""
 		if err != nil {
 			errMsg = "Error: " + err.Error()
-		}
-
-		var message string
-		if desiredMatch {
-			message = matcher.FailureMessage(value)
 		} else {
-			message = matcher.NegatedFailureMessage(value)
+			if desiredMatch {
+				message = matcher.FailureMessage(value)
+			} else {
+				message = matcher.NegatedFailureMessage(value)
+			}
 		}
 		actual.fail(fmt.Sprintf("%s after %.3fs.\n%s%s%s", preamble, time.Since(timer).Seconds(), description, message, errMsg), 3+actual.offset)
 	}
