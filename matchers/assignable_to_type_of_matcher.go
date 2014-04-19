@@ -22,7 +22,7 @@ func (matcher *AssignableToTypeOfMatcher) Match(actual interface{}) (success boo
 }
 
 func (matcher *AssignableToTypeOfMatcher) FailureMessage(actual interface{}) string {
-	return format.Message(actual, fmt.Sprintf("not to be assignable to the type: %T", matcher.Expected))
+	return format.Message(actual, fmt.Sprintf("to be assignable to the type: %T", matcher.Expected))
 }
 
 func (matcher *AssignableToTypeOfMatcher) NegatedFailureMessage(actual interface{}) string {
