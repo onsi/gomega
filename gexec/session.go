@@ -1,11 +1,9 @@
 /*
-
-gexec provides support for testing external processes.
+Package gexec provides support for testing external processes.
 
 Documentation coming soon!
 
 */
-
 package gexec
 
 import (
