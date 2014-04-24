@@ -7,6 +7,24 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
+/*
+Say is a Gomega matcher that operates on gbytes.Buffers:
+
+	Ω(buffer).Should(Say("something"))
+
+will succeed if the unread portion of the buffer matches the regular expression "something".
+
+When Say succeeds, it fast forwards the gbytes.Buffer's read cursor to just after the succesful match.
+Thus, subsequent calls to Say will only match against the unread portion of the buffer
+
+Say pairs very well with Eventually.  To asser that a buffer eventually receives data matching "[123]-star" within 3 seconds you can:
+
+	Eventually(buffer, 3).Should(Say("[123]-star"))
+
+Ditto with consistently.  To assert that a buffer does not receive data matching "never-see-this" for 1 second you can:
+
+	Consistently(buffer, 1).ShouldNot(Say("never-see-this"))
+*/
 func Say(expected string, args ...interface{}) *sayMatcher {
 	formattedRegexp := expected
 	if len(args) > 0 {

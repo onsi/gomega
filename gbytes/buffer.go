@@ -1,7 +1,12 @@
 /*
-Package gbytes provides a buffer that supports incrementally detecting input
+Package gbytes provides a buffer that supports incrementally detecting input.
 
-More documentation coming soon!
+You use gbytes.Buffer with the gbytes.Say matcher.  When Say finds a match, it fastforwards the buffer's read cursor to the end of that match.
+
+Subsequent matches against the buffer will only operate against data that appears *after* the read cursor.
+
+The read cursor is an opaque implementation detail that you cannot access.  You should use the Say matcher to sift through the buffer.  You can always
+access the entire buffer's contents with Contents().
 
 */
 package gbytes
@@ -13,6 +18,11 @@ import (
 	"time"
 )
 
+/*
+gbytes.Buffer implements an io.Writer and can be used with the gbytes.Say matcher.
+
+You should only use a gbytes.Buffer in test code.  It stores all writes in an in-memory buffer - behavior that is inappropriate for production code!
+*/
 type Buffer struct {
 	contents     []byte
 	readCursor   uint64
@@ -20,12 +30,18 @@ type Buffer struct {
 	detectCloser chan interface{}
 }
 
+/*
+NewBuffer returns a new gbytes.Buffer
+*/
 func NewBuffer() *Buffer {
 	return &Buffer{
 		lock: &sync.Mutex{},
 	}
 }
 
+/*
+Write implements the io.Writer interface
+*/
 func (b *Buffer) Write(p []byte) (n int, err error) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
@@ -34,6 +50,9 @@ func (b *Buffer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+/*
+Contents returns all data ever written to the buffer.
+*/
 func (b *Buffer) Contents() []byte {
 	b.lock.Lock()
 	defer b.lock.Unlock()
@@ -43,6 +62,33 @@ func (b *Buffer) Contents() []byte {
 	return contents
 }
 
+/*
+Detect takes a regular expression and returns a channel.
+
+The channel will receive true the first time data matching the regular expression is written to the buffer.
+The channel is subsequently closed and the buffer's read-cursor is fast-forwarded to just after the matching region.
+
+You typically don't need to use Detect and should use the ghttp.Say matcher instead.  Detect is useful, however, in cases where your code must
+be branch and handle different outputs written to the buffer.
+
+For example, consider a buffer hooked up to the stdout of a client library.  You may (or may not, depending on state outside of your control) need to authenticate the client library.
+
+You could do something like:
+
+select {
+case <-buffer.Detect("You are not logged in"):
+	//log in
+case <-buffer.Detect("Success"):
+	//carry on
+case <-time.After(time.Second):
+	//welp
+}
+buffer.CancelDetects()
+
+You should always call CancelDetects after using Detect.  This will close any channels that have not detected and clean up the goroutines that were spawned to support them.
+
+Finally, you can pass detect a format string followed by variadic arguments.  This will construct the regexp using fmt.Sprintf.
+*/
 func (b *Buffer) Detect(desired string, args ...interface{}) chan bool {
 	formattedRegexp := desired
 	if len(args) > 0 {
@@ -90,6 +136,9 @@ func (b *Buffer) Detect(desired string, args ...interface{}) chan bool {
 	return response
 }
 
+/*
+CancelDetects cancels any pending detects and cleans up their goroutines.  You should always call this when you're done with a set of Detect channels.
+*/
 func (b *Buffer) CancelDetects() {
 	b.lock.Lock()
 	defer b.lock.Unlock()
