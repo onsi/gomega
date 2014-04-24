@@ -89,14 +89,6 @@ var _ = Describe("Session", func() {
 		})
 	})
 
-	Describe("Blocking until the command exits", func() {
-		It("should be possible to do so", func() {
-			Ω(session).ShouldNot(Exit())
-			session.BlockUntilExited()
-			Ω(session).Should(Exit())
-		})
-	})
-
 	Context("when wrapping out and err", func() {
 		BeforeEach(func() {
 			outWriter = &bytes.Buffer{}
