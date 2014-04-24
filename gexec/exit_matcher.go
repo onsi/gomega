@@ -6,6 +6,20 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
+/*
+The Exit matcher operates on a session:
+
+	Ω(session).Should(Exit(<optional status code>))
+
+Exit passes if the session has already exited.
+
+If no status code is provided, then Exit will succeed if the session has exited regardless of exit code.
+Otherwise, Exit will only succeed if the process has exited with the provided status code.
+
+Note that the process must have already exited.  To wait for a process to exit, use Eventually:
+
+	Eventually(session, 3).Should(Exit(0))
+*/
 func Exit(optionalExitCode ...int) *exitMatcher {
 	exitCode := -1
 	if len(optionalExitCode) > 0 {
