@@ -8,6 +8,14 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type speaker struct {
+	buffer *Buffer
+}
+
+func (s *speaker) Buffer() *Buffer {
+	return s.buffer
+}
+
 var _ = Describe("SayMatcher", func() {
 	var buffer *Buffer
 
@@ -16,12 +24,12 @@ var _ = Describe("SayMatcher", func() {
 		buffer.Write([]byte("abc"))
 	})
 
-	Context("when actual is not a gexec Buffer", func() {
+	Context("when actual is not a gexec Buffer, or a speaker", func() {
 		It("should error", func() {
 			failures := interceptFailures(func() {
 				Ω("foo").Should(Say("foo"))
 			})
-			Ω(failures[0]).Should(ContainSubstring("gbytes Buffer"))
+			Ω(failures[0]).Should(ContainSubstring("*gbytes.Buffer"))
 		})
 	})
 
@@ -85,6 +93,19 @@ var _ = Describe("SayMatcher", func() {
 			}()
 			Ω(buffer).ShouldNot(Say("def"))
 			Eventually(buffer).Should(Say("def"))
+		})
+	})
+
+	Context("when actual is a BufferProvider", func() {
+		It("should use actual's buffer", func() {
+			s := &speaker{
+				buffer: NewBuffer(),
+			}
+
+			Ω(s).ShouldNot(Say("abc"))
+
+			s.Buffer().Write([]byte("abc"))
+			Ω(s).Should(Say("abc"))
 		})
 	})
 })

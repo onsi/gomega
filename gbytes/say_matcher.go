@@ -7,6 +7,11 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
+//Objects satisfying the BufferProvider can be used with the Say matcher.
+type BufferProvider interface {
+	Buffer() *Buffer
+}
+
 /*
 Say is a Gomega matcher that operates on gbytes.Buffers:
 
@@ -24,6 +29,9 @@ Say pairs very well with Eventually.  To asser that a buffer eventually receives
 Ditto with consistently.  To assert that a buffer does not receive data matching "never-see-this" for 1 second you can:
 
 	Consistently(buffer, 1).ShouldNot(Say("never-see-this"))
+
+In addition to bytes.Buffers, Say can operate on objects that implement the gbytes.BufferProvider interface.
+In such cases, Say simply operates on the *gbytes.Buffer returned by Buffer()
 */
 func Say(expected string, args ...interface{}) *sayMatcher {
 	formattedRegexp := expected
@@ -41,9 +49,14 @@ type sayMatcher struct {
 }
 
 func (m *sayMatcher) Match(actual interface{}) (success bool, err error) {
-	buffer, ok := actual.(*Buffer)
-	if !ok {
-		return false, fmt.Errorf("Say must be passed a gbytes Buffer.  Got:\n%s", format.Object(actual, 1))
+	var buffer *Buffer
+	switch x := actual.(type) {
+	case *Buffer:
+		buffer = x
+	case BufferProvider:
+		buffer = x.Buffer()
+	default:
+		return false, fmt.Errorf("Say must be passed a *gbytes.Buffer or BufferProvider.  Got:\n%s", format.Object(actual, 1))
 	}
 
 	didSay, sayings := buffer.didSay(m.re)

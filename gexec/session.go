@@ -33,7 +33,12 @@ Start starts the passed-in *exec.Cmd command.  It wraps the command in a *gexec.
 The session pipes the command's stdout and stderr to two *gbytes.Buffers available as properties on the session: session.Out and session.Err.
 These buffers can be used with the gbytes.Say matcher to match against unread output:
 
-	Ω(session.Out).Should(gbytes.Say("foo"))
+	Ω(session.Out).Should(gbytes.Say("foo-out"))
+	Ω(session.Err).Should(gbytes.Say("foo-err"))
+
+In addition, Session satisfies the gbytes.BufferProvider interface and provides the stdout *gbytes.Buffer.  This allows you to replace the first line, above, with:
+
+	Ω(session).Should(gbytes.Say("foo-out"))
 
 When outWriter and/or errWriter are non-nil, the session will pipe stdout and/or stderr output both into the session *gybtes.Buffers and to the passed-in outWriter/errWriter.
 This is useful for capturing the process's output or logging it to screen.  In particular, when using Ginkgo it can be convenient to direct output to the GinkgoWriter:
@@ -79,16 +84,32 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 	return session, err
 }
 
+/*
+Buffer implements the gbytes.BufferProvider interface and returns s.Out
+This allows you to make gbytes.Say matcher assertions against stdout without having to reference .Out:
+
+	Eventually(session).Should(gbytes.Say("foo"))
+*/
+func (s *Session) Buffer() *gbytes.Buffer {
+	return s.Out
+}
+
+/*
+ExitCode returns the wrapped command's exit code.  If the command hasn't exited yet, ExitCode returns -1.
+
+To assert that the command has exited it is more convenient to use the Exit matcher:
+
+	Eventually(s).Should(gexec.Exit())
+*/
+func (s *Session) ExitCode() int {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	return s.exitCode
+}
+
 func (s *Session) monitorForExit() {
 	s.Command.Wait()
 	s.lock.Lock()
 	s.exitCode = s.Command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 	s.lock.Unlock()
-}
-
-func (s *Session) getExitCode() int {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	return s.exitCode
 }

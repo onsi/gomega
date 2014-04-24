@@ -49,6 +49,21 @@ var _ = Describe("Session", func() {
 
 			close(done)
 		})
+
+		It("should satisfy the gbytes.BufferProvider interface, passing Stdout", func() {
+			Eventually(session).Should(Say("We've done the impossible, and that makes us mighty"))
+			Eventually(session).Should(Exit())
+		})
+	})
+
+	Describe("providing the exit code", func() {
+		It("should provide the app's exit code", func() {
+			Ω(session.ExitCode()).Should(Equal(-1))
+
+			Eventually(session).Should(Exit())
+			Ω(session.ExitCode()).Should(BeNumerically(">=", 0))
+			Ω(session.ExitCode()).Should(BeNumerically("<", 3))
+		})
 	})
 
 	Context("when wrapping out and err", func() {

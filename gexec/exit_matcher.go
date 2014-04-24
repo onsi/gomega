@@ -43,7 +43,7 @@ func (m *exitMatcher) Match(actual interface{}) (success bool, err error) {
 		return false, fmt.Errorf("Exit must be passed a gexit session.  Got:\n%s", format.Object(actual, 1))
 	}
 
-	m.actualExitCode = session.getExitCode()
+	m.actualExitCode = session.ExitCode()
 
 	if m.actualExitCode == -1 {
 		return false, nil
