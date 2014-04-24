@@ -32,6 +32,8 @@ Ditto with consistently.  To assert that a buffer does not receive data matching
 
 In addition to bytes.Buffers, Say can operate on objects that implement the gbytes.BufferProvider interface.
 In such cases, Say simply operates on the *gbytes.Buffer returned by Buffer()
+
+If the buffer is closed, the Say matcher will tell Eventually to abort.
 */
 func Say(expected string, args ...interface{}) *sayMatcher {
 	formattedRegexp := expected
@@ -48,14 +50,24 @@ type sayMatcher struct {
 	receivedSayings []byte
 }
 
-func (m *sayMatcher) Match(actual interface{}) (success bool, err error) {
+func (m *sayMatcher) buffer(actual interface{}) (*Buffer, bool) {
 	var buffer *Buffer
+
 	switch x := actual.(type) {
 	case *Buffer:
 		buffer = x
 	case BufferProvider:
 		buffer = x.Buffer()
 	default:
+		return nil, false
+	}
+
+	return buffer, true
+}
+
+func (m *sayMatcher) Match(actual interface{}) (success bool, err error) {
+	buffer, ok := m.buffer(actual)
+	if !ok {
 		return false, fmt.Errorf("Say must be passed a *gbytes.Buffer or BufferProvider.  Got:\n%s", format.Object(actual, 1))
 	}
 
@@ -79,4 +91,12 @@ func (m *sayMatcher) NegatedFailureMessage(actual interface{}) (message string) 
 		format.IndentString(string(m.receivedSayings), 1),
 		format.IndentString(m.re.String(), 1),
 	)
+}
+
+func (m *sayMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
+	buffer, ok := m.buffer(actual)
+	if ok {
+		return !buffer.Closed()
+	}
+	return true
 }

@@ -12,6 +12,7 @@ access the entire buffer's contents with Contents().
 package gbytes
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"sync"
@@ -28,6 +29,7 @@ type Buffer struct {
 	readCursor   uint64
 	lock         *sync.Mutex
 	detectCloser chan interface{}
+	closed       bool
 }
 
 /*
@@ -46,8 +48,34 @@ func (b *Buffer) Write(p []byte) (n int, err error) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 
+	if b.closed {
+		return 0, errors.New("attempt to write to closed buffer")
+	}
+
 	b.contents = append(b.contents, p...)
 	return len(p), nil
+}
+
+/*
+Close signifies that the buffer will no longer be written to
+*/
+func (b *Buffer) Close() error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	b.closed = true
+
+	return nil
+}
+
+/*
+Closed returns true if the buffer has been closed
+*/
+func (b *Buffer) Closed() bool {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	return b.closed
 }
 
 /*

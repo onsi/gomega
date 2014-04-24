@@ -57,10 +57,14 @@ func (actual *asyncActual) buildDescription(optionalDescription ...interface{}) 
 		return fmt.Sprintf(optionalDescription[0].(string), optionalDescription[1:]...) + "\n"
 	}
 }
-func (actual *asyncActual) pollActual() (interface{}, error) {
-	actualType := reflect.TypeOf(actual.actualInput)
 
-	if actualType.Kind() == reflect.Func && actualType.NumIn() == 0 && actualType.NumOut() > 0 {
+func (actual *asyncActual) actualInputIsAFunction() bool {
+	actualType := reflect.TypeOf(actual.actualInput)
+	return actualType.Kind() == reflect.Func && actualType.NumIn() == 0 && actualType.NumOut() > 0
+}
+
+func (actual *asyncActual) pollActual() (interface{}, error) {
+	if actual.actualInputIsAFunction() {
 		values := reflect.ValueOf(actual.actualInput).Call([]reflect.Value{})
 
 		extras := []interface{}{}
@@ -80,6 +84,23 @@ func (actual *asyncActual) pollActual() (interface{}, error) {
 	return actual.actualInput, nil
 }
 
+type oracleMatcher interface {
+	MatchMayChangeInTheFuture(actual interface{}) bool
+}
+
+func (actual *asyncActual) matcherMayChange(matcher OmegaMatcher, value interface{}) bool {
+	if actual.actualInputIsAFunction() {
+		return true
+	}
+
+	oracleMatcher, ok := matcher.(oracleMatcher)
+	if !ok {
+		return true
+	}
+
+	return oracleMatcher.MatchMayChangeInTheFuture(value)
+}
+
 func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, optionalDescription ...interface{}) bool {
 	timer := time.Now()
 	timeout := time.After(actual.timeoutInterval)
@@ -88,8 +109,10 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 
 	var matches bool
 	var err error
+	mayChange := true
 	value, err := actual.pollActual()
 	if err == nil {
+		mayChange = actual.matcherMayChange(matcher, value)
 		matches, err = matcher.Match(value)
 	}
 
@@ -114,10 +137,16 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 				return true
 			}
 
+			if !mayChange {
+				fail("No future change is possible.  Bailing out early")
+				return false
+			}
+
 			select {
 			case <-time.After(actual.pollingInterval):
 				value, err = actual.pollActual()
 				if err == nil {
+					mayChange = actual.matcherMayChange(matcher, value)
 					matches, err = matcher.Match(value)
 				}
 			case <-timeout:
@@ -132,10 +161,15 @@ func (actual *asyncActual) match(matcher OmegaMatcher, desiredMatch bool, option
 				return false
 			}
 
+			if !mayChange {
+				return true
+			}
+
 			select {
 			case <-time.After(actual.pollingInterval):
 				value, err = actual.pollActual()
 				if err == nil {
+					mayChange = actual.matcherMayChange(matcher, value)
 					matches, err = matcher.Match(value)
 				}
 			case <-timeout:

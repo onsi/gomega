@@ -25,6 +25,7 @@ type Session struct {
 
 	lock     *sync.Mutex
 	exitCode int
+	exited   chan interface{}
 }
 
 /*
@@ -51,6 +52,9 @@ The session wrapper is responsible for waiting on the *exec.Cmd command.  You *s
 Instead, to assert that the command has exited you can use the gexec.Exit matcher:
 
 	Ω(session).Should(gexec.Exit())
+
+When the session exits it closes the stdout and stderr gbytes buffers.  This will short circuit any
+Eventuallys waiting fo the buffers to Say something.
 */
 func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Session, error) {
 	session := &Session{
@@ -58,6 +62,7 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 		Out:      gbytes.NewBuffer(),
 		Err:      gbytes.NewBuffer(),
 		lock:     &sync.Mutex{},
+		exited:   make(chan interface{}),
 		exitCode: -1,
 	}
 
@@ -107,9 +112,25 @@ func (s *Session) ExitCode() int {
 	return s.exitCode
 }
 
+/*
+BlockUntilExited will block until the command exits
+
+In general you should use:
+
+	Eventually(s).Should(gexec.Exit())
+
+instead
+*/
+func (s *Session) BlockUntilExited() {
+	<-s.exited
+}
+
 func (s *Session) monitorForExit() {
 	s.Command.Wait()
 	s.lock.Lock()
 	s.exitCode = s.Command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+	s.Out.Close()
+	s.Err.Close()
+	close(s.exited)
 	s.lock.Unlock()
 }
