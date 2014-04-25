@@ -74,3 +74,11 @@ func (m *exitMatcher) NegatedFailureMessage(actual interface{}) (message string)
 		}
 	}
 }
+
+func (m *exitMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
+	session, ok := actual.(*Session)
+	if ok {
+		return session.ExitCode() == -1
+	}
+	return true
+}
