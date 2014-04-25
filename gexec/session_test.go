@@ -67,6 +67,14 @@ var _ = Describe("Session", func() {
 		})
 	})
 
+	Describe("wait", func() {
+		It("should wait till the command exits", func() {
+			Ω(session.ExitCode()).Should(Equal(-1))
+			Ω(session.Wait().ExitCode()).Should(BeNumerically(">=", 0))
+			Ω(session.Wait().ExitCode()).Should(BeNumerically("<", 3))
+		})
+	})
+
 	Context("when the command exits", func() {
 		It("should close the buffers", func() {
 			Eventually(session).Should(Exit())

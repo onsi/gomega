@@ -10,6 +10,7 @@ import (
 	"sync"
 	"syscall"
 
+	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 )
 
@@ -108,6 +109,23 @@ func (s *Session) ExitCode() int {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return s.exitCode
+}
+
+/*
+Wait waits until the wrapped command exits.  It can be passed an optional timeout.
+If the command does not exit within the timeout, Wait will trigger a test failure.
+
+Wait returns the session, making it possible to chain:
+
+	session.Wait().Out.Contents()
+
+will return the entirety of Out's contents.
+
+Wait uses eventually under the hood and accepts the same timeout/polling intervals that eventually does.
+*/
+func (s *Session) Wait(timeout ...float64) *Session {
+	Eventually(s, timeout...).Should(Exit())
+	return s
 }
 
 func (s *Session) monitorForExit() {
