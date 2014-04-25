@@ -1,8 +1,8 @@
 package gbytes_test
 
 import (
-	"time"
 	. "github.com/onsi/gomega/gbytes"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

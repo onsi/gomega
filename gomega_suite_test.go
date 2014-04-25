@@ -35,3 +35,13 @@ func (matcher *fakeMatcher) FailureMessage(actual interface{}) string {
 func (matcher *fakeMatcher) NegatedFailureMessage(actual interface{}) string {
 	return fmt.Sprintf("negative: %v", actual)
 }
+
+func interceptFailures(f func()) []string {
+	failures := []string{}
+	RegisterFailHandler(func(message string, callerSkip ...int) {
+		failures = append(failures, message)
+	})
+	f()
+	RegisterFailHandler(Fail)
+	return failures
+}

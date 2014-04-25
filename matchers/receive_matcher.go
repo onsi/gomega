@@ -2,13 +2,15 @@ package matchers
 
 import (
 	"fmt"
-	"github.com/onsi/gomega/format"
 	"reflect"
+
+	"github.com/onsi/gomega/format"
 )
 
 type ReceiveMatcher struct {
 	Arg           interface{}
 	receivedValue interface{}
+	channelClosed bool
 }
 
 func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, err error) {
@@ -52,6 +54,7 @@ func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, err erro
 		closed = !open
 		didReceive = open
 	}
+	matcher.channelClosed = closed
 
 	if closed {
 		return false, fmt.Errorf("ReceiveMatcher was given a closed channel:\n%s", format.Object(actual, 1))
@@ -96,4 +99,12 @@ func (matcher *ReceiveMatcher) NegatedFailureMessage(actual interface{}) (messag
 	} else {
 		return format.Message(actual, "not to receive anything")
 	}
+}
+
+func (matcher *ReceiveMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
+	if !isChan(actual) {
+		return false
+	}
+
+	return !matcher.channelClosed
 }

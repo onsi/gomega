@@ -241,4 +241,27 @@ var _ = Describe("ReceiveMatcher", func() {
 			Ω(err).Should(HaveOccurred())
 		})
 	})
+
+	Describe("Bailing early", func() {
+		It("should bail early when passed a closed channel", func() {
+			c := make(chan bool)
+			close(c)
+
+			t := time.Now()
+			failures := interceptFailures(func() {
+				Eventually(c).Should(Receive())
+			})
+			Ω(time.Since(t)).Should(BeNumerically("<", 500*time.Millisecond))
+			Ω(failures).Should(HaveLen(1))
+		})
+
+		It("should bail early when passed a non-channel", func() {
+			t := time.Now()
+			failures := interceptFailures(func() {
+				Eventually(3).Should(Receive())
+			})
+			Ω(time.Since(t)).Should(BeNumerically("<", 500*time.Millisecond))
+			Ω(failures).Should(HaveLen(1))
+		})
+	})
 })

@@ -27,3 +27,13 @@ func Test(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Gomega")
 }
+
+func interceptFailures(f func()) []string {
+	failures := []string{}
+	RegisterFailHandler(func(message string, callerSkip ...int) {
+		failures = append(failures, message)
+	})
+	f()
+	RegisterFailHandler(Fail)
+	return failures
+}
