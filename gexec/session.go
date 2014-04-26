@@ -119,7 +119,7 @@ Wait returns the session, making it possible to chain:
 
 	session.Wait().Out.Contents()
 
-will return the entirety of Out's contents.
+will wait for the command to exit then return the entirety of Out's contents.
 
 Wait uses eventually under the hood and accepts the same timeout/polling intervals that eventually does.
 */

@@ -2,10 +2,10 @@ package format_test
 
 import (
 	"fmt"
+	"strings"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
-	"strings"
 )
 
 //recursive struct
@@ -145,7 +145,7 @@ var _ = Describe("Format", func() {
 		Describe("formatting []byte slices", func() {
 			It("should present them as strings", func() {
 				b := []byte("a\nb\nc")
-				Ω(Object(b, 1)).Should(match("[]uint8 | len:5, cap:8", `a
+				Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a
     b
     c`))
 			})
@@ -296,7 +296,7 @@ var _ = Describe("Format", func() {
 		Describe("formatting aliased types", func() {
 			It("should print out the correct alias type", func() {
 				Ω(Object(StringAlias("alias"), 1)).Should(match("format_test.StringAlias", `alias`))
-				Ω(Object(ByteAlias("alias"), 1)).Should(match("format_test.ByteAlias | len:5, cap:8", `alias`))
+				Ω(Object(ByteAlias("alias"), 1)).Should(matchRegexp(`format_test\.ByteAlias \| len:5, cap:\d+`, `alias`))
 				Ω(Object(IntAlias(3), 1)).Should(match("format_test.IntAlias", "3"))
 			})
 		})
