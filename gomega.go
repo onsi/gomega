@@ -105,7 +105,8 @@ func ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) Actu
 //The first optional argument is the timeout
 //The second optional argument is the polling interval
 //
-//Both intervals can either be specified as time.Duration or as floats/integers.  In the latter case they are interpreted as seconds.
+//Both intervals can either be specified as time.Duration, parsable duration strings or as floats/integers.  In the
+//last case they are interpreted as seconds.
 //
 //If Eventually is passed an actual that is a function taking no arguments and returning at least one value,
 //then Eventually will call the function periodically and try the matcher against the function's first return value.
@@ -159,7 +160,8 @@ func EventuallyWithOffset(offset int, actual interface{}, intervals ...interface
 //The first optional argument is the duration that Consistently will run for
 //The second optional argument is the polling interval
 //
-//Both intervals can either be specified as time.Duration or as floats/integers.  In the latter case they are interpreted as seconds.
+//Both intervals can either be specified as time.Duration, parsable duration strings or as floats/integers.  In the
+//last case they are interpreted as seconds.
 //
 //If Consistently is passed an actual that is a function taking no arguments and returning at least one value,
 //then Consistently will call the function periodically and try the matcher against the function's first return value.
