@@ -265,7 +265,13 @@ func toDuration(input interface{}) time.Duration {
 		return time.Duration(value.Uint()) * time.Second
 	} else if reflect.Float32 <= kind && kind <= reflect.Float64 {
 		return time.Duration(value.Float() * float64(time.Second))
+	} else if reflect.String == kind {
+		duration, err := time.ParseDuration(value.String())
+		if err != nil {
+			panic(fmt.Sprintf("%#v is not a valid parsable duration string.", input))
+		}
+		return duration
 	}
 
-	panic(fmt.Sprintf("%v is not a valid interval.  Must be time.Duration or a number.", input))
+	panic(fmt.Sprintf("%v is not a valid interval.  Must be time.Duration, parsable duration string or a number.", input))
 }
