@@ -2,8 +2,8 @@ package gomega
 
 import (
 	"errors"
-	. "github.com/onsi/ginkgo"
 	"time"
+	. "github.com/onsi/ginkgo"
 )
 
 func init() {
