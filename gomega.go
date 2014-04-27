@@ -25,17 +25,10 @@ var globalFailHandler OmegaFailHandler
 
 type OmegaFailHandler func(message string, callerSkip ...int)
 
-//The default timeout duration for Eventually.  Eventually will repeatedly poll your condition until it succeeds, or until this timeout elapses.
-var DefaultEventuallyTimeout = time.Second
-
-//The default polling interval for Eventually.
-var DefaultEventuallyPollingInterval = 10 * time.Millisecond
-
-//The default duration for Consistently.  Consistently will verify that your condition is satsified for this long.
-var DefaultConsistentlyDuration = 100 * time.Millisecond
-
-//The default polling interval for Consistently.
-var DefaultConsistentlyPollingInterval = 10 * time.Millisecond
+var defaultEventuallyTimeout = time.Second
+var defaultEventuallyPollingInterval = 10 * time.Millisecond
+var defaultConsistentlyDuration = 100 * time.Millisecond
+var defaultConsistentlyPollingInterval = 10 * time.Millisecond
 
 //RegisterFailHandler connects Ginkgo to Gomega.  When a matcher fails
 //the fail handler passed into RegisterFailHandler is called.
@@ -142,8 +135,8 @@ func Eventually(actual interface{}, intervals ...interface{}) AsyncActual {
 //initial argument to indicate an offset in the call stack.  This is useful when building helper
 //functions that contain matchers.  To learn more, read about `ExpectWithOffset`.
 func EventuallyWithOffset(offset int, actual interface{}, intervals ...interface{}) AsyncActual {
-	timeoutInterval := DefaultEventuallyTimeout
-	pollingInterval := DefaultEventuallyPollingInterval
+	timeoutInterval := defaultEventuallyTimeout
+	pollingInterval := defaultEventuallyPollingInterval
 	if len(intervals) > 0 {
 		timeoutInterval = toDuration(intervals[0])
 	}
@@ -184,8 +177,8 @@ func Consistently(actual interface{}, intervals ...interface{}) AsyncActual {
 //initial argument to indicate an offset in the call stack.  This is useful when building helper
 //functions that contain matchers.  To learn more, read about `ExpectWithOffset`.
 func ConsistentlyWithOffset(offset int, actual interface{}, intervals ...interface{}) AsyncActual {
-	timeoutInterval := DefaultConsistentlyDuration
-	pollingInterval := DefaultConsistentlyPollingInterval
+	timeoutInterval := defaultConsistentlyDuration
+	pollingInterval := defaultConsistentlyPollingInterval
 	if len(intervals) > 0 {
 		timeoutInterval = toDuration(intervals[0])
 	}
@@ -193,6 +186,26 @@ func ConsistentlyWithOffset(offset int, actual interface{}, intervals ...interfa
 		pollingInterval = toDuration(intervals[1])
 	}
 	return newAsyncActual(asyncActualTypeConsistently, actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
+}
+
+//Set the default timeout duration for Eventually.  Eventually will repeatedly poll your condition until it succeeds, or until this timeout elapses.
+func SetDefaultEventuallyTimeout(t time.Duration) {
+	defaultEventuallyTimeout = t
+}
+
+//Set the default polling interval for Eventually.
+func SetDefaultEventuallyPollingInterval(t time.Duration) {
+	defaultEventuallyPollingInterval = t
+}
+
+//Set the default duration for Consistently.  Consistently will verify that your condition is satsified for this long.
+func SetDefaultConsistentlyDuration(t time.Duration) {
+	defaultConsistentlyDuration = t
+}
+
+//Set the default polling interval for Consistently.
+func SetDefaultConsistentlyPollingInterval(t time.Duration) {
+	defaultConsistentlyPollingInterval = t
 }
 
 //AsyncActual is returned by Eventually and Consistently and polls the actual value passed into Eventually against
