@@ -132,7 +132,7 @@ func (s *Session) Wait(timeout ...interface{}) *Session {
 }
 
 /*
-Kill sends the running command a Kill signal and waits for it to exit.
+Kill sends the running command a SIGKILL signal and waits for it to exit.
 
 If the command has already exited, Kill returns silently.
 */
@@ -145,15 +145,33 @@ func (s *Session) Kill(timeout ...interface{}) {
 }
 
 /*
-Interrupt sends the running command an interrupt signal.  It does not wait for the process to exit
+Interrupt sends the running command a SIGINT signal.  It does not wait for the process to exit
 
 If the command has already exited, Interrupt returns silently.
 */
 func (s *Session) Interrupt() {
+	s.Signal(syscall.SIGINT)
+}
+
+/*
+Terminate sends the running command a SIGTERM signal.  It does not wait for the process to exit
+
+If the command has already exited, Terminate returns silently.
+*/
+func (s *Session) Terminate() {
+	s.Signal(syscall.SIGTERM)
+}
+
+/*
+Terminate sends the running command the passed in signal.  It does not wait for the process to exit
+
+If the command has already exited, Signal returns silently.
+*/
+func (s *Session) Signal(signal os.Signal) {
 	if s.ExitCode() != -1 {
 		return
 	}
-	s.Command.Process.Signal(os.Interrupt)
+	s.Command.Process.Signal(signal)
 }
 
 func (s *Session) monitorForExit() {
