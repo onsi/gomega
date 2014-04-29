@@ -14,6 +14,8 @@ import (
 	"github.com/onsi/gomega/gbytes"
 )
 
+const INVALID_EXIT_CODE = 254
+
 type Session struct {
 	//The wrapped command
 	Command *exec.Cmd
@@ -128,11 +130,29 @@ func (s *Session) Wait(timeout ...interface{}) *Session {
 	return s
 }
 
+/*
+Kill sends the running command a Kill signal and waits for it to exit.
+
+If the command has already exited, Kill returns silently.
+*/
+func (s *Session) Kill(timeout ...interface{}) {
+	if s.ExitCode() != -1 {
+		return
+	}
+	s.Command.Process.Kill()
+	s.Wait(timeout...)
+}
+
 func (s *Session) monitorForExit() {
-	s.Command.Wait()
+	err := s.Command.Wait()
 	s.lock.Lock()
 	s.exitCode = s.Command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 	s.Out.Close()
 	s.Err.Close()
+	if s.exitCode == -1 && err != nil {
+		//The process has exited, but probably received a signal.
+		//This returns an error to s.Command.Wait, but s.Command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() returns -1
+		s.exitCode = INVALID_EXIT_CODE
+	}
 	s.lock.Unlock()
 }
