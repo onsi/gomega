@@ -135,43 +135,53 @@ func (s *Session) Wait(timeout ...interface{}) *Session {
 Kill sends the running command a SIGKILL signal and waits for it to exit.
 
 If the command has already exited, Kill returns silently.
+
+The session is returned to enable chaining.
 */
-func (s *Session) Kill(timeout ...interface{}) {
+func (s *Session) Kill(timeout ...interface{}) *Session {
 	if s.ExitCode() != -1 {
-		return
+		return s
 	}
 	s.Command.Process.Kill()
 	s.Wait(timeout...)
+	return s
 }
 
 /*
 Interrupt sends the running command a SIGINT signal.  It does not wait for the process to exit
 
 If the command has already exited, Interrupt returns silently.
+
+The session is returned to enable chaining.
 */
-func (s *Session) Interrupt() {
-	s.Signal(syscall.SIGINT)
+func (s *Session) Interrupt() *Session {
+	return s.Signal(syscall.SIGINT)
 }
 
 /*
 Terminate sends the running command a SIGTERM signal.  It does not wait for the process to exit
 
 If the command has already exited, Terminate returns silently.
+
+The session is returned to enable chaining.
 */
-func (s *Session) Terminate() {
-	s.Signal(syscall.SIGTERM)
+func (s *Session) Terminate() *Session {
+	return s.Signal(syscall.SIGTERM)
 }
 
 /*
 Terminate sends the running command the passed in signal.  It does not wait for the process to exit
 
 If the command has already exited, Signal returns silently.
+
+The session is returned to enable chaining.
 */
-func (s *Session) Signal(signal os.Signal) {
+func (s *Session) Signal(signal os.Signal) *Session {
 	if s.ExitCode() != -1 {
-		return
+		return s
 	}
 	s.Command.Process.Signal(signal)
+	return s
 }
 
 func (s *Session) monitorForExit() {
