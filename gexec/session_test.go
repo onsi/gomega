@@ -85,6 +85,17 @@ var _ = Describe("Session", func() {
 		})
 	})
 
+	Describe("interrupt", func() {
+		It("should interrupt the command", func() {
+			session, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			session.Interrupt()
+			Ω(session).ShouldNot(Exit(), "Should not exit immediately...")
+			Eventually(session).Should(Exit(INVALID_EXIT_CODE), "Go handles processes the exit with signals in a weird way.  It doesn't return a valid status code!")
+		})
+	})
+
 	Context("when the command exits", func() {
 		It("should close the buffers", func() {
 			Eventually(session).Should(Exit())

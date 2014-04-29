@@ -5,6 +5,7 @@ package gexec
 
 import (
 	"io"
+	"os"
 	"os/exec"
 	"reflect"
 	"sync"
@@ -141,6 +142,18 @@ func (s *Session) Kill(timeout ...interface{}) {
 	}
 	s.Command.Process.Kill()
 	s.Wait(timeout...)
+}
+
+/*
+Interrupt sends the running command an interrupt signal.  It does not wait for the process to exit
+
+If the command has already exited, Interrupt returns silently.
+*/
+func (s *Session) Interrupt() {
+	if s.ExitCode() != -1 {
+		return
+	}
+	s.Command.Process.Signal(os.Interrupt)
 }
 
 func (s *Session) monitorForExit() {
