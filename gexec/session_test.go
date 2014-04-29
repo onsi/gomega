@@ -82,7 +82,8 @@ var _ = Describe("Session", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 
 			session.Kill()
-			Ω(session).Should(Exit(INVALID_EXIT_CODE), "Go handles processes the exit with signals in a weird way.  It doesn't return a valid status code!")
+			Ω(session).ShouldNot(Exit(), "Should not exit immediately...")
+			Eventually(session).Should(Exit(INVALID_EXIT_CODE), "Go handles processes the exit with signals in a weird way.  It doesn't return a valid status code!")
 		})
 	})
 
