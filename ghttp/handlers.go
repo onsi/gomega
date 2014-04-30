@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"net/http"
+	. "github.com/onsi/gomega"
 )
 
 //CombineHandler takes variadic list of handlers and produces one handler
@@ -108,7 +108,9 @@ func RespondWith(statusCode int, body string) http.HandlerFunc {
 func RespondWithPtr(statusCode *int, body *string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(*statusCode)
-		w.Write([]byte(*body))
+		if body != nil {
+			w.Write([]byte(*body))
+		}
 	}
 }
 

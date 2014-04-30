@@ -105,11 +105,11 @@ Here's a simple example, note that the server handler is only defined in one Bef
 package ghttp
 
 import (
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sync"
+	. "github.com/onsi/gomega"
 )
 
 func new() *Server {
