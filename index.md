@@ -157,11 +157,13 @@ For example:
 
 `Eventually` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
 
-The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing in float64s (in seconds) just after your function:
+The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing them in just after your function:
 
     Eventually(func() []int {
         return thing.SliceImMonitoring
-    }, TIMEOUT_IN_SECONDS, POLLING_INTERVAL_IN_SECONDS).Should(HaveLen(2))
+    }, TIMEOUT, POLLING_INTERVAL).Should(HaveLen(2))
+
+These can be passed in as `time.Duration`s, string representations of a `time.Duration` (e.g. `"2s"`) or `float64` values (in which case they are interpreted as seconds).
 
 `Eventually` is especially handy when writing integration tests against asynchronous services or components:
 
@@ -179,7 +181,13 @@ If the argument to `Eventually` is *not* a function, `Eventually` will simply ru
     Eventually(channel).Should(BeClosed())
     Eventually(channel).Should(Receive())
 
-> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) then Go may (or may not) change the pointer address of the slice.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
+This also pairs well with `gexec`'s `Session` command wrappers nad `gbyte`'s `Buffer`s:
+
+    Eventually(session).Should(gexec.Exit(0)) //the wrapped command should exit with status 0, eventually
+    Eventually(buffer).Should(Say("something matching this regexp"))
+    Eventually(session.Out).Should(Say("Splines reticulated"))
+
+> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
 
 ###Consistently
@@ -192,12 +200,14 @@ For example:
         return thing.MemoryUsage()
     }).Should(BeNumerically("<", 10))
 
-`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing in float64s (in seconds) just after your function:
+`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
 
 
     Consistently(func() []int {
         return thing.MemoryUsage()
-    }, DURATION_IN_SECONDS, POLLING_INTERVAL_IN_SECONDS).Should(BeNumerically("<", 10))
+    }, DURATION, POLLING_INTERVAL).Should(BeNumerically("<", 10))
+
+As with `Eventually`, these can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
 
 `Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can asser that:
 
@@ -208,6 +218,15 @@ To assert that nothing gets sent to a channel.
 As with `Eventually`, if you pass `Consistently` a function that returns more than one value, it will pass the first value to the matcher and assert that all other values are `nil` or zero-valued.
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests....  Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
+
+###Modifying Default Intervals
+
+By default, `Eventually` will poll every 10 milliseconds for up to 1 second and `Consistently` will monitor every 10 milliseconds for up to 100 milliseconds.  You can modify these defaults across your test suite with:
+
+    SetDefaultEventuallyTimeout(t time.Duration)
+    SetDefaultEventuallyPollingInterval(t time.Duration)
+    SetDefaultConsistentlyDuration(t time.Duration)
+    SetDefaultConsistentlyPollingInterval(t time.Duration)
 
 ---
 
