@@ -680,6 +680,32 @@ You might testdrive this matcher while writing it using Ginkgo.  Your test might
 
 This also offers an example of what using the matcher would look like in your tests.  Note that testing the cases when the matcher returns an error involves creating the matcher and invoking `Match` manually (instead of using an `Ω` or `Expect` assertion).
 
+### Aborting Eventually/Consistently
+
+There are sometimes instances where a `Eventually` and `Consistently` should stop polling a matcher because the result of the match simply cannot change.
+
+For example, consider a test that looks like:
+    
+    Eventually(myChannel).Should(Receive(Equal("bar")))
+
+`Eventually` will repeatedly invoke the `Receive` matcher against `myChannel` until the match succeeds.  However, if the channel becomes *closed* there is *no way* for the match to ever succeed.  Allowing `Eventually` to conitnue polling is inefficient and slows the test suite down.
+
+To get around this, a matcher can optionally implement:
+
+    MatchMayChangeInTheFuture(actual interface{}) bool
+
+This is not part of the `OmegaMatcher` interface and, in general, most matchers do not need to implement `MatchMayChangeInTheFuture`.
+
+If implemented, however, `MatchMayChangeInTheFuture` will be called with the appropriate `actual` value by `Eventually` and `Consistently` *after* the call to `Match` during every polling interval.  If `MatchMayChangeInTheFuture` returns `true`, `Eventually` and `Consistently` will continue polling.  If, however, `MatchMayChangeInTheFuture` returns `false`, `Eventually` and `Consistently` will abort and either fail or pass as appropriate.
+
+If you'd like to look at a simple example `MatchMayChangeInTheFuture` check out [`gexec`'s `Exit` matcher](https://github.com/onsi/gomega/tree/master/gexec/exit_matcher.go).  Here, `MatchMayChangeInTheFuture` returns true if the `gexec.Session` under test has not exited yet, but returns false if it has.  Because of this, if a process exits with status code 3, but an assertion is made of the form:
+
+    Eventually(session, 30).Should(gexec.Exit(0))
+
+`Eventually` will not block for 30 seconds but will return (and fail, correctly) as soon as the mismatched exit code arrives!
+
+> Note: `Eventually` and `Consistently` only excercise the `MatchMayChangeInTheFuture` method *if* they are passed a bare value.  If they are passed functions to be polled it is not possible to guarantee that the return value of the function will not change between polling intervals.  In this case, `MatchMayChangeInTheFuture` is not called and the polling continues until either a match is found or the timeout elapses.
+
 ### Contibuting to Gomega
 
 Contributions are more than welcome.  Either [open an issue](http://github.com/onsi/gomega/issues) for a matcher you'd like to see or, better yet, test drive the matcher and [send a pull request](https://github.com/onsi/gomega/pulls).
