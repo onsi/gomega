@@ -383,7 +383,7 @@ If you have a go-routine running in the background that will write to channel `c
         c <- true
     }()
 
-you can assert that `c` receives something eventually:
+you can assert that `c` receives something (anything!) eventually:
 
     Eventually(c).Should(Receive())
 
@@ -393,12 +393,20 @@ A similar use-case is to assert that no go-routine writes to a channel (for a pe
 
     Consistently(c).ShouldNot(Receive())
 
-Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the `Receive` matcher for the value passed
-to the channel by passing it a pointer to a variable of the appropriate type:
+`Receive` also allows you to make assertions on the received object.  You do this by passing `Receive` a matcher:
 
-    var receivedString string
-    Eventually(stringChan).Should(Receive(&receivedString))
-    Ω(receivedString).Shoudl(Equal("foo"))
+    Eventually(c).Should(Receive(Equal("foo")))
+
+This assertion will only succeed if `c` receives an object *and* that object satisfies `Equal("foo")`.  Note that `Eventually` will continually poll `c` until this condition is met.  If there are objects coming down the channel that do not satisfy the passed in matcher, they will be pulled off and discarded until an object that *does* satisfy the matcher is received.
+
+Finally, there are occasions when you need to grab the object sent down the channel (e.g. to make several assertions against hte object).  To do this, you can ask the `Receive` matcher for the value passed to the channel by passing it a pointer to a variable of the appropriate type:
+
+    var receivedBagel Bagel
+    Eventually(bagelChan).Should(Receive(&receivedBagel))
+    Ω(receivedBagel.Contents()).Should(ContainElement("cream cheese"))
+    Ω(receivedBagel.Kind()).Should(Equal("sesame"))
+
+Of course, this could have been written as `receivedBagel := <-bagelChan` - however using `Receive` makes it easy to avoid hanging the test suite should nothing ever come down the channel.
 
 ### BeEmpty()
 
