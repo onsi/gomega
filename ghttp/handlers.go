@@ -93,9 +93,18 @@ func VerifyJSONRepresenting(object interface{}) http.HandlerFunc {
 	)
 }
 
+func copyHeader(src http.Header, dst http.Header) {
+	for key, value := range src {
+		dst[key] = value
+	}
+}
+
 //RespondWith returns a handler that responds to a request with the specified status code and body
-func RespondWith(statusCode int, body string) http.HandlerFunc {
+func RespondWith(statusCode int, body string, optionalHeader ...http.Header) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		if len(optionalHeader) == 1 {
+			copyHeader(optionalHeader[0], w.Header())
+		}
 		w.WriteHeader(statusCode)
 		w.Write([]byte(body))
 	}
@@ -105,8 +114,11 @@ func RespondWith(statusCode int, body string) http.HandlerFunc {
 //
 //Unlike RespondWith, you pass RepondWithPtr a pointer to the status code and body allowing different tests
 //to share the same setup but specify different status codes and bodies.
-func RespondWithPtr(statusCode *int, body *string) http.HandlerFunc {
+func RespondWithPtr(statusCode *int, body *string, optionalHeader ...http.Header) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		if len(optionalHeader) == 1 {
+			copyHeader(optionalHeader[0], w.Header())
+		}
 		w.WriteHeader(*statusCode)
 		if body != nil {
 			w.Write([]byte(*body))
@@ -116,10 +128,10 @@ func RespondWithPtr(statusCode *int, body *string) http.HandlerFunc {
 
 //RespondWithJSONEncoded returns a handler that responds to a request with the specified status code and a body
 //containing the JSON-encoding of the passed in object
-func RespondWithJSONEncoded(statusCode int, object interface{}) http.HandlerFunc {
+func RespondWithJSONEncoded(statusCode int, object interface{}, optionalHeader ...http.Header) http.HandlerFunc {
 	data, err := json.Marshal(object)
 	Ω(err).ShouldNot(HaveOccurred())
-	return RespondWith(statusCode, string(data))
+	return RespondWith(statusCode, string(data), optionalHeader...)
 }
 
 //RespondWithJSONEncodedPtr behaves like RespondWithJSONEncoded but takes a pointer
@@ -127,10 +139,13 @@ func RespondWithJSONEncoded(statusCode int, object interface{}) http.HandlerFunc
 //
 //This allows different tests to share the same setup but specify different status codes and JSON-encoded
 //objects.
-func RespondWithJSONEncodedPtr(statusCode *int, object *interface{}) http.HandlerFunc {
+func RespondWithJSONEncodedPtr(statusCode *int, object *interface{}, optionalHeader ...http.Header) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		data, err := json.Marshal(*object)
 		Ω(err).ShouldNot(HaveOccurred())
+		if len(optionalHeader) == 1 {
+			copyHeader(optionalHeader[0], w.Header())
+		}
 		w.WriteHeader(*statusCode)
 		w.Write(data)
 	}
