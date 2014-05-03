@@ -315,6 +315,9 @@ var _ = Describe("TestServer", func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/foo"),
 						RespondWith(http.StatusCreated, "sweet"),
+					), CombineHandlers(
+						VerifyRequest("POST", "/foo"),
+						RespondWith(http.StatusOK, []byte("sour")),
 					))
 				})
 
@@ -327,6 +330,15 @@ var _ = Describe("TestServer", func() {
 					body, err := ioutil.ReadAll(resp.Body)
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(body).Should(Equal([]byte("sweet")))
+
+					resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(resp.StatusCode).Should(Equal(http.StatusOK))
+
+					body, err = ioutil.ReadAll(resp.Body)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(body).Should(Equal([]byte("sour")))
 				})
 			})
 
@@ -351,20 +363,27 @@ var _ = Describe("TestServer", func() {
 
 		Describe("RespondWithPtr", func() {
 			var code int
-			var body string
+			var byteBody []byte
+			var stringBody string
 			BeforeEach(func() {
 				code = http.StatusOK
-				body = "sweet"
+				byteBody = []byte("sweet")
+				stringBody = "sour"
 
 				s.AppendHandlers(CombineHandlers(
 					VerifyRequest("POST", "/foo"),
-					RespondWithPtr(&code, &body),
+					RespondWithPtr(&code, &byteBody),
+				), CombineHandlers(
+					VerifyRequest("POST", "/foo"),
+					RespondWithPtr(&code, &stringBody),
 				))
 			})
 
 			It("should return the response", func() {
 				code = http.StatusCreated
-				body = "tasty"
+				byteBody = []byte("tasty")
+				stringBody = "treat"
+
 				resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
 				Ω(err).ShouldNot(HaveOccurred())
 
@@ -373,6 +392,15 @@ var _ = Describe("TestServer", func() {
 				body, err := ioutil.ReadAll(resp.Body)
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(body).Should(Equal([]byte("tasty")))
+
+				resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(resp.StatusCode).Should(Equal(http.StatusCreated))
+
+				body, err = ioutil.ReadAll(resp.Body)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(body).Should(Equal([]byte("treat")))
 			})
 
 			Context("when passed a nil body", func() {
