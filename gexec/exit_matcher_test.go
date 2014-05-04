@@ -1,9 +1,9 @@
 package gexec_test
 
 import (
-	. "github.com/onsi/gomega/gexec"
 	"os/exec"
 	"time"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,7 +23,7 @@ var _ = Describe("ExitMatcher", func() {
 	Describe("when passed something that is not a session", func() {
 		It("should error", func() {
 			failures := interceptFailures(func() {
-				Ω(command).Should(Exit())
+				Ω("aardvark").Should(Exit())
 			})
 
 			Ω(failures[0]).Should(ContainSubstring("Exit must be passed a gexit session"))
