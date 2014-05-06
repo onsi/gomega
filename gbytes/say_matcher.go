@@ -94,9 +94,12 @@ func (m *sayMatcher) NegatedFailureMessage(actual interface{}) (message string) 
 }
 
 func (m *sayMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
-	buffer, ok := m.buffer(actual)
-	if ok {
-		return !buffer.Closed()
+	switch x := actual.(type) {
+	case *Buffer:
+		return !x.Closed()
+	case BufferProvider:
+		return !x.Buffer().Closed()
+	default:
+		return true
 	}
-	return true
 }
