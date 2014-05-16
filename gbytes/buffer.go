@@ -42,6 +42,16 @@ func NewBuffer() *Buffer {
 }
 
 /*
+BufferWithBytes returns a new gbytes.Buffer seeded with the passed in bytes
+*/
+func BufferWithBytes(bytes []byte) *Buffer {
+	return &Buffer{
+		lock:     &sync.Mutex{},
+		contents: bytes,
+	}
+}
+
+/*
 Write implements the io.Writer interface
 */
 func (b *Buffer) Write(p []byte) (n int, err error) {

@@ -1,8 +1,8 @@
 package gbytes_test
 
 import (
-	. "github.com/onsi/gomega/gbytes"
 	"time"
+	. "github.com/onsi/gomega/gbytes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,6 +23,16 @@ var _ = Describe("Buffer", func() {
 
 			Ω(buffer).Should(Say("bcd"))
 			Ω(buffer.Contents()).Should(Equal([]byte("abcdef")))
+		})
+	})
+
+	Describe("creating a buffer with bytes", func() {
+		It("should create the buffer with the cursor set to the beginning", func() {
+			buffer := BufferWithBytes([]byte("abcdef"))
+			Ω(buffer.Contents()).Should(Equal([]byte("abcdef")))
+			Ω(buffer).Should(Say("abc"))
+			Ω(buffer).ShouldNot(Say("abc"))
+			Ω(buffer).Should(Say("def"))
 		})
 	})
 
