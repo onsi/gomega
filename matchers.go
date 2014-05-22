@@ -141,7 +141,7 @@ func ContainSubstring(substr string, args ...interface{}) OmegaMatcher {
 }
 
 //MatchJSON succeeds if actual is a string or stringer of JSON that matches
-//the expected JSON.  The JSONs are decoded and the resulting objects is compared via
+//the expected JSON.  The JSONs are decoded and the resulting objects are compared via
 //reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
 func MatchJSON(json interface{}) OmegaMatcher {
 	return &matchers.MatchJSONMatcher{

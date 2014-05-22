@@ -155,10 +155,20 @@ var _ = Describe("TestServer", func() {
 				Ω(failures).Should(HaveLen(1))
 			})
 
-			It("should also be possible to verify the rawQuery", func() {
-				s.SetHandler(0, VerifyRequest("GET", "/foo", "baz=bar"))
-				resp, err = http.Get(s.URL() + "/foo?baz=bar")
-				Ω(err).ShouldNot(HaveOccurred())
+			Context("when passed a rawQuery", func() {
+				It("should also be possible to verify the rawQuery", func() {
+					s.SetHandler(0, VerifyRequest("GET", "/foo", "baz=bar"))
+					resp, err = http.Get(s.URL() + "/foo?baz=bar")
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+			})
+
+			Context("when passed a matcher for path", func() {
+				It("should apply the matcher", func() {
+					s.SetHandler(0, VerifyRequest("GET", MatchRegexp(`/foo/[a-f]*/3`)))
+					resp, err = http.Get(s.URL() + "/foo/abcdefa/3")
+					Ω(err).ShouldNot(HaveOccurred())
+				})
 			})
 		})
 
@@ -250,6 +260,42 @@ var _ = Describe("TestServer", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 				req.Header.Add("Schmaccept", "jpeg")
 				req.Header.Add("Schmaccept", "png")
+				req.Header.Add("Cache-Control", "omicron")
+				req.Header.Add("return-path", "hobbiton")
+
+				failures := interceptFailures(func() {
+					http.DefaultClient.Do(req)
+				})
+				Ω(failures).Should(HaveLen(1))
+			})
+		})
+
+		Describe("VerifyHeaderKV", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(CombineHandlers(
+					VerifyRequest("GET", "/foo"),
+					VerifyHeaderKV("accept", "jpeg", "png"),
+					VerifyHeaderKV("cache-control", "omicron"),
+					VerifyHeaderKV("Return-Path", "hobbiton"),
+				))
+			})
+
+			It("should verify the headers", func() {
+				req, err := http.NewRequest("GET", s.URL()+"/foo", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+				req.Header.Add("Accept", "jpeg")
+				req.Header.Add("Accept", "png")
+				req.Header.Add("Cache-Control", "omicron")
+				req.Header.Add("return-path", "hobbiton")
+
+				resp, err = http.DefaultClient.Do(req)
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("should verify the headers", func() {
+				req, err := http.NewRequest("GET", s.URL()+"/foo", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+				req.Header.Add("Accept", "jpeg")
 				req.Header.Add("Cache-Control", "omicron")
 				req.Header.Add("return-path", "hobbiton")
 
