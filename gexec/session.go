@@ -138,7 +138,7 @@ If the command has already exited, Kill returns silently.
 
 The session is returned to enable chaining.
 */
-func (s *Session) Kill(timeout ...interface{}) *Session {
+func (s *Session) Kill() *Session {
 	if s.ExitCode() != -1 {
 		return s
 	}
