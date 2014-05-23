@@ -719,3 +719,491 @@ If you'd like to look at a simple example `MatchMayChangeInTheFuture` check out 
 Contributions are more than welcome.  Either [open an issue](http://github.com/onsi/gomega/issues) for a matcher you'd like to see or, better yet, test drive the matcher and [send a pull request](https://github.com/onsi/gomega/pulls).
 
 When adding a new matcher please mimic the style use in Gomega's current matchers: you should use the tools in `formatSupport.go`, put the matcher and its tests in the `matchers` package, the constructor in the `matchers.go` file in the `omega` package.  Also, be sure to update the github-pages documentation (both `index.md` and `gomega_sidebar.html`) and include those changes in a separate pull request.
+
+## `ghttp`: Testing HTTP CLients
+The `ghttp` package provides support for testing http *clients*.  The typical pattern in Go for testing http clients entails spinning up an `httptest.Server` using the `net/http/httptest` package and attaching test-specific handlers that perform assertions.
+
+`ghttp` provides `ghttp.Server` - a wrapper around `httptest.Server` that allows you to easily build up a stack of test handlers.  These handlers make assertions against the incoming request and return a pre-fabricated response.  `ghttp` provides a number of prebuilt handlers that cover the most common assertions.  You can combine these handlers to build out full-fledged assertions that test multiple aspects of the incoming requests.
+
+The goal of this documentation is to provide you with an adequate mental model to use `ghttp` correctly.  For a full reference of all the available handlers and the various methods on `ghttp.Server` look at the [godoc](https://godoc.org/github.com/onsi/gomega/ghttp) documentation.
+
+### Making assertions against an incoming request
+
+Let's start with a simple example.  Say you are building an API client that provides a `FetchSprockets(category string)` method that makes an http request to a remote server to fetch sprockets of a given category.
+
+For now, let's not worry about the values returned by `FetchSprockets` but simply assert that the correct request was made.  Here's the setup for our `ghttp`-based Ginkgo test:
+
+
+    Describe("The sprockets client", func() {
+        var server *ghttp.Server
+        var client *sprockets.Client
+
+        BeforeEach(func() {
+            server = ghttp.NewServer()
+            client = sprockets.NewClient(server.URL())
+        })
+
+        AfterEach(func() {
+            //shut down the server between tests
+            server.Close() 
+        })
+    })
+
+Note that the server's URL is auto-generated and varies between test runs.  Because of this, you must always inject the server URL into your client.  Let's add a simple test that asserts that `FetchSprockets` hits the correct endpoint with the correct HTTP verb:
+
+    Describe("The sprockets client", func() {
+        //...see above
+
+        Describe("fetching sprockets", func() {
+            BeforeEach(func() {
+                server.AppendHandlers(
+                    ghttp.VerifyRequest("GET", "/sprockets"),
+                )
+            })
+
+            It("should make a request to fetch sprockets", func() {
+                client.FetchSprockets("")
+                Ω(server.ReceivedRequests()).Should(HaveLen(1))
+            })
+        })
+    })
+
+Here we append a `VerifyRequest` handler to the `server` and call `client.FetchSprockets`.  This call (assuming it's a blocking call) will make a round-trip to the test `server` before returning.  The test `server` receives the request and passes it through the `VerifyRequest` handler which will validate that the request is a `GET` request hitting the `/sprockets` endpoint.  If it's not, the test will fail.
+
+Note that the test can pass trivially if `client.FetchSprockets()` doesn't actually make a request.  To guard against this you can assert that the `server` has actually received a request.  All the requests received by the server are saved off and made available via `server.ReceivedRequests()`.  We use this to assert that there should have been exactly one received requests.
+
+> Guarding against the trivial "false positive"  case outlined above isn't really necessary.  Just good practice when test *driving*.
+
+Let's add some more to our example.  Let's make an assertion that `FetchSprockets` can request sprockets filtered by a particular category:
+
+
+    Describe("The sprockets client", func() {
+        //...see above
+
+        Describe("fetching sprockets", func() {
+            BeforeEach(func() {
+                server.AppendHandlers(
+                    ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                )
+            })
+
+            It("should make a request to fetch sprockets", func() {
+                client.FetchSprockets("encabulators")
+                Ω(server.ReceivedRequests()).Should(HaveLen(1))
+            })
+        })
+    })
+
+`ghttp.VerifyRequest` takes an optional third parameter that is matched against the request `URL`'s `RawQuery`.
+
+Let's extend the example some more.  In addition to asserting that the request is a `GET` request to the correct endpoint with the correct query params, let's also assert that it includes the correct `BasicAuth` information and a correct custom header.  Here's the complete example:
+
+
+    Describe("The sprockets client", func() {
+        var (
+            server *ghttp.Server
+            client *sprockets.Client
+            username, password string
+        )
+
+        BeforeEach(func() {
+            username, password = "gopher", "tacoshell"
+            server = ghttp.NewServer()
+            client = sprockets.NewClient(server.URL(), username, password)
+        })
+
+        AfterEach(func() {
+            server.Close() 
+        })
+
+        Describe("fetching sprockets", func() {
+            BeforeEach(func() {
+                server.AppendHandlers(
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                        ghttp.VerifyBasicAuth(username, password),
+                        ghttp.VerifyHeader(http.Header{
+                            "X-Sprocket-API-Version": []string{"1.0"},
+                        }),
+                    )
+                )
+            })
+
+            It("should make a request to fetch sprockets", func() {
+                client.FetchSprockets("encabulators")
+                Ω(server.ReceivedRequests()).Should(HaveLen(1))
+            })
+        })
+    })
+
+This example *combines* multiple `ghttp` verify handlers using `ghttp.CombineHandlers`.  Under the hood, this returns a new handler that wraps and invokes the three passed in verify handlers.  The request sent by the client will pass through each of these verify handlers and must pass them all for the test to pass.
+
+Note that you can easily add your own verify handler into the mix.  Just pass in a regular `http.HandlerFunc` and make assertions against the received request.
+
+> It's important to understand that you must pass `AppendHandlers` **one** handler *per* incoming request (see [below](#handling-multiple-requests)).  In order to apply multiple handlers to a single request we must first combine them with `ghttp.CombineHandlers` and then pass that *one* wrapper handler in to `AppendHandlers`.
+
+### Providing responses
+
+So far, we've only made assertions about the outgoing request.  Clients are also responsible for parsing responses and returning valid data.  Let's say that `FetchSprockets()` returns two things: a slice `[]Sprocket` and an `error`.  Here's what a happy path test that asserts the correct data is returned might look like:
+
+
+    Describe("The sprockets client", func() {
+        //...
+        Describe("fetching sprockets", func() {
+            BeforeEach(func() {
+                server.AppendHandlers(
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                        ghttp.VerifyBasicAuth(username, password),
+                        ghttp.VerifyHeader(http.Header{
+                            "X-Sprocket-API-Version": []string{"1.0"},
+                        }),
+                        ghttp.RespondWith(http.StatusOK, `[
+                            {"name": "entropic decoupler", "color": "red"},
+                            {"name": "defragmenting ramjet", "color": "yellow"}
+                        ]`),
+                    )
+                )
+            })
+
+            It("should make a request to fetch sprockets", func() {
+                sprockets, err := client.FetchSprockets("encabulators")
+                Ω(err).ShouldNot(HaveOccurred())
+                Ω(sprockets).Should(Equal([]Sprocket{
+                    sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                }))
+            })
+        })
+    })
+
+We use `ghttp.RespondWith` to specify the response return by the server.  In this case we're passing back a status code of `200` (`http.StatusOK`) and a pile of JSON.  We then asser, in the test, that the client succeeds and returns the correct set of sprockets.
+
+The fact that details of the JSON encoding are bleeding into this test is somewhat unfortunate, and there's a lot of repetition going on.  `ghttp` provides a `RepondWithJSONEncoded` handler that accepts an arbitrary object and JSON encodes it for you.  Here's a cleaner test:
+
+    Describe("The sprockets client", func() {
+        //...
+        Describe("fetching sprockets", func() {
+            var returnedSprockets []Sprocket
+            BeforeEach(func() {
+                returnedSprockets = []Sprocket{
+                    sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                }
+
+                server.AppendHandlers(
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                        ghttp.VerifyBasicAuth(username, password),
+                        ghttp.VerifyHeader(http.Header{
+                            "X-Sprocket-API-Version": []string{"1.0"},
+                        }),
+                        ghttp.RespondWithJSONEncoded(http.StatusOK, returnedSprockets),
+                    )
+                )
+            })
+
+            It("should make a request to fetch sprockets", func() {
+                sprockets, err := client.FetchSprockets("encabulators")
+                Ω(err).ShouldNot(HaveOccurred())
+                Ω(sprockets).Should(Equal(returnedSprockets))
+            })
+        })
+    })
+
+### Testing different response scenarios
+
+Our test currently only handles the happy path where the server returns a `200`.  We should also test a handful of sad paths.  In particular, we'd like to return a `SprocketsErrorNotFound` error when the server `404`s and a `SprocketsErrorUnauthorized` error when the server returns a `401`.  But how to do this without redefining our server handler three times?
+
+`ghttp` provides `RespondWithPtr` and `RespondWithJSONEncodedPtr` for just this use case.  Both take *pointers* to status codes and respond bodies (objects for the `JSON` case).  Here's the more complete test:
+
+    Describe("The sprockets client", func() {
+        //...
+        Describe("fetching sprockets", func() {
+            var returnedSprockets []Sprocket
+            var statusCode int
+
+            BeforeEach(func() {
+                returnedSprockets = []Sprocket{
+                    sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                }
+
+                server.AppendHandlers(
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                        ghttp.VerifyBasicAuth(username, password),
+                        ghttp.VerifyHeader(http.Header{
+                            "X-Sprocket-API-Version": []string{"1.0"},
+                        }),
+                        ghttp.RespondWithJSONEncodedPtr(&statusCode, &returnedSprockets),
+                    )
+                )
+            })
+
+            Context("when the request succeeds", func() {
+                BeforeEach(func() {
+                    statusCode = http.StatusOK
+                })
+
+                It("should return the fetched sprockets without erroring", func() {
+                    sprockets, err := client.FetchSprockets("encabulators")
+                    Ω(err).ShouldNot(HaveOccurred())
+                    Ω(sprockets).Should(Equal(returnedSprockets))
+                })
+            })
+
+            Context("when the response is unauthorized", func() {
+                BeforeEach(func() {
+                    statusCode = http.StatusUnauthorized
+                })
+                
+                It("should return the SprocketsErrorUnauthorized error", func() {
+                    sprockets, err := client.FetchSprockets("encabulators")
+                    Ω(sprockets).Should(BeEmpty())
+                    Ω(err).Should(MatchError(SprocketsErrorUnauthorized))
+                })
+            })
+
+            Context("when the response is not found", func() {
+                BeforeEach(func() {
+                    statusCode = http.StatusNotFound
+                })
+                
+                It("should return the SprocketsErrorNotFound error", func() {
+                    sprockets, err := client.FetchSprockets("encabulators")
+                    Ω(sprockets).Should(BeEmpty())
+                    Ω(err).Should(MatchError(SprocketsErrorNotFound))
+                })
+            })
+        })
+    })
+
+In this way, the status code and returned value (not shown here) can be changed in sub-contexts without having to modify the original test setup.
+
+### Handling multiple requests
+
+So far, we've only seen examples where one request is made per test.  `ghttp` supports handling *multiple* requests too.  `server.AppendHandlers` can be passed multiple handlers and these handlers are evaluated in order as requests come in.
+
+This can be helpful in cases where it is not possible (or desirable) to have calls to the client under test only generate *one* request.  A common example is pagination.  If the sprockets API is paginated it may be desirable for `FetchSprockets` provide a simpler interface that simply fetches all available sprockets.
+
+Here's what a test might look like:
+
+    Describe("fetching sprockets from a paginated endpoint", func() {
+        var returnedSprockets []Sprocket
+        var firstResponse, secondResponse PaginatedResponse
+        var statusCode int
+
+        BeforeEach(func() {
+            returnedSprockets = []Sprocket{
+                sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
+                sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                sprocketts.Sprocket{Name: "parametric demuxer", Color: "blue"},
+            }
+
+            firstReponse = sprockets.PaginatedResponse{
+                Sprockets: returnedSprockets[0:2], //first batch
+                PaginationToken: "get-second-batch", //some opaque non-empty token
+            }
+
+            secondReponse = sprockets.PaginatedResponse{
+                Sprockets: returnedSprockets[2:], //second batch
+                PaginationToken: "", //signifies the last batch
+            }
+
+            server.AppendHandlers(
+                ghttp.CombineHandlers(
+                    ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                    ghttp.RespondWithJSONEncoded(http.StatusOK, firstReponse),
+                ),
+                ghttp.CombineHandlers(`
+                    ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators&pagination-token=get-second-batch"),
+                    ghttp.RespondWithJSONEncoded(http.StatusOK, secondResponse),
+                )
+            )
+        })
+
+        It("should fetch all the sprockets", func() {
+            sprockets, err := client.FetchSprockets("encabulators")
+            Ω(err).ShouldNot(HaveOccurred())
+            Ω(sprockets).Should(Equal(returnedSprockets))
+        })
+    })
+
+By default the `ghttp` server fails the test if the number of requests received exceeds the number of handlers registered, so this test ensures that the `client` stops sending requests after receiving the second (and final) set of paginated data.
+
+### Allowing unhandled requests
+
+As we just saw, by default, `ghttp`'s server marks the test as failed if a request is made for which there is no registered handler (recall that the server registers an ordered list of handlers - as each request comes in, a handler is popped off the top of the list to handle the request).
+
+It is sometimes useful to have a fake server that simply returns a fixed status code for all incoming requests.  `ghttp` supports this: just set `server.AllowUnhandledRequests = true` and `server.UnhandledRequestStatusCode` to whatever status code you'd like to return.
+
+In addition to returning the registered status code, `ghttp`'s server will also save all received requests under.  These can be accessed by calling `server.ReceivedRequests()`.  This is useful for cases where you may want to make assertions against requests *after* they've been made.
+
+## `gbytes`: Testing Streaming Buffers
+
+`gbytes` implements `gbytes.Buffer` - an `io.WriteCloser` that captures all input to an in-memory buffer.
+
+When used in concert with the `gbytes.Say` matcher, the `gbytes.Buffer` allows you make *ordered* assertions against streaming data.
+
+What follows is a contrived example.  `gbytes` is best paired with [`gexec`](#_testing_external_processes).
+
+Say you have an integration test that is streaming output from an external API.  You can feed this stream into a `gbytes.Buffer` and make ordered assertions like so:
+
+    Describe("attach to the data stream", func() {
+        var (
+            client *apiclient.Client
+            buffer *gbytes.Buffer
+        )
+        BeforeEach(func() {
+            buffer = gbytes.NewBuffer()
+            client := apiclient.New()
+            go client.AttachToDataStream(buffer)
+        })
+
+        It("should stream data", func() {
+            Eventually(buffer).Should(gbytes.Say(`Attached to stream as client \d+`))
+
+            client.ReticulateSplines()
+            Eventually(buffer).Should(gbytes.Say(`reticulating splines`))
+            client.EncabulateRetros(7)
+            Eventually(buffer).Should(gbytes.Say(`encabulating 7 retros`))
+        })
+    })
+
+These assertions will only pass if the strings passed to `Say` (which are interpreted as regular expressions - make sure to escape characters appropriately!) appear in the buffer.  An opaqure read cursor (that you cannot access or modify) is fastforwarded as succesful assertions are made so, for example:
+
+    Eventually(buffer).Should(gbytes.Say(`reticulating splines`))
+    Consistently(buffer).ShoudlNot(gbytes.Say(`reticulating splines`))    
+
+will (counterintuitively) pass.  This allows you to write tests like:
+
+    client.ReticulateSplines()
+    Eventually(buffer).Should(gbytes.Say(`reticulating splines`))
+    client.ReticulateSplines()
+    Eventually(buffer).Should(gbytes.Say(`reticulating splines`))
+
+and ensure that the test is correctly asserting that `reticulating splines` appears *twice*.
+
+At any time, you can access the entire contents written to the buffer via `buffer.Contents()`.  This includes *everything* every written to the buffer regardless of the current position of the read cursor.
+
+### Handling branches
+
+Sometimes (rarely!) you must write a test that must perform different actions depending on the output streamed to the buffer.  This can be accomplishd using `buffer.Detect`. Here's a contrived example:
+
+    func LoginIfNecessary() {
+        client.Authorize()
+        select {
+        case <-buffer.Detect("You are not logged in"):
+            client.Login()
+        case <-buffer.Detect("Success"):
+            return
+        case <-time.After(time.Second):
+            ginkgo.Fail("timed out waiting for output")
+        }
+        buffer.CancelDetects()
+    }
+
+`buffer.Detect` takes a string (interpreted as a regular expression) and returns a channel that will fire *once* if the requested string is detected.  Upon detection, the buffer's opaque read cursor is fastforwarded to subsequent uses of `gbytes.Say` will pick up from where the succeeding `Detect` left off.  You *must* call `buffer.CancelDetects()` to clean up afterwards (`buffer` spawns one goroutine per call to `Detect`).
+
+## `gexec`: Testing External Processes
+
+`gexec` simplifies testing external processes.  It can help you [compile go binaries](#compiling_external_binaries), [start external processes](#starting_external_processes), [send signals and wait for them to exit](#sending_signals_and_waiting_for_the_process_to_exit), make [assertions agains the exit code](#asserting_against_exit_code), and stream output into `gbytes.Buffer`s to allow you [make assertions against output](#making_assertions_against_the_process_output).
+
+### Compiling external binaries
+
+You use `gexec.Build()` to compile Go binaries.  These are built using `go build` and are stored off in a temporary directory.  You'll want to `gexec.CleanupBuildArtifacts()` when you're done with the test.
+
+A common pattern is to compile binaries once at the beginning of the test using `BeforeSuite` and to clean up once at the end of the test using `AfterSuite`:
+    
+    var pathToSprocketCLI string
+
+    BeforeSuite(func() {
+        var err error
+        pathToSprocketCLI, err = gexec.Build("github.com/spacely/sprockets")
+        Ω(err).ShouldNot(HaveOccurred())
+    })
+
+    AfterSuite(func() {
+        gexec.CleanupBuildArtifacts()
+    })
+
+> By default, `gexec.Build` uses the GOPATH specified in your environment.  You can also use `gexec.BuildIn(gopath string, packagePath string)` to specify a custom GOPATH for the build command.  This is useful to, for example, build a binary against its vendored Godeps.
+
+### Starting external processes
+
+`gexec` provides a `Session` that wraps `exec.Cmd`.  `Session` includes a number of features that will be explored in the next few sections.  You create a `Session` by instructing `gexec` to start a command:
+    
+    command := exec.Command(pathToSprocketCLI, "-api=127.0.0.1:8899")
+    session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+    Ω(err).ShouldNot(HaveOccurred())
+
+`gexec.Start` calls `command.Start` for you and forwards the command's `stdout` and `stderr` to `io.Writer`s that you provide. In the code above, we pass in Ginkgo's `GinkgoWriter`.  This makes working with external processes quite convenient: when a test passes no output is printed to screen, however if a test fails then any output generated by the command will be provided.
+
+> If you want to see all your ouput regardless of test status, just run `ginkgo` in verbose mode (`-v`) - now everything written to `GinkgoWriter` makes it onto the screen.
+
+### Sending signals and waiting for the process to exit
+
+`gexec.Session` makes it easy to send signals to your started command:
+
+    session.Kill() //sends SIGKILL
+    session.Interupt() //sends SIGINT
+    session.Terminate() //sends SIGTERM
+    session.Signal(signal) //sends the passed in os.Signal signal
+
+If the process has already exited these signal calls are no-ops.
+
+In addition to starting the wrapped command, `gexec.Session` also *monitors* the command until it exits.  You can ask `gexec.Session` to `Wait` until the process exits:
+
+    session.Wait()
+
+this will block until the session exits and will *fail* if it does not within the default `Eventually` timeout.  You can override this timeout by specifying a custom one:
+
+    session.Wait(5 * time.Second)
+
+> Though you can access the wrapped command using `session.Command` you should not attempt to `Wait` on it yourself.  `gexec` has already called `Wait` in order to monitor your process for you.
+
+> Under the hood `session.Wait` simply uses `Eventually`.
+
+
+Since the signalling methods return the session you can chain calls together:
+
+    session.Terminate().Wait()
+
+will send `SIGTERM` and then wait for the process to exit.
+
+### Asserting against exit code
+
+Once a session has exited you can fetch its exit code with `session.ExitCode()`.  You can subsequently make assertions against the exit code.
+
+A more idiomatic way to assert that a command has exited is to use the `gexec.Exit()` matcher:
+
+    Eventually(session).Should(Exit())
+
+Will verify that the `session` exits within `Eventually`'s default timeout.  You can assert that the process exits with a specified exit code too:
+
+    Eventually(session).Should(Exit(0))
+
+> If the process has not exited yet, `session.ExitCode()` returns `-1`
+
+### Making assertions against the process output
+
+In addition to streaming output to the passed in `io.Writer`s (the `GinkgoWriter` in our example above), `gexec.Start` attaches `gbytes.Buffer`s to the command's output streams.  These are available on the `session` object via:
+
+    session.Out //a gbytes.Buffer connected to the command's stdout
+    session.Err //a gbytes.Buffer connected to the command's stderr
+
+This allows you to make assertions against the stream of output:
+
+    Eventually(session.Out).Should(gbytes.Say("hello [A-Za-z], nice to meet you"))
+    Eventually(session.Err).Should(gbytes.Say("oops!"))
+
+Since `gexec.Session` is a `gbytes.BufferProvider` that provides the `Out` buffer you can write assertions against `stdout` ouptut like so:
+
+    Eventually(session).Should(gbytes.Say("hello [A-Za-z], nice to meet you"))
+
+Using the `Say` matcher is convenient when making *ordered* assertions against a stream of data generated by a live process.  Sometimes, however, all you need is to
+wait for the process to exit and then make assertions against the entire contents of its output.  Since `Wait()` returns `session` you can wait for the process to exit, then grab all its stdout as a `[]byte` buffer with a simple oneliner:
+
+    Ω(session.Wait().Out.Contents()).Should(ContainSubstring("finished succesfully"))
+
