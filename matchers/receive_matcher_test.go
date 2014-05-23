@@ -1,10 +1,10 @@
 package matchers_test
 
 import (
+	"time"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
-	"time"
 )
 
 type kungFuActor interface {
@@ -174,11 +174,11 @@ var _ = Describe("ReceiveMatcher", func() {
 		})
 
 		Context("if nothing is received", func() {
-			It("should error", func() {
+			It("should fail", func() {
 				channel := make(chan int, 1)
 				success, err := (&ReceiveMatcher{Arg: Equal(1)}).Match(channel)
 				Ω(success).Should(BeFalse())
-				Ω(err).Should(HaveOccurred())
+				Ω(err).ShouldNot(HaveOccurred())
 			})
 		})
 	})
@@ -239,6 +239,23 @@ var _ = Describe("ReceiveMatcher", func() {
 			success, err = (&ReceiveMatcher{}).Match(3)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
+		})
+	})
+
+	Describe("when used with eventually and a custom matcher", func() {
+		It("should return the matcher's error when a failing value is received on the channel, instead of the must receive something failure", func() {
+			failures := interceptFailures(func() {
+				c := make(chan string, 0)
+				Eventually(c, 0.01).Should(Receive(Equal("hello")))
+			})
+			Ω(failures[0]).Should(ContainSubstring("When passed a matcher, ReceiveMatcher's channel *must* receive something."))
+
+			failures = interceptFailures(func() {
+				c := make(chan string, 1)
+				c <- "hi"
+				Eventually(c, 0.01).Should(Receive(Equal("hello")))
+			})
+			Ω(failures[0]).Should(ContainSubstring("<string>: hello"))
 		})
 	})
 

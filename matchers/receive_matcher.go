@@ -9,7 +9,7 @@ import (
 
 type ReceiveMatcher struct {
 	Arg           interface{}
-	receivedValue interface{}
+	receivedValue reflect.Value
 	channelClosed bool
 }
 
@@ -62,10 +62,10 @@ func (matcher *ReceiveMatcher) Match(actual interface{}) (success bool, err erro
 
 	if hasSubMatcher {
 		if didReceive {
-			matcher.receivedValue = value.Interface()
-			return subMatcher.Match(matcher.receivedValue)
+			matcher.receivedValue = value
+			return subMatcher.Match(matcher.receivedValue.Interface())
 		} else {
-			return false, fmt.Errorf("When passed a matcher, ReceiveMatcher's channel *must* receive something.")
+			return false, nil
 		}
 	}
 
@@ -85,7 +85,10 @@ func (matcher *ReceiveMatcher) FailureMessage(actual interface{}) (message strin
 	subMatcher, hasSubMatcher := (matcher.Arg).(omegaMatcher)
 
 	if hasSubMatcher {
-		return subMatcher.FailureMessage(matcher.receivedValue)
+		if matcher.receivedValue.IsValid() {
+			return subMatcher.FailureMessage(matcher.receivedValue.Interface())
+		}
+		return "When passed a matcher, ReceiveMatcher's channel *must* receive something."
 	} else {
 		return format.Message(actual, "to receive something")
 	}
@@ -95,7 +98,10 @@ func (matcher *ReceiveMatcher) NegatedFailureMessage(actual interface{}) (messag
 	subMatcher, hasSubMatcher := (matcher.Arg).(omegaMatcher)
 
 	if hasSubMatcher {
-		return subMatcher.NegatedFailureMessage(matcher.receivedValue)
+		if matcher.receivedValue.IsValid() {
+			return subMatcher.NegatedFailureMessage(matcher.receivedValue.Interface())
+		}
+		return "When passed a matcher, ReceiveMatcher's channel *must* receive something."
 	} else {
 		return format.Message(actual, "not to receive anything")
 	}
