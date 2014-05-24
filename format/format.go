@@ -8,7 +8,7 @@ import (
 
 var Indent = "    "
 var longFormThreshold = 20
-var maxIndent = uint(20)
+var maxIndent = uint(10)
 
 func Message(actual interface{}, message string, expected ...interface{}) string {
 	if len(expected) == 0 {
