@@ -1,3 +1,6 @@
+/*
+Gomega's format package pretty-prints objects.  It explores input objects recursively and generates formatted, indented output with type information.
+*/
 package format
 
 import (
@@ -6,10 +9,37 @@ import (
 	"strings"
 )
 
-var Indent = "    "
-var longFormThreshold = 20
-var maxIndent = uint(10)
+// Use MaxDepth to set the maximum recursion depth when printing deeply nested objects
+var MaxDepth = uint(10)
 
+/*
+By default, all objects (even those that implement fmt.Stringer and fmt.GoStringer) are recursively inspected to generate output.
+
+Set UseStringerRepresentation = true to use GoString (for fmt.GoStringers) or String (for fmt.Stringer) instead.
+
+Note that GoString and String don't always have all the information you need to understand why a test failed!
+*/
+var UseStringerRepresentation = false
+
+//The default indentation string emitted by the format package
+var Indent = "    "
+
+var longFormThreshold = 20
+
+/*
+Generates a formatted matcher success/failure message of the form:
+
+	Expected
+		<pretty printed actual>
+	<message>
+		<pretty printed expected>
+
+If expected is omited, then the message looks like:
+
+	Expected
+		<pretty printed actual>
+	<message>
+*/
 func Message(actual interface{}, message string, expected ...interface{}) string {
 	if len(expected) == 0 {
 		return fmt.Sprintf("Expected\n%s\n%s", Object(actual, 1), message)
@@ -18,12 +48,24 @@ func Message(actual interface{}, message string, expected ...interface{}) string
 	}
 }
 
+/*
+Pretty prints the passed in object at the passed in indentation level.
+
+Object recurses into deeply nested objects emitting pretty-printed representations of their components.
+
+Modify format.MaxDepth to control how deep the recursion is allowed to go
+Set format.UseStringerRepresentation to true to return object.GoString() or object.String() when available instead of
+recursing into the object.
+*/
 func Object(object interface{}, indentation uint) string {
 	indent := strings.Repeat(Indent, int(indentation))
 	value := reflect.ValueOf(object)
 	return fmt.Sprintf("%s<%s>: %s", indent, formatType(object), formatValue(value, indentation))
 }
 
+/*
+IndentString takes a string and indents each line by the specified amount.
+*/
 func IndentString(s string, indentation uint) string {
 	components := strings.Split(s, "\n")
 	result := ""
@@ -61,12 +103,26 @@ func formatType(object interface{}) string {
 }
 
 func formatValue(value reflect.Value, indentation uint) string {
-	if indentation > maxIndent {
-		return "Too deep for me, man..."
+	if indentation > MaxDepth {
+		return "..."
 	}
+
 	if isNilValue(value) {
 		return "nil"
 	}
+
+	if UseStringerRepresentation {
+		if value.CanInterface() {
+			obj := value.Interface()
+			switch x := obj.(type) {
+			case fmt.GoStringer:
+				return x.GoString()
+			case fmt.Stringer:
+				return x.String()
+			}
+		}
+	}
+
 	switch value.Kind() {
 	case reflect.Bool:
 		return fmt.Sprintf("%v", value.Bool())
