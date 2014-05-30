@@ -9,6 +9,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type NeverExits struct{}
+
+func (e NeverExits) ExitCode() int {
+	return -1
+}
+
 var _ = Describe("ExitMatcher", func() {
 	var command *exec.Cmd
 	var session *Session
@@ -20,13 +26,23 @@ var _ = Describe("ExitMatcher", func() {
 		Ω(err).ShouldNot(HaveOccurred())
 	})
 
-	Describe("when passed something that is not a session", func() {
+	Describe("when passed something that is an Exiter", func() {
+		It("should act normally", func() {
+			failures := interceptFailures(func() {
+				Ω(NeverExits{}).Should(Exit())
+			})
+
+			Ω(failures[0]).Should(ContainSubstring("Expected process to exit.  It did not."))
+		})
+	})
+
+	Describe("when passed something that is not an Exiter", func() {
 		It("should error", func() {
 			failures := interceptFailures(func() {
 				Ω("aardvark").Should(Exit())
 			})
 
-			Ω(failures[0]).Should(ContainSubstring("Exit must be passed a gexit session"))
+			Ω(failures[0]).Should(ContainSubstring("Exit must be passed a gexec.Exiter"))
 		})
 	})
 
