@@ -37,13 +37,17 @@ type exitMatcher struct {
 	actualExitCode int
 }
 
+type Exiter interface {
+	ExitCode() int
+}
+
 func (m *exitMatcher) Match(actual interface{}) (success bool, err error) {
-	session, ok := actual.(*Session)
+	exiter, ok := actual.(Exiter)
 	if !ok {
-		return false, fmt.Errorf("Exit must be passed a gexit session.  Got:\n%s", format.Object(actual, 1))
+		return false, fmt.Errorf("Exit must be passed a gexec.Exiter (Missing method ExitCode() int) Got:\n%s", format.Object(actual, 1))
 	}
 
-	m.actualExitCode = session.ExitCode()
+	m.actualExitCode = exiter.ExitCode()
 
 	if m.actualExitCode == -1 {
 		return false, nil
