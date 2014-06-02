@@ -27,6 +27,9 @@ type Session struct {
 	//A *gbytes.Buffer connected to the command's stderr
 	Err *gbytes.Buffer
 
+	//A channel that will close when the command exits
+	Exited <-chan struct{}
+
 	lock     *sync.Mutex
 	exitCode int
 }
@@ -60,10 +63,13 @@ When the session exits it closes the stdout and stderr gbytes buffers.  This wil
 Eventuallys waiting fo the buffers to Say something.
 */
 func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Session, error) {
+	exited := make(chan struct{})
+
 	session := &Session{
 		Command:  command,
 		Out:      gbytes.NewBuffer(),
 		Err:      gbytes.NewBuffer(),
+		Exited:   exited,
 		lock:     &sync.Mutex{},
 		exitCode: -1,
 	}
@@ -85,7 +91,7 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 
 	err := command.Start()
 	if err == nil {
-		go session.monitorForExit()
+		go session.monitorForExit(exited)
 	}
 
 	return session, err
@@ -187,7 +193,7 @@ func (s *Session) Signal(signal os.Signal) *Session {
 	return s
 }
 
-func (s *Session) monitorForExit() {
+func (s *Session) monitorForExit(exited chan<- struct{}) {
 	err := s.Command.Wait()
 	s.lock.Lock()
 	s.Out.Close()
@@ -203,4 +209,6 @@ func (s *Session) monitorForExit() {
 		s.exitCode = exitStatus
 	}
 	s.lock.Unlock()
+
+	close(exited)
 }

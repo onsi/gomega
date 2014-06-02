@@ -75,6 +75,13 @@ var _ = Describe("Session", func() {
 		})
 	})
 
+	Describe("exited", func() {
+		It("should close when the command exits", func() {
+			Eventually(session.Exited).Should(BeClosed())
+			Ω(session.ExitCode()).ShouldNot(Equal(-1))
+		})
+	})
+
 	Describe("kill", func() {
 		It("should kill the command and wait for it to exit", func() {
 			session, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
