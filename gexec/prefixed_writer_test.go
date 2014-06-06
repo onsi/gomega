@@ -22,6 +22,7 @@ var _ = Describe("PrefixedWriter", func() {
 		writer.Write([]byte("hij\n"))
 		writer.Write([]byte("\n\n"))
 		writer.Write([]byte("klm\n\nnop"))
+		writer.Write([]byte(""))
 		writer.Write([]byte("qrs"))
 		writer.Write([]byte("\ntuv\nwx"))
 		writer.Write([]byte("yz\n\n"))
@@ -35,7 +36,6 @@ var _ = Describe("PrefixedWriter", func() {
 [p]nopqrs
 [p]tuv
 [p]wxyz
-[p]
 [p]`))
 	})
 })

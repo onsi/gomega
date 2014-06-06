@@ -14,18 +14,19 @@ session by passing in a PrefixedWriter:
 gexec.Start(cmd, NewPrefixedWriter("[my-cmd] ", GinkgoWriter), NewPrefixedWriter("[my-cmd] ", GinkgoWriter))
 */
 type PrefixedWriter struct {
-	prefix    []byte
-	writer    io.Writer
-	lock      *sync.Mutex
-	isNewLine bool
+	prefix       []byte
+	writer       io.Writer
+	lock         *sync.Mutex
+	isNewLine    bool
+	isFirstWrite bool
 }
 
 func NewPrefixedWriter(prefix string, writer io.Writer) *PrefixedWriter {
 	return &PrefixedWriter{
-		prefix:    []byte(prefix),
-		writer:    writer,
-		lock:      &sync.Mutex{},
-		isNewLine: true,
+		prefix:       []byte(prefix),
+		writer:       writer,
+		lock:         &sync.Mutex{},
+		isFirstWrite: true,
 	}
 }
 
@@ -36,24 +37,42 @@ func (w *PrefixedWriter) Write(b []byte) (int, error) {
 	newLine := []byte("\n")
 	segments := bytes.Split(b, newLine)
 
-	for i, segment := range segments {
-		if w.isNewLine {
-			_, err := w.writer.Write(w.prefix)
-			if err != nil {
-				return 0, err
-			}
-			w.isNewLine = false
+	if len(segments) != 0 {
+		toWrite := []byte{}
+		if w.isFirstWrite {
+			toWrite = append(toWrite, w.prefix...)
+			toWrite = append(toWrite, segments[0]...)
+			w.isFirstWrite = false
+		} else if w.isNewLine {
+			toWrite = append(toWrite, newLine...)
+			toWrite = append(toWrite, w.prefix...)
+			toWrite = append(toWrite, segments[0]...)
+		} else {
+			toWrite = append(toWrite, segments[0]...)
 		}
-		_, err := w.writer.Write(segment)
+
+		for i := 1; i < len(segments)-1; i++ {
+			toWrite = append(toWrite, newLine...)
+			toWrite = append(toWrite, w.prefix...)
+			toWrite = append(toWrite, segments[i]...)
+		}
+
+		if len(segments) > 1 {
+			lastSegment := segments[len(segments)-1]
+
+			if len(lastSegment) == 0 {
+				w.isNewLine = true
+			} else {
+				toWrite = append(toWrite, newLine...)
+				toWrite = append(toWrite, w.prefix...)
+				toWrite = append(toWrite, lastSegment...)
+				w.isNewLine = false
+			}
+		}
+
+		_, err := w.writer.Write(toWrite)
 		if err != nil {
 			return 0, err
-		}
-		if i < len(segments)-1 {
-			_, err := w.writer.Write(newLine)
-			if err != nil {
-				return 0, err
-			}
-			w.isNewLine = true
 		}
 	}
 
