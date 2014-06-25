@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
@@ -73,11 +74,54 @@ var _ = Describe("TestServer", func() {
 		var called []string
 		BeforeEach(func() {
 			called = []string{}
+			s.RouteToHandler("GET", "/routed", func(w http.ResponseWriter, req *http.Request) {
+				called = append(called, "r1")
+			})
+			s.RouteToHandler("POST", regexp.MustCompile(`/routed\d`), func(w http.ResponseWriter, req *http.Request) {
+				called = append(called, "r2")
+			})
 			s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {
 				called = append(called, "A")
 			}, func(w http.ResponseWriter, req *http.Request) {
 				called = append(called, "B")
 			})
+		})
+
+		It("should prefer routed handlers if there is a match", func() {
+			http.Get(s.URL() + "/routed")
+			http.Post(s.URL()+"/routed7", "application/json", nil)
+			http.Get(s.URL() + "/foo")
+			http.Get(s.URL() + "/routed")
+			http.Post(s.URL()+"/routed9", "application/json", nil)
+			http.Get(s.URL() + "/bar")
+
+			failures := interceptFailures(func() {
+				http.Get(s.URL() + "/foo")
+				http.Get(s.URL() + "/routed/not/a/match")
+				http.Get(s.URL() + "/routed7")
+				http.Post(s.URL()+"/routed", "application/json", nil)
+			})
+
+			Ω(failures[0]).Should(ContainSubstring("Received Unhandled Request"))
+			Ω(failures).Should(HaveLen(4))
+
+			http.Post(s.URL()+"/routed3", "application/json", nil)
+
+			Ω(called).Should(Equal([]string{"r1", "r2", "A", "r1", "r2", "B", "r2"}))
+		})
+
+		It("should override routed handlers when reregistered", func() {
+			s.RouteToHandler("GET", "/routed", func(w http.ResponseWriter, req *http.Request) {
+				called = append(called, "r3")
+			})
+			s.RouteToHandler("POST", regexp.MustCompile(`/routed\d`), func(w http.ResponseWriter, req *http.Request) {
+				called = append(called, "r4")
+			})
+
+			http.Get(s.URL() + "/routed")
+			http.Post(s.URL()+"/routed7", "application/json", nil)
+
+			Ω(called).Should(Equal([]string{"r3", "r4"}))
 		})
 
 		It("should call the appended handlers, in order, as requests come in", func() {

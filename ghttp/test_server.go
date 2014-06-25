@@ -109,6 +109,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"regexp"
 	"sync"
 	. "github.com/onsi/gomega"
 )
@@ -119,6 +121,13 @@ func new() *Server {
 		UnhandledRequestStatusCode: http.StatusInternalServerError,
 		writeLock:                  &sync.Mutex{},
 	}
+}
+
+type routedHandler struct {
+	method     string
+	pathRegexp *regexp.Regexp
+	path       string
+	handler    http.HandlerFunc
 }
 
 // NewServer returns a new `*ghttp.Server` that wraps an `httptest` server.  The server is started automatically.
@@ -149,6 +158,7 @@ type Server struct {
 
 	receivedRequests []*http.Request
 	requestHandlers  []http.HandlerFunc
+	routedHandlers   []routedHandler
 
 	writeLock *sync.Mutex
 	calls     int
@@ -167,6 +177,13 @@ func (s *Server) Close() {
 }
 
 //ServeHTTP() makes Server an http.Handler
+//When the server receives a request it handles the request in the following order:
+//
+//1. If the request matches a handler registered with RouteToHandler, that handler is called.
+//2. Otherwise, if there are handlers registered via AppendHandlers, those handlers are called in order.
+//3. If all registered handlers have been called then:
+//   a) If AllowUnhandledRequests is true, the request will be handled with response code of UnhandledRequestStatusCode
+//   b) If AllowUnhandledRequests is false, the request will not be handled and the current test will be marked as failed.
 func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	s.writeLock.Lock()
 	defer s.writeLock.Unlock()
@@ -174,8 +191,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		recover()
 	}()
 
-	if s.calls < len(s.requestHandlers) {
+	if routedHandler, ok := s.handlerForRoute(req.Method, req.URL.Path); ok {
+		routedHandler(w, req)
+	} else if s.calls < len(s.requestHandlers) {
 		s.requestHandlers[s.calls](w, req)
+		s.calls++
 	} else {
 		if s.AllowUnhandledRequests {
 			ioutil.ReadAll(req.Body)
@@ -186,7 +206,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	s.receivedRequests = append(s.receivedRequests, req)
-	s.calls++
 }
 
 //ReceivedRequests is an array containing all requests received by the server (both handled and unhandled requests)
@@ -195,6 +214,55 @@ func (s *Server) ReceivedRequests() []*http.Request {
 	defer s.writeLock.Unlock()
 
 	return s.receivedRequests
+}
+
+//RouteToHandler can be used to register handlers that will always handle requests that match
+//the passed in method and path.
+//
+//The path may be either a string object or a *regexp.Regexp.
+func (s *Server) RouteToHandler(method string, path interface{}, handler http.HandlerFunc) {
+	s.writeLock.Lock()
+	defer s.writeLock.Unlock()
+
+	rh := routedHandler{
+		method:  method,
+		handler: handler,
+	}
+
+	switch p := path.(type) {
+	case *regexp.Regexp:
+		rh.pathRegexp = p
+	case string:
+		rh.path = p
+	default:
+		panic("path must be a string or a regular expression")
+	}
+
+	for i, existingRH := range s.routedHandlers {
+		if existingRH.method == method &&
+			reflect.DeepEqual(existingRH.pathRegexp, rh.pathRegexp) &&
+			existingRH.path == rh.path {
+			s.routedHandlers[i] = rh
+			return
+		}
+	}
+	s.routedHandlers = append(s.routedHandlers, rh)
+}
+
+func (s *Server) handlerForRoute(method string, path string) (http.HandlerFunc, bool) {
+	for _, rh := range s.routedHandlers {
+		if rh.method == method {
+			if rh.pathRegexp != nil {
+				if rh.pathRegexp.Match([]byte(path)) {
+					return rh.handler, true
+				}
+			} else if rh.path == path {
+				return rh.handler, true
+			}
+		}
+	}
+
+	return nil, false
 }
 
 //AppendHandlers will appends http.HandlerFuncs to the server's list of registered handlers.  The first incoming request is handled by the first handler, the second by the second, etc...
