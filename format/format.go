@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // Use MaxDepth to set the maximum recursion depth when printing deeply nested objects
@@ -230,6 +231,14 @@ func formatMap(v reflect.Value, indentation uint) string {
 
 func formatStruct(v reflect.Value, indentation uint) string {
 	t := v.Type()
+
+	if v.CanInterface() {
+		obj := v.Interface()
+		switch x := obj.(type) {
+		case time.Time:
+			return x.Format(time.RFC3339Nano)
+		}
+	}
 
 	l := v.NumField()
 	result := []string{}

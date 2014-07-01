@@ -219,6 +219,11 @@ func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
 	}
 }
 
+//BeAfter compares time.Time's and succeeds if actual.After(expected)
+func BeAfter(expected interface{}) OmegaMatcher {
+	return &matchers.BeAfterMatcher{Expected: expected}
+}
+
 //Panic succeeds if actual is a function that, when invoked, panics.
 //Actual must be a function that takes no arguments and returns no results.
 func Panic() OmegaMatcher {

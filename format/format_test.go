@@ -2,10 +2,11 @@ package format_test
 
 import (
 	"fmt"
-	"strings"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
+	"strings"
+	"time"
 )
 
 //recursive struct
@@ -157,6 +158,13 @@ var _ = Describe("Format", func() {
 				Ω(Object(s, 1)).Should(match("string", `a
     b
     c`))
+			})
+		})
+
+		Describe("formatting time.Time", func() {
+			It("should give the type and format values correctly", func() {
+				t := time.Now()
+				Ω(Object(t, 1)).Should(match("time.Time", t.Format(time.RFC3339Nano)))
 			})
 		})
 
