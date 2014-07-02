@@ -189,6 +189,18 @@ func HaveKey(key interface{}) OmegaMatcher {
 	}
 }
 
+//HaveKeyValue succeeds if actual is a map with the passed in key and value.
+//By default HaveKeyValue uses Equal() to perform the match, however a
+//matcher can be passed in instead:
+//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKeyValue("Foo", "Bar"))
+//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`), "Bar"))
+func HaveKeyValue(key interface{}, value interface{}) OmegaMatcher {
+	return &matchers.HaveKeyValueMatcher{
+		Key:   key,
+		Value: value,
+	}
+}
+
 //BeNumerically performs numerical assertions in a type-agnostic way.
 //Actual and expected should be numbers, though the specific type of
 //number is irrelevant (floa32, float64, uint8, etc...).
