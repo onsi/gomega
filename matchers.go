@@ -231,9 +231,15 @@ func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
 	}
 }
 
-//BeAfter compares time.Time's and succeeds if actual.After(expected)
-func BeAfter(expected interface{}) OmegaMatcher {
-	return &matchers.BeAfterMatcher{Expected: expected}
+//BeTemporally compares time.Time's like BeNumerically
+//Actual and expected must be time.Time. The comparators are the same as for BeNumerically
+//    Ω(time.Now()).Should(BeTemporally(">", time.Time{}))
+//    Ω(time.Now()).Should(BeTemporally("~", time.Now(), time.Second))
+func BeTemporally(comparator string, compareTo ...interface{}) OmegaMatcher {
+	return &matchers.BeTemporallyMatcher{
+		Comparator: comparator,
+		CompareTo:  compareTo,
+	}
 }
 
 //Panic succeeds if actual is a function that, when invoked, panics.
