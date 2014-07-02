@@ -6,14 +6,14 @@ import (
 	"reflect"
 )
 
-type HaveKeyValueMatcher struct {
+type HaveKeyWithValueMatcher struct {
 	Key   interface{}
 	Value interface{}
 }
 
-func (matcher *HaveKeyValueMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *HaveKeyWithValueMatcher) Match(actual interface{}) (success bool, err error) {
 	if !isMap(actual) {
-		return false, fmt.Errorf("HaveKeyValue matcher expects a map.  Got:%s", format.Object(actual, 1))
+		return false, fmt.Errorf("HaveKeyWithValue matcher expects a map.  Got:%s", format.Object(actual, 1))
 	}
 
 	keyMatcher, keyIsMatcher := matcher.Key.(omegaMatcher)
@@ -30,13 +30,13 @@ func (matcher *HaveKeyValueMatcher) Match(actual interface{}) (success bool, err
 	for i := 0; i < len(keys); i++ {
 		success, err := keyMatcher.Match(keys[i].Interface())
 		if err != nil {
-			return false, fmt.Errorf("HaveKeyValue's key matcher failed with:\n%s%s", format.Indent, err.Error())
+			return false, fmt.Errorf("HaveKeyWithValue's key matcher failed with:\n%s%s", format.Indent, err.Error())
 		}
 		if success {
 			actualValue := reflect.ValueOf(actual).MapIndex(keys[i])
 			success, err := valueMatcher.Match(actualValue.Interface())
 			if err != nil {
-				return false, fmt.Errorf("HaveKeyValue's value matcher failed with:\n%s%s", format.Indent, err.Error())
+				return false, fmt.Errorf("HaveKeyWithValue's value matcher failed with:\n%s%s", format.Indent, err.Error())
 			}
 			return success, nil
 		}
@@ -45,7 +45,7 @@ func (matcher *HaveKeyValueMatcher) Match(actual interface{}) (success bool, err
 	return false, nil
 }
 
-func (matcher *HaveKeyValueMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *HaveKeyWithValueMatcher) FailureMessage(actual interface{}) (message string) {
 	str := "to have {key: value}"
 	if _, ok := matcher.Key.(omegaMatcher); ok {
 		str += " matching"
@@ -58,7 +58,7 @@ func (matcher *HaveKeyValueMatcher) FailureMessage(actual interface{}) (message 
 	return format.Message(actual, str, expect)
 }
 
-func (matcher *HaveKeyValueMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *HaveKeyWithValueMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	kStr := "not to have key"
 	if _, ok := matcher.Key.(omegaMatcher); ok {
 		kStr = "not to have key matching"

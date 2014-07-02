@@ -189,13 +189,13 @@ func HaveKey(key interface{}) OmegaMatcher {
 	}
 }
 
-//HaveKeyValue succeeds if actual is a map with the passed in key and value.
-//By default HaveKeyValue uses Equal() to perform the match, however a
+//HaveKeyWithValue succeeds if actual is a map with the passed in key and value.
+//By default HaveKeyWithValue uses Equal() to perform the match, however a
 //matcher can be passed in instead:
-//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKeyValue("Foo", "Bar"))
-//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`), "Bar"))
-func HaveKeyValue(key interface{}, value interface{}) OmegaMatcher {
-	return &matchers.HaveKeyValueMatcher{
+//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKeyWithValue("Foo", "Bar"))
+//    Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), "Bar"))
+func HaveKeyWithValue(key interface{}, value interface{}) OmegaMatcher {
+	return &matchers.HaveKeyWithValueMatcher{
 		Key:   key,
 		Value: value,
 	}
