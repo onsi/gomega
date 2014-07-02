@@ -70,7 +70,7 @@ On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥z`
 
 On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `OmegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `OmegaMatcher` object.
 
-> The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding_your_own_matchers) section.
+> The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.
 
 Each assertion returns a `bool` denoting whether or not the assertion passed.  This is useful for bailing out of a test early if an assertion fails:
 
@@ -232,7 +232,7 @@ By default, `Eventually` will poll every 10 milliseconds for up to 1 second and 
 
 ##Making Assertions in Helper Functions
 
-While writing [custom matchers](#adding_your_own_matchers) is an expressive way to make assertions against your code, it is often more convenient to write one-off helper functions like so:
+While writing [custom matchers](#adding-your-own-matchers) is an expressive way to make assertions against your code, it is often more convenient to write one-off helper functions like so:
 
     var _ = Describe("Turboencabulator", func() {
         ...
@@ -287,7 +287,7 @@ uses [`reflect.DeepEqual`](http://golang.org/pkg/reflect#deepequal) to compare `
 
 It is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
 
-> For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator_string_compareto_interface) matcher
+> For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher
 
 ### BeEquivalentTo(expected interface{})
 
@@ -309,7 +309,7 @@ As a rule, you **should not** use `BeEquivalentTo` with numbers.  Both of the fo
     Ω(5.1).Should(BeEquivalentTo(5))
     Ω(5).ShouldNot(BeEquivalentTo(5.1))
 
-the first assertion passes because 5.1 will be cast to an integer and will get rounded down!  Such false positives are terrible and should be avoided.  Use [`BeNumerically()`](#benumericallycomparator_string_compareto_interface) to compare numbers instead.
+the first assertion passes because 5.1 will be cast to an integer and will get rounded down!  Such false positives are terrible and should be avoided.  Use [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) to compare numbers instead.
 
 ### BeNil()
 
@@ -1046,7 +1046,7 @@ In addition to returning the registered status code, `ghttp`'s server will also 
 
 When used in concert with the `gbytes.Say` matcher, the `gbytes.Buffer` allows you make *ordered* assertions against streaming data.
 
-What follows is a contrived example.  `gbytes` is best paired with [`gexec`](#_testing_external_processes).
+What follows is a contrived example.  `gbytes` is best paired with [`gexec`](#gexec-testing-external-processes).
 
 Say you have an integration test that is streaming output from an external API.  You can feed this stream into a `gbytes.Buffer` and make ordered assertions like so:
 
@@ -1108,7 +1108,7 @@ Sometimes (rarely!) you must write a test that must perform different actions de
 
 ## `gexec`: Testing External Processes
 
-`gexec` simplifies testing external processes.  It can help you [compile go binaries](#compiling_external_binaries), [start external processes](#starting_external_processes), [send signals and wait for them to exit](#sending_signals_and_waiting_for_the_process_to_exit), make [assertions agains the exit code](#asserting_against_exit_code), and stream output into `gbytes.Buffer`s to allow you [make assertions against output](#making_assertions_against_the_process_output).
+`gexec` simplifies testing external processes.  It can help you [compile go binaries](#compiling-external-binaries), [start external processes](#starting-external-processes), [send signals and wait for them to exit](#sending-signals-and-waiting-for-the-process-to-exit), make [assertions agains the exit code](#asserting-against-exit-code), and stream output into `gbytes.Buffer`s to allow you [make assertions against output](#making-assertions-against-the-process-output).
 
 ### Compiling external binaries
 
