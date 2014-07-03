@@ -48,7 +48,7 @@ var _ = Describe("HaveKeyWithValue", func() {
 		})
 	})
 
-	Context("when the passed in key is actually a matcher", func() {
+	Context("when the passed in key or value is actually a matcher", func() {
 		It("should pass each element through the matcher", func() {
 			Ω(stringKeys).Should(HaveKeyWithValue(ContainSubstring("oo"), 2))
 			Ω(intKeys).Should(HaveKeyWithValue(2, ContainSubstring("oo")))
@@ -56,8 +56,13 @@ var _ = Describe("HaveKeyWithValue", func() {
 		})
 
 		It("should fail if the matcher ever fails", func() {
-			actual := map[interface{}]string{"foo": "a", 3: "b", "bar": "c"}
+			actual := map[int]string{1: "a", 3: "b", 2: "c"}
 			success, err := (&HaveKeyWithValueMatcher{Key: ContainSubstring("ar"), Value: 2}).Match(actual)
+			Ω(success).Should(BeFalse())
+			Ω(err).Should(HaveOccurred())
+
+			otherActual := map[string]int{"a": 1, "b": 2, "c": 3}
+			success, err = (&HaveKeyWithValueMatcher{Key: "a", Value: ContainSubstring("1")}).Match(otherActual)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})
