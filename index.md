@@ -135,6 +135,22 @@ Will offer the more helpful output:
       <bool>: true
     to be false
 
+
+### Adjusting Output
+
+When a failure occurs, Gomega prints out a recursive description of the objects involved in the failed assertion.  This output can be very verbose, but Gomega's philosophy is to give as much output as possible to aid in identifying the root cause of a test failure.
+
+These recursive object renditions are performed by the `format` subpackage.  `format` provides some globally adjustable settings to tune Gomega's output:
+
+- `format.MaxDepth = 10`: Gomega will recursively traverse nested data structures as it produces output.  By default the maximum depth of this recursion is set to `10` you can adjust this to see deeper or shallower representations of objects.
+- `format.UseStringerRepresentation = false`: Gomega does *not* call `String` or `GoString` on objects that satisfy the `Stringer` and `GoStringer` interfaces.  Oftentimes such representations, while more human readable, do not contain all the relevant information associated with an object thereby making it harder to understand why a test might be failing.  If you'd rather see the output of `String` or `GoString` set this property to `true`.
+
+> For a tricky example of why `format.UseStringerRepresentation = false` is your friend, check out issue [#37](https://github.com/onsi/gomega/issues/37).
+
+If you want to use Gomega's recursive object description in your own code you can call into the `format` package directly:
+
+    fmt.Println(format.Object(theThingYouWantToPrint, 1))
+
 ---
 
 ##Making Asynchronous Assertions
@@ -870,8 +886,8 @@ So far, we've only made assertions about the outgoing request.  Clients are also
                 sprockets, err := client.FetchSprockets("encabulators")
                 Ω(err).ShouldNot(HaveOccurred())
                 Ω(sprockets).Should(Equal([]Sprocket{
-                    sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
-                    sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                    sprockets.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprockets.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
                 }))
             })
         })
@@ -887,8 +903,8 @@ The fact that details of the JSON encoding are bleeding into this test is somewh
             var returnedSprockets []Sprocket
             BeforeEach(func() {
                 returnedSprockets = []Sprocket{
-                    sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
-                    sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                    sprockets.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprockets.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
                 }
 
                 server.AppendHandlers(
@@ -925,8 +941,8 @@ Our test currently only handles the happy path where the server returns a `200`.
 
             BeforeEach(func() {
                 returnedSprockets = []Sprocket{
-                    sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
-                    sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                    sprockets.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprockets.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
                 }
 
                 server.AppendHandlers(
@@ -985,7 +1001,7 @@ In this way, the status code and returned value (not shown here) can be changed 
 
 So far, we've only seen examples where one request is made per test.  `ghttp` supports handling *multiple* requests too.  `server.AppendHandlers` can be passed multiple handlers and these handlers are evaluated in order as requests come in.
 
-This can be helpful in cases where it is not possible (or desirable) to have calls to the client under test only generate *one* request.  A common example is pagination.  If the sprockets API is paginated it may be desirable for `FetchSprockets` provide a simpler interface that simply fetches all available sprockets.
+This can be helpful in cases where it is not possible (or desirable) to have calls to the client under test only generate *one* request.  A common example is pagination.  If the sprockets API is paginated it may be desirable for `FetchSprockets` to provide a simpler interface that simply fetches all available sprockets.
 
 Here's what a test might look like:
 
@@ -996,9 +1012,9 @@ Here's what a test might look like:
 
         BeforeEach(func() {
             returnedSprockets = []Sprocket{
-                sprocketts.Sprocket{Name: "entropic decoupler", Color: "red"},
-                sprocketts.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
-                sprocketts.Sprocket{Name: "parametric demuxer", Color: "blue"},
+                sprockets.Sprocket{Name: "entropic decoupler", Color: "red"},
+                sprockets.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                sprockets.Sprocket{Name: "parametric demuxer", Color: "blue"},
             }
 
             firstReponse = sprockets.PaginatedResponse{
@@ -1032,13 +1048,90 @@ Here's what a test might look like:
 
 By default the `ghttp` server fails the test if the number of requests received exceeds the number of handlers registered, so this test ensures that the `client` stops sending requests after receiving the second (and final) set of paginated data.
 
+### MUXing Routes to Handlers
+
+`AppendHandlers` allows you to make ordered assertions about incoming requests.  This places a strong constraint on all incoming requests: namely that exactly the right requests have to arrive in exactly the right order and that no additional requests are allowed.
+
+One can take a different testing strategy, however.  Instead of asserting that requests come in in a predefined order, you may which to build a test server that can handle arbitrarily many requests to a set of predefined routes.  In fact, there may be some circumstances where you want to make ordered assertions on *some* requests (via `AppendHandlers`) but still support sending particular responses to *other* requests that may interleave the ordered assertions.
+
+`ghttp` supports these sorts of usecases via `server.RouteToHandler(method, path, handler)`.
+
+Let's cook up an example.  Perhaps, instead of authenticating via basic auth our sprockets client logs in and fetches a token from the server when performing requests that require authentication.  We could pepper our `AppendHandlers` calls with a handler that handles these requests (this is not a terrible idea, of course!) *or* we could set up a single route at the top of our tests. 
+
+Here's what such a test might look like:
+
+    Describe("CRUDing sprockes", func() {
+        BeforeEach(func() {
+            server.RouteToHandler("POST", "/login", ghttp.CombineHandlers(
+                ghttp.VerifyRequest("POST", "/login", "user=bob&password=password"),
+                ghttp.RespondWith(http.StatusOK, "your-auth-token"),
+            ))
+        })
+        var returnedSprockets []Sprocket
+        var firstResponse, secondResponse PaginatedResponse
+        var statusCode int
+
+        Context("GETting sprockets", func() {
+            var returnedSprockets []Sprocket
+
+            BeforeEach(func() {
+                returnedSprockets = []Sprocket{
+                    sprockets.Sprocket{Name: "entropic decoupler", Color: "red"},
+                    sprockets.Sprocket{Name: "defragmenting ramjet", Color: "yellow"},
+                    sprockets.Sprocket{Name: "parametric demuxer", Color: "blue"},
+                }
+
+                server.AppendHandlers(
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
+                        ghttp.RespondWithJSONEncoded(http.StatusOK, returnedSprockets),
+                    ),
+                )                
+            })
+
+            It("should fetch all the sprockets", func() {
+                sprockets, err := client.FetchSprockes("encabulators")
+                Ω(err).ShouldNot(HaveOccurred())
+                Ω(sprockets).Should(Equal(returnedSprockets))
+            })
+        })
+
+        Context("POSTing sprockets", func() {
+            var sprocketToSave Sprocket
+            BeforeEach(func() {
+                sprocketToSave = sprockets.Sprocket{Name: "endothermic penambulator", Color: "purple"}
+
+                server.AppendHandlers(
+                    ghttp.CombineHandlers(
+                        ghttp.VerifyRequest("POST", "/sprocket", "token=your-auth-token"),
+                        ghttp.VerifyJSONRepresenting(sprocketToSave)
+                        ghttp.RespondWithJSONEncoded(http.StatusOK, nil),
+                    ),
+                )
+            })
+
+            It("should save the sprocket", func() {
+                err := client.SaveSprocket(sprocketToSave)
+                Ω(err).ShouldNot(HaveOccurred())
+            })
+        })
+    })
+
+Here, saving a sprocket triggers authentication, which is handled by the registered `RouteToHandler` handler whereas fetching the list of sprockets does not.
+
+> `RouteToHandler` can take either a string as a route (as seen in this example) or a `regexp.Regexp`.
+
 ### Allowing unhandled requests
 
-As we just saw, by default, `ghttp`'s server marks the test as failed if a request is made for which there is no registered handler (recall that the server registers an ordered list of handlers - as each request comes in, a handler is popped off the top of the list to handle the request).
+By default, `ghttp`'s server marks the test as failed if a request is made for which there is no registered handler.
 
-It is sometimes useful to have a fake server that simply returns a fixed status code for all incoming requests.  `ghttp` supports this: just set `server.AllowUnhandledRequests = true` and `server.UnhandledRequestStatusCode` to whatever status code you'd like to return.
+It is sometimes useful to have a fake server that simply returns a fixed status code for all unhandled incoming requests.  `ghttp` supports this: just set `server.AllowUnhandledRequests = true` and `server.UnhandledRequestStatusCode` to whatever status code you'd like to return.
 
-In addition to returning the registered status code, `ghttp`'s server will also save all received requests under.  These can be accessed by calling `server.ReceivedRequests()`.  This is useful for cases where you may want to make assertions against requests *after* they've been made.
+In addition to returning the registered status code, `ghttp`'s server will also save all received requests.  These can be accessed by calling `server.ReceivedRequests()`.  This is useful for cases where you may want to make assertions against requests *after* they've been made.
+
+To bring it all together: there are three ways to instruct a `ghttp` server to handle requests: you can map routes to handlers using `RouteToHandler`, you can append handlers via `AppendHandlers, and you can `AllowUnhandledRequests` and specify an `UnhandledRequestStatusCode`.
+
+When a `ghttp` server receives a request it first checks against the set of handlers registred via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `AllowUnhandledRequests` is `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with `UnhandledRequestStatusCode`.
 
 ## `gbytes`: Testing Streaming Buffers
 
