@@ -1105,10 +1105,6 @@ Here's what such a test might look like:
                 ghttp.RespondWith(http.StatusOK, "your-auth-token"),
             ))
         })
-        var returnedSprockets []Sprocket
-        var firstResponse, secondResponse PaginatedResponse
-        var statusCode int
-
         Context("GETting sprockets", func() {
             var returnedSprockets []Sprocket
 
