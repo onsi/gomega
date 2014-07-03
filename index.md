@@ -488,11 +488,21 @@ By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equal
 
     Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
 
+### HaveKeyWithValue(key interface{}, value interface{})
+
+    Ω(ACTUAL).Should(HaveKeyWithValue(KEY, VALUE))
+
+succeeds if `ACTUAL` is a map with a key that equals `KEY` containing a value that equals `VALUE`.  It is an error for `ACTUAL` to not be a `map`.
+
+By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY` and between the associated value and `VALUE`.  You can change this, however, by passing `HaveKeyWithValue` an `OmegaMatcher` for either parameter. For example, to check that a map has a key that matches a regular expression, and a value that passes some numerical threshold:
+
+    Ω(map[string]int{"Foo": 3, "BazFoo": 4}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), BeNumerically(">", 3)))
+
 ### BeNumerically(comparator string, compareTo ...interface{})
 
     Ω(ACTUAL).Should(BeNumerically(COMPARATOR_STRING, EXPECTED, <THRESHOLD>))
 
-performs numerical assertions in a type-agnostic way.  `ACTUAL` and `EXPECTED` should be numebers, though the specific type of number is irrelevant (`float32`, `float64`, `uint8`, etc...).  It is an error for `ACTUAL` or `EXPECTED` to not be a number.
+performs numerical assertions in a type-agnostic way.  `ACTUAL` and `EXPECTED` should be numbers, though the specific type of number is irrelevant (`float32`, `float64`, `uint8`, etc...).  It is an error for `ACTUAL` or `EXPECTED` to not be a number.
 
 There are six supported comparators:
 
@@ -513,6 +523,34 @@ There are six supported comparators:
 
 - `Ω(ACTUAL).Should(BeNumerically("<=", EXPECTED))`:
     Asserts that `ACTUAL` is less than or equal to `EXPECTED`
+
+Any other comparator is an error.
+
+### BeTemporally(comparator string, compareTo time.Time, threshold ...time.Duration)
+
+    Ω(ACTUAL).Should(BeTemporally(COMPARATOR_STRING, EXPECTED_TIME, <THRESHOLD_DURATION>))
+
+performs time-related assertions.  `ACTUAL` must be a `time.Time`
+
+There are six supported comparators:
+
+- `Ω(ACTUAL).Should(BeTemporally("==", EXPECTED_TIME))`:
+    Asserts that `ACTUAL` and `EXPECTED_TIME` are identical `time.Time`s
+
+- `Ω(ACTUAL).Should(BeTemporally("~", EXPECTED_TIME, <THRESHOLD_DURATION>))`:
+    Asserts that `ACTUAL` and `EXPECTED_TIME` are within `<THRESHOLD_DURATION>` of one another.  By default `<THRESHOLD_DURATION>` is `time.Millisecond` but you can specify a custom value.
+
+- `Ω(ACTUAL).Should(BeTemporally(">", EXPECTED_TIME))`:
+    Asserts that `ACTUAL` is after `EXPECTED_TIME`
+
+- `Ω(ACTUAL).Should(BeTemporally(">=", EXPECTED_TIME))`:
+    Asserts that `ACTUAL` is after or at `EXPECTED_TIME`
+
+- `Ω(ACTUAL).Should(BeTemporally("<", EXPECTED_TIME))`:
+    Asserts that `ACTUAL` is before `EXPECTED_TIME`
+
+- `Ω(ACTUAL).Should(BeTemporally("<=", EXPECTED_TIME))`:
+    Asserts that `ACTUAL` is before or at `EXPECTED_TIME`
 
 Any other comparator is an error.
 
