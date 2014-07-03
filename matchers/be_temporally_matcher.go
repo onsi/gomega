@@ -8,15 +8,16 @@ import (
 
 type BeTemporallyMatcher struct {
 	Comparator string
-	CompareTo  []interface{}
+	CompareTo  time.Time
+	Threshold  []time.Duration
 }
 
 func (matcher *BeTemporallyMatcher) FailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, fmt.Sprintf("to be %s", matcher.Comparator), matcher.CompareTo[0])
+	return format.Message(actual, fmt.Sprintf("to be %s", matcher.Comparator), matcher.CompareTo)
 }
 
 func (matcher *BeTemporallyMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, fmt.Sprintf("not to be %s", matcher.Comparator), matcher.CompareTo[0])
+	return format.Message(actual, fmt.Sprintf("not to be %s", matcher.Comparator), matcher.CompareTo)
 }
 
 func (matcher *BeTemporallyMatcher) Match(actual interface{}) (bool, error) {
@@ -26,14 +27,8 @@ func (matcher *BeTemporallyMatcher) Match(actual interface{}) (bool, error) {
 		return ok
 	}
 
-	if len(matcher.CompareTo) == 0 || len(matcher.CompareTo) > 2 {
-		return false, fmt.Errorf("BeTemporally requires 1 or 2 CompareTo arguments.  Got:\n%s", format.Object(matcher.CompareTo, 1))
-	}
 	if !isTime(actual) {
 		return false, fmt.Errorf("Expected a time.Time.  Got:\n%s", format.Object(actual, 1))
-	}
-	if !isTime(matcher.CompareTo[0]) {
-		return false, fmt.Errorf("Expected a time.Time.  Got:\n%s", format.Object(matcher.CompareTo[0], 1))
 	}
 
 	switch matcher.Comparator {
@@ -42,16 +37,12 @@ func (matcher *BeTemporallyMatcher) Match(actual interface{}) (bool, error) {
 		return false, fmt.Errorf("Unknown comparator: %s", matcher.Comparator)
 	}
 
-	var secondOperand = time.Millisecond
-	if len(matcher.CompareTo) == 2 {
-		var ok bool
-		secondOperand, ok = matcher.CompareTo[1].(time.Duration)
-		if !ok {
-			return false, fmt.Errorf("Expected a time.Duration.  Got:\n%s", format.Object(matcher.CompareTo[1], 1))
-		}
+	var threshold = time.Millisecond
+	if len(matcher.Threshold) == 1 {
+		threshold = matcher.Threshold[0]
 	}
 
-	return matcher.matchTimes(actual.(time.Time), matcher.CompareTo[0].(time.Time), secondOperand), nil
+	return matcher.matchTimes(actual.(time.Time), matcher.CompareTo, threshold), nil
 }
 
 func (matcher *BeTemporallyMatcher) matchTimes(actual, compareTo time.Time, threshold time.Duration) (success bool) {

@@ -2,6 +2,7 @@ package gomega
 
 import (
 	"github.com/onsi/gomega/matchers"
+	"time"
 )
 
 //Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
@@ -235,10 +236,11 @@ func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
 //Actual and expected must be time.Time. The comparators are the same as for BeNumerically
 //    Ω(time.Now()).Should(BeTemporally(">", time.Time{}))
 //    Ω(time.Now()).Should(BeTemporally("~", time.Now(), time.Second))
-func BeTemporally(comparator string, compareTo ...interface{}) OmegaMatcher {
+func BeTemporally(comparator string, compareTo time.Time, threshold ...time.Duration) OmegaMatcher {
 	return &matchers.BeTemporallyMatcher{
 		Comparator: comparator,
 		CompareTo:  compareTo,
+		Threshold:  threshold,
 	}
 }
 

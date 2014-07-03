@@ -78,31 +78,11 @@ var _ = Describe("BeTemporally", func() {
 
 	Context("when passed a non-time", func() {
 		It("should error", func() {
-			success, err := (&BeTemporallyMatcher{Comparator: "==", CompareTo: []interface{}{5}}).Match("foo")
+			success, err := (&BeTemporallyMatcher{Comparator: "==", CompareTo: t0}).Match("foo")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, err = (&BeTemporallyMatcher{Comparator: "=="}).Match(t0)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
-
-			success, err = (&BeTemporallyMatcher{Comparator: "~", CompareTo: []interface{}{3.0, "foo"}}).Match(5.0)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
-
-			success, err = (&BeTemporallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match(t0)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
-
-			success, err = (&BeTemporallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match("foo")
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
-
-			success, err = (&BeTemporallyMatcher{Comparator: "==", CompareTo: []interface{}{nil}}).Match(0)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
-
-			success, err = (&BeTemporallyMatcher{Comparator: "==", CompareTo: []interface{}{0}}).Match(nil)
+			success, err = (&BeTemporallyMatcher{Comparator: "=="}).Match(nil)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})
@@ -110,7 +90,7 @@ var _ = Describe("BeTemporally", func() {
 
 	Context("when passed an unsupported comparator", func() {
 		It("should error", func() {
-			success, err := (&BeTemporallyMatcher{Comparator: "!=", CompareTo: []interface{}{t0}}).Match(t2)
+			success, err := (&BeTemporallyMatcher{Comparator: "!=", CompareTo: t0}).Match(t2)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})
