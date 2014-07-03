@@ -1,8 +1,9 @@
 package gomega
 
 import (
-	"github.com/onsi/gomega/matchers"
 	"time"
+
+	"github.com/onsi/gomega/matchers"
 )
 
 //Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
@@ -220,18 +221,6 @@ func BeNumerically(comparator string, compareTo ...interface{}) OmegaMatcher {
 	}
 }
 
-//BeAssignableToTypeOf succeeds if actual is assignable to the type of expected.
-//It will return an error when one of the values is nil.
-//	  Ω(0).Should(BeAssignableToTypeOf(0))         // Same values
-//	  Ω(5).Should(BeAssignableToTypeOf(-1))        // different values same type
-//	  Ω("foo").Should(BeAssignableToTypeOf("bar")) // different values same type
-//    Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
-func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
-	return &matchers.AssignableToTypeOfMatcher{
-		Expected: expected,
-	}
-}
-
 //BeTemporally compares time.Time's like BeNumerically
 //Actual and expected must be time.Time. The comparators are the same as for BeNumerically
 //    Ω(time.Now()).Should(BeTemporally(">", time.Time{}))
@@ -241,6 +230,18 @@ func BeTemporally(comparator string, compareTo time.Time, threshold ...time.Dura
 		Comparator: comparator,
 		CompareTo:  compareTo,
 		Threshold:  threshold,
+	}
+}
+
+//BeAssignableToTypeOf succeeds if actual is assignable to the type of expected.
+//It will return an error when one of the values is nil.
+//	  Ω(0).Should(BeAssignableToTypeOf(0))         // Same values
+//	  Ω(5).Should(BeAssignableToTypeOf(-1))        // different values same type
+//	  Ω("foo").Should(BeAssignableToTypeOf("bar")) // different values same type
+//    Ω(struct{ Foo string }{}).Should(BeAssignableToTypeOf(struct{ Foo string }{}))
+func BeAssignableToTypeOf(expected interface{}) OmegaMatcher {
+	return &matchers.AssignableToTypeOfMatcher{
+		Expected: expected,
 	}
 }
 
