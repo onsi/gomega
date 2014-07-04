@@ -151,6 +151,12 @@ func MatchJSON(json interface{}) OmegaMatcher {
 	}
 }
 
+func MatchArrayOrSlice(expectedArrayOrSlice interface{}) OmegaMatcher {
+	return &matchers.MatchArrayOrSliceMatcher{
+		ExpectedArrayOrSlice: expectedArrayOrSlice,
+	}
+}
+
 //BeEmpty succeeds if actual is empty.  Actual must be of type string, array, map, chan, or slice.
 func BeEmpty() OmegaMatcher {
 	return &matchers.BeEmptyMatcher{}
