@@ -174,10 +174,31 @@ func BeZero() OmegaMatcher {
 //    Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 //
 //Actual must be an array, slice or map.
-//For maps, containElement searches through the map's values.
+//For maps, ContainElement searches through the map's values.
 func ContainElement(element interface{}) OmegaMatcher {
 	return &matchers.ContainElementMatcher{
 		Element: element,
+	}
+}
+
+//ConsistOf succeeds if actual contains preciely the elements passed into the matcher.  The ordering of the elements does not matter.
+//By default ConsistOf() uses Equal() to match the elements, however custom matchers can be passed in instead.  Here are some examples:
+//
+//    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf("FooBar", "Foo"))
+//    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf(ContainSubstring("Bar"), "Foo"))
+//    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf(ContainSubstring("Foo"), ContainSubstring("Foo")))
+//
+//Actual must be an array, slice or map.  For maps, ConsistOf matches against the map's values.
+//
+//You typically pass variadic arguments to ConsistOf (as in the examples above).  However, if you need to pass in a slice you can provided that it
+//is the only element passed in to ConsistOf:
+//
+//    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf([]string{"FooBar", "Foo"}))
+//
+//Note that Go's type system does not allow you to write this as ConsistOf([]string{"FooBar", "Foo"}...) as []string and []interface{} are different types - hence the need for this special rule.
+func ConsistOf(elements ...interface{}) OmegaMatcher {
+	return &matchers.ConsistOfMatcher{
+		Elements: elements,
 	}
 }
 
