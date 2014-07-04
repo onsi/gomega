@@ -478,6 +478,31 @@ By default `ContainElement()` uses the `Equal()` matcher under the hood to asser
 
     Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 
+### ConsistOf(element ...interface{})
+
+    Ω(ACTUAL).Should(ContainElements(ELEMENT1, ELEMENT2, ELEMENT3, .))
+
+or
+
+    Ω(ACTUAL).Should(ContainElements([]SOME_TYPE{ELEMENT1, ELEMENT2, ELEMENT3, ...}))
+
+succeeds if `ACTUAL` contains preciely the elements passed into the matcher.  The ordering of the elements does not matter.
+
+By default `ConsistOf()` uses `Equal()` to match the elements, however custom matchers can be passed in instead.  Here are some examples:
+
+    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf("FooBar", "Foo"))
+    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf(ContainSubstring("Bar"), "Foo"))
+    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf(ContainSubstring("Foo"), ContainSubstring("Foo")))
+
+Actual must be an `array`, `slice` or `map`.  For maps, `ConsistOf` matches against the `map`'s values.
+
+You typically pass variadic arguments to `ConsistOf` (as in the examples above).  However, if you need to pass in a slice you can provided that it
+is the only element passed in to `ConsistOf`:
+
+    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf([]string{"FooBar", "Foo"}))
+
+Note that Go's type system does not allow you to write this as ConsistOf([]string{"FooBar", "Foo"}...) as []string and []interface{} are different types - hence the need for this special rule.
+
 ### HaveKey(key interface{})
 
     Ω(ACTUAL).Should(HaveKey(KEY))
