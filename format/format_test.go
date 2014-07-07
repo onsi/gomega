@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/types"
 )
 
 //recursive struct
@@ -71,14 +72,14 @@ func (g Stringer) String() string {
 }
 
 var _ = Describe("Format", func() {
-	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) OmegaMatcher {
+	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
 		}
 		return Equal(fmt.Sprintf("%s<%s>: %s", Indent, typeRepresentation, valueRepresentation))
 	}
 
-	matchRegexp := func(typeRepresentation string, valueRepresentation string, args ...interface{}) OmegaMatcher {
+	matchRegexp := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
 		}

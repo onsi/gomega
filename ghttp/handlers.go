@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 //CombineHandler takes variadic list of handlers and produces one handler
@@ -28,7 +29,7 @@ func VerifyRequest(method string, path interface{}, rawQuery ...string) http.Han
 	return func(w http.ResponseWriter, req *http.Request) {
 		Ω(req.Method).Should(Equal(method), "Method mismatch")
 		switch p := path.(type) {
-		case OmegaMatcher:
+		case types.GomegaMatcher:
 			Ω(req.URL.Path).Should(p, "Path mismatch")
 		default:
 			Ω(req.URL.Path).Should(Equal(path), "Path mismatch")
