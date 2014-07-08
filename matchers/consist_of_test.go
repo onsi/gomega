@@ -37,7 +37,7 @@ var _ = Describe("ConsistOf", func() {
 
 	Context("with anything else", func() {
 		It("should error", func() {
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Ω("foo").Should(ConsistOf("f", "o", "o"))
 			})
 

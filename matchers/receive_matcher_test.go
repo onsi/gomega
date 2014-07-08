@@ -244,13 +244,13 @@ var _ = Describe("ReceiveMatcher", func() {
 
 	Describe("when used with eventually and a custom matcher", func() {
 		It("should return the matcher's error when a failing value is received on the channel, instead of the must receive something failure", func() {
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				c := make(chan string, 0)
 				Eventually(c, 0.01).Should(Receive(Equal("hello")))
 			})
 			Ω(failures[0]).Should(ContainSubstring("When passed a matcher, ReceiveMatcher's channel *must* receive something."))
 
-			failures = interceptFailures(func() {
+			failures = InterceptGomegaFailures(func() {
 				c := make(chan string, 1)
 				c <- "hi"
 				Eventually(c, 0.01).Should(Receive(Equal("hello")))
@@ -265,7 +265,7 @@ var _ = Describe("ReceiveMatcher", func() {
 			close(c)
 
 			t := time.Now()
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Eventually(c).Should(Receive())
 			})
 			Ω(time.Since(t)).Should(BeNumerically("<", 500*time.Millisecond))
@@ -274,7 +274,7 @@ var _ = Describe("ReceiveMatcher", func() {
 
 		It("should bail early when passed a non-channel", func() {
 			t := time.Now()
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Eventually(3).Should(Receive())
 			})
 			Ω(time.Since(t)).Should(BeNumerically("<", 500*time.Millisecond))

@@ -26,7 +26,7 @@ var _ = Describe("SayMatcher", func() {
 
 	Context("when actual is not a gexec Buffer, or a BufferProvider", func() {
 		It("should error", func() {
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Ω("foo").Should(Say("foo"))
 			})
 			Ω(failures[0]).Should(ContainSubstring("*gbytes.Buffer"))
@@ -66,7 +66,7 @@ var _ = Describe("SayMatcher", func() {
 
 			It("should abort an eventually", func() {
 				t := time.Now()
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					Eventually(buffer).Should(Say("def"))
 				})
 				Eventually(buffer).ShouldNot(Say("def"))
@@ -95,7 +95,7 @@ var _ = Describe("SayMatcher", func() {
 		It("should report where it got stuck", func() {
 			Ω(buffer).Should(Say("abc"))
 			buffer.Write([]byte("def"))
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Ω(buffer).Should(Say("abc"))
 			})
 			Ω(failures[0]).Should(ContainSubstring("Got stuck at:"))
@@ -105,7 +105,7 @@ var _ = Describe("SayMatcher", func() {
 
 	Context("when a negative match fails", func() {
 		It("should report where it got stuck", func() {
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Ω(buffer).ShouldNot(Say("abc"))
 			})
 			Ω(failures[0]).Should(ContainSubstring("Saw:"))
@@ -153,7 +153,7 @@ var _ = Describe("SayMatcher", func() {
 			s.buffer.Close()
 
 			t := time.Now()
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Eventually(s).Should(Say("def"))
 			})
 			Ω(failures).Should(HaveLen(1))

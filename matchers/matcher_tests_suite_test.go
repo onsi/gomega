@@ -1,9 +1,9 @@
 package matchers_test
 
 import (
+	"testing"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
 type myStringer struct {
@@ -26,14 +26,4 @@ type myCustomType struct {
 func Test(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Gomega")
-}
-
-func interceptFailures(f func()) []string {
-	failures := []string{}
-	RegisterFailHandler(func(message string, callerSkip ...int) {
-		failures = append(failures, message)
-	})
-	f()
-	RegisterFailHandler(Fail)
-	return failures
 }

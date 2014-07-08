@@ -140,7 +140,7 @@ var _ = Describe("Session", func() {
 
 		So("this means that eventually should short circuit", func() {
 			t := time.Now()
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				Eventually(session).Should(Say("blah blah blah blah blah"))
 			})
 			Ω(time.Since(t)).Should(BeNumerically("<=", 500*time.Millisecond))

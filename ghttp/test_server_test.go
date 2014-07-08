@@ -17,16 +17,6 @@ var _ = Describe("TestServer", func() {
 		s    *Server
 	)
 
-	interceptFailures := func(f func()) []string {
-		failures := []string{}
-		RegisterFailHandler(func(message string, callerSkip ...int) {
-			failures = append(failures, message)
-		})
-		f()
-		RegisterFailHandler(Fail)
-		return failures
-	}
-
 	BeforeEach(func() {
 		s = NewServer()
 	})
@@ -61,7 +51,7 @@ var _ = Describe("TestServer", func() {
 
 		Context("when false", func() {
 			It("should fail when attempting a request", func() {
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.Get(s.URL() + "/foo")
 				})
 
@@ -95,7 +85,7 @@ var _ = Describe("TestServer", func() {
 			http.Post(s.URL()+"/routed9", "application/json", nil)
 			http.Get(s.URL() + "/bar")
 
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				http.Get(s.URL() + "/foo")
 				http.Get(s.URL() + "/routed/not/a/match")
 				http.Get(s.URL() + "/routed7")
@@ -131,7 +121,7 @@ var _ = Describe("TestServer", func() {
 			http.Get(s.URL() + "/foo")
 			Ω(called).Should(Equal([]string{"A", "B"}))
 
-			failures := interceptFailures(func() {
+			failures := InterceptGomegaFailures(func() {
 				http.Get(s.URL() + "/foo")
 			})
 
@@ -186,14 +176,14 @@ var _ = Describe("TestServer", func() {
 			})
 
 			It("should verify the method, path", func() {
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.Get(s.URL() + "/foo2")
 				})
 				Ω(failures).Should(HaveLen(1))
 			})
 
 			It("should verify the method, path", func() {
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.Post(s.URL()+"/foo", "application/json", nil)
 				})
 				Ω(failures).Should(HaveLen(1))
@@ -238,7 +228,7 @@ var _ = Describe("TestServer", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 				req.Header.Set("Content-Type", "application/json")
 
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.DefaultClient.Do(req)
 				})
 				Ω(failures).Should(HaveLen(1))
@@ -267,7 +257,7 @@ var _ = Describe("TestServer", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 				req.SetBasicAuth("bob", "bassword")
 
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.DefaultClient.Do(req)
 				})
 				Ω(failures).Should(HaveLen(1))
@@ -307,7 +297,7 @@ var _ = Describe("TestServer", func() {
 				req.Header.Add("Cache-Control", "omicron")
 				req.Header.Add("return-path", "hobbiton")
 
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.DefaultClient.Do(req)
 				})
 				Ω(failures).Should(HaveLen(1))
@@ -343,7 +333,7 @@ var _ = Describe("TestServer", func() {
 				req.Header.Add("Cache-Control", "omicron")
 				req.Header.Add("return-path", "hobbiton")
 
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.DefaultClient.Do(req)
 				})
 				Ω(failures).Should(HaveLen(1))
@@ -364,14 +354,14 @@ var _ = Describe("TestServer", func() {
 			})
 
 			It("should verify the json body and the content type", func() {
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.Post(s.URL()+"/foo", "application/json", bytes.NewReader([]byte(`{"b":2, "a":4}`)))
 				})
 				Ω(failures).Should(HaveLen(1))
 			})
 
 			It("should verify the json body and the content type", func() {
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.Post(s.URL()+"/foo", "application/not-json", bytes.NewReader([]byte(`{"b":2, "a":3}`)))
 				})
 				Ω(failures).Should(HaveLen(1))
@@ -392,7 +382,7 @@ var _ = Describe("TestServer", func() {
 			})
 
 			It("should verify the json body and the content type", func() {
-				failures := interceptFailures(func() {
+				failures := InterceptGomegaFailures(func() {
 					http.Post(s.URL()+"/foo", "application/json", bytes.NewReader([]byte(`[1,3]`)))
 				})
 				Ω(failures).Should(HaveLen(1))
