@@ -291,6 +291,9 @@ type GomegaAssertion interface {
 	NotTo(matcher types.GomegaMatcher, optionalDescription ...interface{}) bool
 }
 
+//OmegaMatcher is deprecated in favor of the better-named and better-organized types.GomegaMatcher but sticks around to support existing code that uses it
+type OmegaMatcher types.GomegaMatcher
+
 func toDuration(input interface{}) time.Duration {
 	duration, ok := input.(time.Duration)
 	if ok {
