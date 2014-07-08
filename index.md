@@ -17,7 +17,7 @@ Just `go get` it:
 
 ##Using Gomega with Ginkgo
 
-When a Gomega assertion fails, Gomega calls an `OmegaFailHandler`.  This is a function that you must provide using `gomega.RegisterFailHandler()`.
+When a Gomega assertion fails, Gomega calls a `GomegaFailHandler`.  This is a function that you must provide using `gomega.RegisterFailHandler()`.
 
 If you're using Ginkgo, all you need to do is:
 
@@ -26,6 +26,8 @@ If you're using Ginkgo, all you need to do is:
 before you start your test suite.
 
 If you use the `ginkgo` CLI to `ginkgo bootstrap` a test suite, this hookup will be automatically generated for you.
+
+> `GomegaFailHandler` is defined in the `types` subpackage
 
 ---
 
@@ -68,19 +70,9 @@ Gomega provides two notations for making assertions.  These notations are functi
 
 On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥z`
 
-On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `OmegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `OmegaMatcher` object.
+On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `GomegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `GomegaMatcher` object.
 
-> The `OmegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.
-
-Each assertion returns a `bool` denoting whether or not the assertion passed.  This is useful for bailing out of a test early if an assertion fails:
-
-        goodToGo := Ω(WeAreSetUp()).Should(BeTrue())
-        if !goodToGo {
-            return
-        }
-        doSomethingExpensive()
-
-> With Ginkgo, a failed assertion does *not* bail out of the current test.  It is generally unnecessary to do so, but in cases where bailing out is necessary, use the `bool` return value and pattern outlined above.
+> The `GomegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.  It's defined in the `types` subpackage.
 
 ### Handling Errors
 
@@ -96,7 +88,7 @@ To assert on the return value of such a method you might write a test that looks
     Ω(err).ShouldNot(HaveOccurred())
     Ω(result).Should(Equal("foo"))
 
-This is a very common use case so Gomega streamlines it for you.  Both `Ω` and `Expect` accept *multiple* arguments.  The first argument is passed to the matcher, and the match only succeeds if *all* subsequent arguments are required to be `nil` or zero-valued.  With this, we can rewrite the above example as:
+Gomega streamlines this very common use case.  Both `Ω` and `Expect` accept *multiple* arguments.  The first argument is passed to the matcher, and the match only succeeds if *all* subsequent arguments are required to be `nil` or zero-valued.  With this, we can rewrite the above example as:
 
     Ω(DoSomethingHard()).Should(Equal("foo"))
 
@@ -104,7 +96,7 @@ This will only pass if the return value of `DoSomethingHard()` is `("foo", nil)`
 
 ### Annotating Assertions
 
-You can annotate any assertion by passing a format string (and optional inputs to format) after the `OmegaMatcher`:
+You can annotate any assertion by passing a format string (and optional inputs to format) after the `GomegaMatcher`:
 
     Ω(ACTUAL).Should(Equal(EXPECTED), "My annotation %d", foo)
     Ω(ACTUAL).ShouldNot(Equal(EXPECTED), "My annotation %d", foo)
@@ -171,7 +163,7 @@ For example:
         return thing.Status
     }).ShouldNot(Equal("Stuck Waiting"))
 
-`Eventually` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
+`Eventually` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `GomegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
 
 The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing them in just after your function:
 
@@ -204,7 +196,7 @@ This also pairs well with `gexec`'s `Session` command wrappers nad `gbyte`'s `Bu
     Eventually(session.Out).Should(Say("Splines reticulated"))
 
 > Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
-> As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `OmegaMatcher`.
+> As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `GomegaMatcher`.
 
 ###Consistently
 
@@ -216,7 +208,7 @@ For example:
         return thing.MemoryUsage()
     }).Should(BeNumerically("<", 10))
 
-`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `OmegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
+`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `GomegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
 
 
     Consistently(func() []int {
@@ -289,7 +281,7 @@ now, failed assertions will point to the correct call to the helper in the test.
 
 ## Provided Matchers
 
-Gomega comes with a bunch of `OmegaMatcher`s.  They're all documented here.  If there's one you'd like to see written either [send a pull request or open an issue](http://github.com/onsi/ginkgo).
+Gomega comes with a bunch of `GomegaMatcher`s.  They're all documented here.  If there's one you'd like to see written either [send a pull request or open an issue](http://github.com/onsi/gomega).
 
 These docs only go over the positive assertion case (`Should`), the negative case (`ShouldNot`) is simply the negation of the positive case.  They also use the `Ω` notation, but - as mentioned above - the `Expect` notation is equivalent.
 
@@ -474,7 +466,7 @@ It is an error for either `ACTUAL` or `EXPECTED` to be invalid JSON.
 
 succeeds if `ACTUAL` contains an element that equals `ELEMENT`.  `ACTUAL` must be an `array`, `slice`, or `map` -- anything else is an error.  For `map`s `ContainElement` searches through the map's values (not keys!).
 
-By default `ContainElement()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `ContainElement` an `OmegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
+By default `ContainElement()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `ContainElement` an `GomegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
 
     Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 
@@ -503,7 +495,7 @@ is the only element passed in to `ConsistOf`:
 
 Note that Go's type system does not allow you to write this as ConsistOf([]string{"FooBar", "Foo"}...) as []string and []interface{} are different types - hence the need for this special rule.
 
-When using `ConsistOf` with custom matchers you should be wary of cases where a matcher is under-specified and may match *more* than the element it is intended to match.  Consider this example:
+When passing matchers to `ConsistOf` you should be wary of cases where a matcher is under-specified and may match *more* than the element it is intended to match.  Consider this example:
 
     Ω([]string{"Foo", "FooBar"}).ShouldConsistOf(ContainSubstring("Foo"), ContainSubstring("Bar"))
 
@@ -520,7 +512,7 @@ will fail as the first `ContainSubstring` matcher will greedily match the `"FooB
 
 succeeds if `ACTUAL` is a map with a key that equals `KEY`.  It is an error for `ACTUAL` to not be a `map`.
 
-By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY`.  You can change this, however, by passing `HaveKey` an `OmegaMatcher`. For example, to check that a map has a key that matches a regular expression:
+By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY`.  You can change this, however, by passing `HaveKey` an `GomegaMatcher`. For example, to check that a map has a key that matches a regular expression:
 
     Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
 
@@ -530,7 +522,7 @@ By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equal
 
 succeeds if `ACTUAL` is a map with a key that equals `KEY` containing a value that equals `VALUE`.  It is an error for `ACTUAL` to not be a `map`.
 
-By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY` and between the associated value and `VALUE`.  You can change this, however, by passing `HaveKeyWithValue` an `OmegaMatcher` for either parameter. For example, to check that a map has a key that matches a regular expression, and a value that passes some numerical threshold:
+By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY` and between the associated value and `VALUE`.  You can change this, however, by passing `HaveKeyWithValue` an `GomegaMatcher` for either parameter. For example, to check that a map has a key that matches a regular expression, and a value that passes some numerical threshold:
 
     Ω(map[string]int{"Foo": 3, "BazFoo": 4}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), BeNumerically(">", 3)))
 
@@ -606,15 +598,17 @@ succeeds if `ACTUAL` is a function that, when invoked, panics.  `ACTUAL` must be
 
 ## Adding Your Own Matchers
 
-A matcher, in Gomega, is any type that satisfies the `OmegaMatcher` interface:
+A matcher, in Gomega, is any type that satisfies the `GomegaMatcher` interface:
 
-    type OmegaMatcher interface {
+    type GomegaMatcher interface {
         Match(actual interface{}) (success bool, message string, err error)
         FailureMessage(actual interface{}) (message string)
         NegatedFailureMessage(actual interface{}) (message string)
     }
 
 Writing domain-specific custom matchers is trivial and highly encouraged.  Let's work through an example.
+
+> The `GomegaMatcher` interface is defined in the `types` subpackage.
 
 ### A Custom Matcher: RepresentJSONifiedObject(EXPECTED interface{})
 
@@ -623,7 +617,7 @@ Say you're working on a JSON API and you want to assert that your server returns
     package json_response_matcher
 
     import (
-        "github.com/onsi/gomega"
+        "github.com/onsi/gomega/types"
 
         "encoding/json"
         "fmt"
@@ -631,7 +625,7 @@ Say you're working on a JSON API and you want to assert that your server returns
         "reflect"
     )
 
-    func RepresentJSONifiedObject(expected interface{}) gomega.OmegaMatcher {
+    func RepresentJSONifiedObject(expected interface{}) types.GomegaMatcher {
         return &representJSONMatcher{
             expected: expected,
         }
@@ -671,12 +665,12 @@ Let's break this down:
 
 - Most matchers have a constructor function that returns an instance of the matcher.  In this case we've created `RepresentJSONifiedObject`.  Where possible, your constructor function should take explicit types or interfaces.  For our usecase, however, we need to accept any possible expected type so `RepresentJSONifiedObject` takes an argument with the generic `interface{}` type.
 - The constructor function then initializes and returns an instance of our matcher: the `representJSONMatcher`.  These rarely need to be exported outside of your matcher package.
-- The `representJSONMatcher` must satisfy the `OmegaMatcher` interface.  It does this by implementing the `Match`, `FailureMessage`, and `NegatedFailureMessage` method:
-    - If the `OmegaMatcher` receives invalid inputs `Match` returns a non-Nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
+- The `representJSONMatcher` must satisfy the `GomegaMatcher` interface.  It does this by implementing the `Match`, `FailureMessage`, and `NegatedFailureMessage` method:
+    - If the `GomegaMatcher` receives invalid inputs `Match` returns a non-Nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
     - If the `actual` and `expected` values match, `Match` should return `true`.
     - Similarly, if the `actual` and `expected` values do not match, `Match` should return `false`.
-    - If the `OmegaMatcher` was testing the `Should` case, and `Match` returned false, `FailureMessage` will be called to print a message explaining the failure.
-    - Likewise, if the `OmegaMatcher` was testing the `ShouldNot` case, and `Match` returned false, `NegatedFailureMessage` will be called.
+    - If the `GomegaMatcher` was testing the `Should` case, and `Match` returned false, `FailureMessage` will be called to print a message explaining the failure.
+    - Likewise, if the `GomegaMatcher` was testing the `ShouldNot` case, and `Match` returned false, `NegatedFailureMessage` will be called.
     - It is guaranteed that `FailureMessage` and `NegatedFailureMessage` will only be called *after* `Match`, so you can save off any state you need to compute the messages in `Match`.
 - Finally, it is common for matchers to make extensive use of the `reflect` library to interpret the generic inputs they receive.  In this case, the `representJSONMatcher` goes through some `reflect` gymnastics to create a pointer to a new object with the same type as the `expected` object, read and decode JSON from `actual` into that pointer, and then deference the pointer and compare the result to the `expected` object.
 
@@ -792,7 +786,7 @@ To get around this, a matcher can optionally implement:
 
     MatchMayChangeInTheFuture(actual interface{}) bool
 
-This is not part of the `OmegaMatcher` interface and, in general, most matchers do not need to implement `MatchMayChangeInTheFuture`.
+This is not part of the `GomegaMatcher` interface and, in general, most matchers do not need to implement `MatchMayChangeInTheFuture`.
 
 If implemented, however, `MatchMayChangeInTheFuture` will be called with the appropriate `actual` value by `Eventually` and `Consistently` *after* the call to `Match` during every polling interval.  If `MatchMayChangeInTheFuture` returns `true`, `Eventually` and `Consistently` will continue polling.  If, however, `MatchMayChangeInTheFuture` returns `false`, `Eventually` and `Consistently` will abort and either fail or pass as appropriate.
 
@@ -808,7 +802,7 @@ If you'd like to look at a simple example `MatchMayChangeInTheFuture` check out 
 
 Contributions are more than welcome.  Either [open an issue](http://github.com/onsi/gomega/issues) for a matcher you'd like to see or, better yet, test drive the matcher and [send a pull request](https://github.com/onsi/gomega/pulls).
 
-When adding a new matcher please mimic the style use in Gomega's current matchers: you should use the tools in `formatSupport.go`, put the matcher and its tests in the `matchers` package, the constructor in the `matchers.go` file in the `omega` package.  Also, be sure to update the github-pages documentation (both `index.md` and `gomega_sidebar.html`) and include those changes in a separate pull request.
+When adding a new matcher please mimic the style use in Gomega's current matchers: you should use the `format` package to format your output, put the matcher and its tests in the `matchers` package, the constructor in the `matchers.go` file in the top-level package.
 
 ## `ghttp`: Testing HTTP CLients
 The `ghttp` package provides support for testing http *clients*.  The typical pattern in Go for testing http clients entails spinning up an `httptest.Server` using the `net/http/httptest` package and attaching test-specific handlers that perform assertions.
