@@ -87,7 +87,7 @@ func (assertion *AsyncAssertion) pollActual() (interface{}, error) {
 }
 
 type oracleMatcher interface {
-	MatchMayChangeInTheFuture(assertion interface{}) bool
+	MatchMayChangeInTheFuture(actual interface{}) bool
 }
 
 func (assertion *AsyncAssertion) matcherMayChange(matcher types.GomegaMatcher, value interface{}) bool {
