@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/amitkgupta/goraph"
 	"github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/matchers/support/goraph/bipartitegraph"
 )
 
 type ConsistOfMatcher struct {
@@ -46,12 +46,12 @@ func (matcher *ConsistOfMatcher) Match(actual interface{}) (success bool, err er
 		return match && err == nil, nil
 	}
 
-	bipartiteGraph, err := goraph.NewBipartiteGraph(values, matchers, neighbours)
+	bipartiteGraph, err := bipartitegraph.NewBipartiteGraph(values, matchers, neighbours)
 	if err != nil {
 		return false, err
 	}
 
-	return bipartiteGraph.LargestMatchingSize() == len(values), nil
+	return len(bipartiteGraph.LargestMatching()) == len(values), nil
 }
 
 func (matcher *ConsistOfMatcher) valuesOf(actual interface{}) []interface{} {
