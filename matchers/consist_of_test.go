@@ -54,6 +54,11 @@ var _ = Describe("ConsistOf", func() {
 			Ω([]string{"foo", "bar", "baz"}).ShouldNot(ConsistOf("foo", MatchRegexp("^ba"), MatchRegexp("turducken")))
 		})
 
+        It("should not depend on the order of the matchers", func() {
+			Ω([][]int{[]int{1, 2}, []int{2}}).Should(ConsistOf(ContainElement(1), ContainElement(2)))
+			Ω([][]int{[]int{1, 2}, []int{2}}).Should(ConsistOf(ContainElement(2), ContainElement(1)))
+        })
+
 		Context("when a matcher errors", func() {
 			It("should soldier on", func() {
 				Ω([]string{"foo", "bar", "baz"}).ShouldNot(ConsistOf(BeFalse(), "foo", "bar"))
