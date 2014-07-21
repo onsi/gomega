@@ -197,15 +197,6 @@ func ContainElement(element interface{}) types.GomegaMatcher {
 //    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf([]string{"FooBar", "Foo"}))
 //
 //Note that Go's type system does not allow you to write this as ConsistOf([]string{"FooBar", "Foo"}...) as []string and []interface{} are different types - hence the need for this special rule.
-//When using `ConsistOf` with custom matchers you should be wary of cases where a matcher is under-specified and may match *more* than the element it is intended to match.  Consider this example:
-//
-//     Ω([]string{"Foo", "FooBar"}).ShouldConsistOf(ContainSubstring("Foo"), ContainSubstring("Bar"))
-//
-// will pass, but:
-//
-//     Ω([]string{"FooBar", "Foo"}).ShouldConsistOf(ContainSubstring("Foo"), ContainSubstring("Bar"))
-//
-// will fail as the first `ContainSubstring` matcher will greedily match the `"FooBar"` leaving nothing for the second `ContainSubstring` matcher to match against.
 
 func ConsistOf(elements ...interface{}) types.GomegaMatcher {
 	return &matchers.ConsistOfMatcher{
