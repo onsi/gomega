@@ -77,7 +77,7 @@ func BeClosed() types.GomegaMatcher {
 	return &matchers.BeClosedMatcher{}
 }
 
-//Receive succeeds if there is a message to be received on actual.
+//Receive succeeds if there is a value to be received on actual.
 //Actual must be a channel (and cannot be a send-only channel) -- anything else is an error.
 //
 //Receive returns immediately and never blocks:
@@ -119,6 +119,24 @@ func Receive(args ...interface{}) types.GomegaMatcher {
 	}
 
 	return &matchers.ReceiveMatcher{
+		Arg: arg,
+	}
+}
+
+//BeSent succeeds if a value can be sent to actual.
+//Actual must be a channel (and cannot be a receive-only channel) that can sent the type of the value passed into BeSent -- anything else is an error.
+//In addition, actual must not be closed.
+//
+//BeSent never blocks:
+//
+//- If the channel `c` is not ready to receive then Ω(c).Should(BeSent("foo")) will fail immediately
+//- If the channel `c` is eventually ready to receive then Eventually(c).Should(BeSent("foo")) will succeed.. presuming the channel becomes ready to receive  before Eventually's timeout
+//- If the channel `c` is closed then Ω(c).Should(BeSent("foo")) and Ω(c).ShouldNot(BeSent("foo")) will both fail immediately
+//
+//Of course, the value is actually sent to the channel.  The point of `BeSent` is less to make an assertion about the availability of the channel (which is typically an implementation detail that your test should not be concerned with).
+//Rather, the point of `BeSent` is to make it possible to easily and expressively write tests that can timeout on blocked channel sends.
+func BeSent(arg interface{}) types.GomegaMatcher {
+	return &matchers.BeSentMatcher{
 		Arg: arg,
 	}
 }
