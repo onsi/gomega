@@ -285,7 +285,9 @@ Gomega comes with a bunch of `GomegaMatcher`s.  They're all documented here.  If
 
 These docs only go over the positive assertion case (`Should`), the negative case (`ShouldNot`) is simply the negation of the positive case.  They also use the `Ω` notation, but - as mentioned above - the `Expect` notation is equivalent.
 
-### Equal(expected interface{})
+### Asserting Equivalence
+
+#### Equal(expected interface{})
 
     Ω(ACTUAL).Should(Equal(EXPECTED))
 
@@ -297,7 +299,7 @@ It is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil
 
 > For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher
 
-### BeEquivalentTo(expected interface{})
+#### BeEquivalentTo(expected interface{})
 
     Ω(ACTUAL).Should(BeEquivalentTo(EXPECTED))
 
@@ -319,19 +321,29 @@ As a rule, you **should not** use `BeEquivalentTo` with numbers.  Both of the fo
 
 the first assertion passes because 5.1 will be cast to an integer and will get rounded down!  Such false positives are terrible and should be avoided.  Use [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) to compare numbers instead.
 
-### BeNil()
+#### BeAssignableToTypeOf(expected interface)
+
+    Ω(ACTUAL).Should(BeAssignableToTypeOf(EXPECTED interface))
+
+succeeds if `ACTUAL` is a type that can be assigned to a variable with the same type as `EXPECTED`.  It is an error for either `ACTUAL` or `EXPECTED` to be `nil`.
+
+### Asserting Presence
+
+#### BeNil()
 
     Ω(ACTUAL).Should(BeNil())
 
 succeeds if `ACTUAL` is, in fact, `nil`.
 
-### BeZero()
+#### BeZero()
 
     Ω(ACTUAL).Should(BeZero())
 
 succeeds if `ACTUAL` is the zero value for its type *or* if `ACTUAL` is `nil`.
 
-### BeTrue()
+### Asserting Truthiness
+
+#### BeTrue()
 
     Ω(ACTUAL).Should(BeTrue())
 
@@ -339,13 +351,15 @@ succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error f
 
 > Some matcher libraries have a notion of `truthiness` to assert that an object is present.  Gomega is strict, and `BeTrue()` only works with `bool`s.  You can use `Ω(ACTUAL).ShouldNot(BeZero())` or `Ω(ACTUAL).ShouldNot(BeNil())` to verify object presence.
 
-### BeFalse()
+#### BeFalse()
 
     Ω(ACTUAL).Should(BeFalse())
 
 succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.
 
-### HaveOccurred()
+### Asserting on Errors
+
+#### HaveOccurred()
 
     Ω(ACTUAL).Should(HaveOccurred())
 
@@ -354,13 +368,15 @@ succeeds if `ACTUAL` is a non-nil `error`.  Thus, the typical Go error checking 
     err := SomethingThatMightFail()
     Ω(err).ShouldNot(HaveOccurred())
 
-### MatchError(expected interface{})
+#### MatchError(expected interface{})
 
     Ω(ACTUAL).Should(MatchError(EXPECTED))
 
 succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  Alternatively, `EXPECTED` can be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`.  Any other type for `EXPECTED` is an error.
 
-### BeClosed()
+### Working with Channels
+
+#### BeClosed()
 
     Ω(ACTUAL).Should(BeClosed())
 
@@ -372,7 +388,7 @@ Also, if you are testing that a *buffered* channel is closed you must first read
 
 Finally, as a corollary: it is an error to check whether or not a send-only channel is closed.
 
-### Receive()
+#### Receive()
 
     Ω(ACTUAL).Should(Receive(<optionalPointer>))
 
@@ -416,19 +432,25 @@ Finally, there are occasions when you need to grab the object sent down the chan
 
 Of course, this could have been written as `receivedBagel := <-bagelChan` - however using `Receive` makes it easy to avoid hanging the test suite should nothing ever come down the channel.
 
-### BeEmpty()
+#### BeSent(value interface{})
 
-    Ω(ACTUAL).Should(BeEmpty())
+    Ω(ACTUAL).Should(BeSent(VALUE))
 
-succeeds if `ACTUAL` is, in fact, empty. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`.  It is an error for it to have any other type.
+attempts to send VALUE to the channel ACTUAL without blocking.  It succeeds if this is possible.
 
-### HaveLen(count int)
+`ACTUAL` must be a channel (and cannot be a receive-only channel) that can sent the type of the `VALUE` passed into `BeSent` -- anything else is an error. In addition, actual must not be closed.
 
-    Ω(ACTUAL).Should(HaveLen(INT))
+`BeSent` never blocks:
 
-succeeds if the length of `ACTUAL` is `INT`. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`.  It is an error for it to have any other type.
+- If the channel `c` is not ready to receive then `Ω(c).Should(BeSent("foo"))` will fail immediately
+- If the channel `c` is eventually ready to receive then `Eventually(c).Should(BeSent("foo"))` will succeed.. presuming the channel becomes ready to receive before `Eventually`'s timeout
+- If the channel `c` is closed then `Ω(c).Should(BeSent("foo"))` and `Ω(c).ShouldNot(BeSent("foo"))` will both fail immediately
 
-### ContainSubstring(substr string, args ...interface{})
+Of course, `VALUE` is actually sent to the channel.  The point of `BeSent` is less to make an assertion about the availability of the channel (which is typically an implementation detail that your test should not be concerned with). Rather, the point of `BeSent` is to make it possible to easily and expressively write tests that can timeout on blocked channel sends.
+
+### Working with Strings and JSON
+
+#### ContainSubstring(substr string, args ...interface{})
 
     Ω(ACTUAL).Should(ContainSubstring(STRING, ARGS...))
 
@@ -440,7 +462,7 @@ succeeds if `ACTUAL` contains the substring generated by:
 
 > Note, of course, that the `ARGS...` are not required.  They are simply a convenience to allow you to build up strings programmatically inline in the matcher.
 
-### MatchRegexp(regexp string, args ...interface{})
+#### MatchRegexp(regexp string, args ...interface{})
 
     Ω(ACTUAL).Should(MatchRegexp(STRING, ARGS...))
 
@@ -452,7 +474,7 @@ succeeds if `ACTUAL` is matched by the regular expression string generated by:
 
 > Note, of course, that the `ARGS...` are not required.  They are simply a convenience to allow you to build up strings programmatically inline in the matcher.
 
-### MatchJSON(json interface{})
+#### MatchJSON(json interface{})
 
     Ω(ACTUAL).Should(MatchJSON(EXPECTED))
 
@@ -460,7 +482,21 @@ Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `Mat
 
 It is an error for either `ACTUAL` or `EXPECTED` to be invalid JSON.
 
-### ContainElement(element interface{})
+### Working with Collections
+
+#### BeEmpty()
+
+    Ω(ACTUAL).Should(BeEmpty())
+
+succeeds if `ACTUAL` is, in fact, empty. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`.  It is an error for it to have any other type.
+
+#### HaveLen(count int)
+
+    Ω(ACTUAL).Should(HaveLen(INT))
+
+succeeds if the length of `ACTUAL` is `INT`. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`.  It is an error for it to have any other type.
+
+#### ContainElement(element interface{})
 
     Ω(ACTUAL).Should(ContainElement(ELEMENT))
 
@@ -470,7 +506,7 @@ By default `ContainElement()` uses the `Equal()` matcher under the hood to asser
 
     Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 
-### ConsistOf(element ...interface{})
+#### ConsistOf(element ...interface{})
 
     Ω(ACTUAL).Should(ContainElements(ELEMENT1, ELEMENT2, ELEMENT3, .))
 
@@ -496,7 +532,7 @@ is the only element passed in to `ConsistOf`:
 Note that Go's type system does not allow you to write this as ConsistOf([]string{"FooBar", "Foo"}...) as []string and []interface{} are different types - hence the need for this special rule.
 
 
-### HaveKey(key interface{})
+#### HaveKey(key interface{})
 
     Ω(ACTUAL).Should(HaveKey(KEY))
 
@@ -506,7 +542,7 @@ By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equal
 
     Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
 
-### HaveKeyWithValue(key interface{}, value interface{})
+#### HaveKeyWithValue(key interface{}, value interface{})
 
     Ω(ACTUAL).Should(HaveKeyWithValue(KEY, VALUE))
 
@@ -516,7 +552,9 @@ By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to ass
 
     Ω(map[string]int{"Foo": 3, "BazFoo": 4}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), BeNumerically(">", 3)))
 
-### BeNumerically(comparator string, compareTo ...interface{})
+### Working with Numbers and Times
+
+#### BeNumerically(comparator string, compareTo ...interface{})
 
     Ω(ACTUAL).Should(BeNumerically(COMPARATOR_STRING, EXPECTED, <THRESHOLD>))
 
@@ -544,7 +582,7 @@ There are six supported comparators:
 
 Any other comparator is an error.
 
-### BeTemporally(comparator string, compareTo time.Time, threshold ...time.Duration)
+#### BeTemporally(comparator string, compareTo time.Time, threshold ...time.Duration)
 
     Ω(ACTUAL).Should(BeTemporally(COMPARATOR_STRING, EXPECTED_TIME, <THRESHOLD_DURATION>))
 
@@ -572,13 +610,9 @@ There are six supported comparators:
 
 Any other comparator is an error.
 
-### BeAssignableToTypeOf(expected interface)
+### Asserting on Panics
 
-    Ω(ACTUAL).Should(BeAssignableToTypeOf(EXPECTED interface))
-
-succeeds if `ACTUAL` is a type that can be assigned to a variable with the same type as `EXPECTED`.  It is an error for either `ACTUAL` or `EXPECTED` to be `nil`.
-
-### Panic()
+#### Panic()
 
     Ω(ACTUAL).Should(Panic())
 

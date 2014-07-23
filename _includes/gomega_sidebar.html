@@ -48,74 +48,130 @@
     <li>
         <a href="#provided-matchers">Provided Matchers</a>
         <ul class="nav">
-            <li>
-                <a href="#equalexpected-interface"><code>Equal(...)</code></a>
+            <li> 
+                <a href="#asserting-equivalence">Asserting Equivalence</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#equalexpected-interface"><code>Equal(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#beequivalenttoexpected-interface"><code>BeEquivalentTo(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#beassignabletotypeofexpected-interface"><code>BeAssignableToTypeOf(...)</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#beequivalenttoexpected-interface"><code>BeEquivalentTo(...)</code></a>
+
+            <li> 
+                <a href="#asserting-presence">Asserting Presence</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#benil"><code>BeNil()</code></a>
+                    </li>
+                    <li>
+                        <a href="#bezero"><code>BeZero()</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#benil"><code>BeNil()</code></a>
+
+            <li> 
+                <a href="#asserting-truthiness">Asserting Truthiness</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#betrue"><code>BeTrue()</code></a>
+                    </li>
+                    <li>
+                        <a href="#befalse"><code>BeFalse()</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#bezero"><code>BeZero()</code></a>
+
+            <li> 
+                <a href="#asserting-on-errors">Asserting on Errors</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#haveoccurred"><code>HaveOccurred()</code></a>
+                    </li>
+                    <li>
+                        <a href="#matcherrorexpected-interface"><code>MatchError(...)</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#betrue"><code>BeTrue()</code></a>
+
+            <li> 
+                <a href="#working-with-channels">Working with Channels</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#beclosed"><code>BeClosed()</code></a>
+                    </li>            
+                    <li>
+                        <a href="#receive"><code>Receive()</code></a>
+                    </li>            
+                    <li>
+                        <a href="#besentvalue-interface"><code>BeSent(...)</code></a>
+                    </li>            
+                </ul>
             </li>
-            <li>
-                <a href="#befalse"><code>BeFalse()</code></a>
+
+            <li> 
+                <a href="#working-with-channels">Working with Strings and JSON</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#containsubstringsubstr-string-args-interface"><code>ContainSubstring(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#matchregexpregexp-string-args-interface"><code>MatchRegexp(...)</code></a>
+                    </li>
+                       <li>
+                        <a href="#matchjsonjson-interface"><code>MatchJSON(...)</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#haveoccurred"><code>HaveOccurred()</code></a>
+     
+            <li> 
+                <a href="#working-with-collections">Working with Collections</a>
+                <ul class="nav">
+                    <li>
+                        <a href="#beempty"><code>BeEmpty()</code></a>
+                    </li>
+                    <li>
+                        <a href="#havelencount-int"><code>HaveLen(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#containelementelement-interface"><code>ContainElement(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#consistofelement-interface"><code>ConsistOf(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#havekeykey-interface"><code>HaveKey(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#havekeywithvaluekey-interface-value-interface"><code>HaveKeyWithValue(...)</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#matcherrorexpected-interface"><code>MatchError(...)</code></a>
+
+            <li> 
+                <a href="#working-with-collections">Working with Numbers and Times</a>
+                <ul class="nav">            
+                    <li>
+                        <a href="#benumericallycomparator-string-compareto-interface"><code>BeNumerically(...)</code></a>
+                    </li>
+                    <li>
+                        <a href="#betemporallycomparator-string-compareto-timetime-threshold-timeduration"><code>BeTemporally(...)</code></a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="#beclosed"><code>BeClosed()</code></a>
-            </li>            
-            <li>
-                <a href="#receive"><code>Receive()</code></a>
-            </li>            
-            <li>
-                <a href="#beempty"><code>BeEmpty()</code></a>
-            </li>
-            <li>
-                <a href="#havelencount-int"><code>HaveLen(...)</code></a>
-            </li>
-            <li>
-                <a href="#containsubstringsubstr-string-args-interface"><code>ContainSubstring(...)</code></a>
-            </li>
-            <li>
-                <a href="#matchregexpregexp-string-args-interface"><code>MatchRegexp(...)</code></a>
-            </li>
-               <li>
-                <a href="#matchjsonjson-interface"><code>MatchJSON(...)</code></a>
-            </li>
-            <li>
-                <a href="#containelementelement-interface"><code>ContainElement(...)</code></a>
-            </li>
-            <li>
-                <a href="#consistofelement-interface"><code>ConsistOf(...)</code></a>
-            </li>
-            <li>
-                <a href="#havekeykey-interface"><code>HaveKey(...)</code></a>
-            </li>
-            <li>
-                <a href="#havekeywithvaluekey-interface-value-interface"><code>HaveKeyWithValue(...)</code></a>
-            </li>
-            <li>
-                <a href="#benumericallycomparator-string-compareto-interface"><code>BeNumerically(...)</code></a>
-            </li>
-            <li>
-                <a href="#betemporallycomparator-string-compareto-timetime-threshold-timeduration"><code>BeTemporally(...)</code></a>
-            </li>
-            <li>
-                <a href="#beassignabletotypeofexpected-interface"><code>BeAssignableToTypeOf(...)</code></a>
-            </li>
-            <li>
-                <a href="#panic"><code>Panic()</code></a>
+
+            <li> 
+                <a href="#asserting-on-panics">Asserting on Panics</a>
+                <ul class="nav">            
+                    <li>        
+                        <a href="#panic"><code>Panic()</code></a>
+                    </li>
+                </ul>
             </li>
         </ul>    
     </li>
