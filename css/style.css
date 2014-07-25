@@ -87,6 +87,11 @@ blockquote p {
     margin-bottom:16px;
 }
 
+.sidebar-section>ul {
+    max-height: 600px;
+    overflow: auto;
+}
+
 .copy {
     font-size:90%;
     text-align: center;
@@ -127,9 +132,18 @@ blockquote p {
     display:block;
 }
 
+.nav>li>.nav>li>.nav>li>a {
+    padding:4px;
+}
+
 .sidebar-section>ul>li>ul>li {
     margin-top:0px;
     margin-left:15px;
+}
+
+.sidebar-section>ul>li>ul>li>ul>li {
+    margin-top:0px;
+    margin-left:18px;
 }
 
 .sidebar-section>ul>li>ul>li>a:hover {
