@@ -1,3 +1,7 @@
+## 1.0 (8/2/2014)
+
+No changes. Dropping "beta" from the version number.
+
 ## 1.0.0-beta (7/8/2014)
 Breaking Changes:
 

@@ -24,7 +24,7 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-const GOMEGA_VERSION = "1.0-beta"
+const GOMEGA_VERSION = "1.0"
 
 var globalFailHandler types.GomegaFailHandler
 
