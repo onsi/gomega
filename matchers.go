@@ -161,6 +161,26 @@ func ContainSubstring(substr string, args ...interface{}) types.GomegaMatcher {
 	}
 }
 
+//HavePrefix succeeds if actual is a string or stringer that contains the
+//passed-in string as a prefix.  Optional arguments can be provided to construct
+//via fmt.Sprintf().
+func HavePrefix(prefix string, args ...interface{}) types.GomegaMatcher {
+	return &matchers.HavePrefixMatcher{
+		Prefix: prefix,
+		Args:   args,
+	}
+}
+
+//HaveSuffix succeeds if actual is a string or stringer that contains the
+//passed-in string as a suffix.  Optional arguments can be provided to construct
+//via fmt.Sprintf().
+func HaveSuffix(suffix string, args ...interface{}) types.GomegaMatcher {
+	return &matchers.HaveSuffixMatcher{
+		Suffix: suffix,
+		Args:   args,
+	}
+}
+
 //MatchJSON succeeds if actual is a string or stringer of JSON that matches
 //the expected JSON.  The JSONs are decoded and the resulting objects are compared via
 //reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
