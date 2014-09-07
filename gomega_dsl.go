@@ -130,6 +130,9 @@ func Expect(actual interface{}, extra ...interface{}) GomegaAssertion {
 //error message to refer to the calling line in the test (as opposed to the line in the helper function)
 //set the first argument of `ExpectWithOffset` appropriately.
 func ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) GomegaAssertion {
+	if globalFailHandler == nil {
+		panic("Expect() called but the fail handler was nil. Did you use Expect() outside of It()?")
+	}
 	return assertion.New(actual, globalFailHandler, offset, extra...)
 }
 
