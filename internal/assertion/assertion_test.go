@@ -2,6 +2,7 @@ package assertion_test
 
 import (
 	"errors"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/internal/assertion"
@@ -231,6 +232,21 @@ var _ = Describe("Assertion", func() {
 				Ω(failureMessage).Should(ContainSubstring("foo"))
 				Ω(failureCallerSkip).Should(Equal(3))
 			})
+		})
+	})
+
+	Context("Making an assertion without a registered fail handler", func() {
+		It("should panic", func() {
+			defer func() {
+				e := recover()
+				RegisterFailHandler(Fail)
+				if e == nil {
+					Fail("expected a panic to have occured")
+				}
+			}()
+
+			RegisterFailHandler(nil)
+			Ω(true).Should(BeTrue())
 		})
 	})
 })

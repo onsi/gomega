@@ -1,3 +1,10 @@
+## HEAD
+
+Improvements:
+
+- Added `BeSent` which attempts to send a value down a channel and fails if the attempt blocks.  Can be paired with `Eventually` to safely send a value down a channel with a timeout.
+- `Ω`, `Expect`, `Eventually`, and `Consistently` now immediately `panic` if there is no registered fail handler.  This is always a mistake that can hide failing tests.
+
 ## 1.0 (8/2/2014)
 
 No changes. Dropping "beta" from the version number.
