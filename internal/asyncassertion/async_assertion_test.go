@@ -66,7 +66,8 @@ var _ = Describe("Async Assertion", func() {
 
 				a.Should(HaveLen(11), "My description %d", 2)
 
-				Ω(arr).Should(HaveLen(10))
+				Ω(len(arr)).Should(BeNumerically(">", 8))
+				Ω(len(arr)).Should(BeNumerically("<=", 10))
 				Ω(failureMessage).Should(ContainSubstring("Timed out after"))
 				Ω(failureMessage).Should(ContainSubstring("<[]int | len:10"), "Should pass the correct value to the matcher message formatter.")
 				Ω(failureMessage).Should(ContainSubstring("My description 2"))
