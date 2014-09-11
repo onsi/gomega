@@ -27,13 +27,13 @@ before you start your test suite.
 
 If you use the `ginkgo` CLI to `ginkgo bootstrap` a test suite, this hookup will be automatically generated for you.
 
-> `GomegaFailHandler` is defined in the `types` subpackage
+> `GomegaFailHandler` is defined in the `types` subpackage.
 
 ---
 
 ## Using Gomega with Golang's XUnit-style Tests
 
-Though Gomega is tailored to work best with Ginkgo it is easy to use Gomega with Golang's XUnit style tests.  Here's how: me know.
+Though Gomega is tailored to work best with Ginkgo it is easy to use Gomega with Golang's XUnit style tests.  Here's how:
 
 To use Gomega with Golang's XUnit style tests:
 
@@ -47,9 +47,9 @@ To use Gomega with Golang's XUnit style tests:
 There are two caveats:
 
 - You **must** register the `t *testing.T` passed to your test with Gomega before you make any assertions associated with that test.  So every `Test...` function in your suite should have the `RegisterTestingT(t)` line.
-- Gomega uses a global (singleton) fail handler.  This has the benefit that you don't need to pass the fail handler down to each test, but does mean that *you cannot run your XUnit style tests in parallel with Gomega*.  If you find this odious, open an issue on Github and let
+- Gomega uses a global (singleton) fail handler.  This has the benefit that you don't need to pass the fail handler down to each test, but does mean that *you cannot run your XUnit style tests in parallel with Gomega*.  If you find this odious, open an issue on Github and let me know.
 
-> Gomega tests written with Ginkgo *can* be run in parallel using the `ginkgo` CLI.  This is because Ginkgo runs it's parallel specs in different *processes* whereas the default Golang test runner runs parallel tests in the *same* process.  The latter approach makes your test suite susceptible to test pollution and is avoided by Ginkgo.
+> Gomega tests written with Ginkgo *can* be run in parallel using the `ginkgo` CLI.  This is because Ginkgo runs its parallel specs in different *processes* whereas the default Golang test runner runs parallel tests in the *same* process.  The latter approach makes your test suite susceptible to test pollution and is avoided by Ginkgo.
 
 ---
 
@@ -68,11 +68,11 @@ Gomega provides two notations for making assertions.  These notations are functi
         Expect(ACTUAL).NotTo(Equal(EXPECTED))
         Expect(ACTUAL).ToNot(Equal(EXPECTED))
 
-On OS X the `Ω` character is easy to type.  Just hit option-z: `⌥z`
+On OS X the `Ω` character should be easy to type, it is usually just option-z: `⌥z`.
 
 On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `GomegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `GomegaMatcher` object.
 
-> The `GomegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.  It's defined in the `types` subpackage.
+> The `GomegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.  It is defined in the `types` subpackage.
 
 ### Handling Errors
 
@@ -147,7 +147,7 @@ If you want to use Gomega's recursive object description in your own code you ca
 
 ##Making Asynchronous Assertions
 
-Gomega has support for making *asynchronous* assertions.  There are two functions that provide this support `Eventually` and `Consistently`.
+Gomega has support for making *asynchronous* assertions.  There are two functions that provide this support: `Eventually` and `Consistently`.
 
 ###Eventually
 
@@ -189,18 +189,20 @@ If the argument to `Eventually` is *not* a function, `Eventually` will simply ru
     Eventually(channel).Should(BeClosed())
     Eventually(channel).Should(Receive())
 
-This also pairs well with `gexec`'s `Session` command wrappers nad `gbyte`'s `Buffer`s:
+This also pairs well with `gexec`'s `Session` command wrappers and `gbyte`'s `Buffer`s:
 
-    Eventually(session).Should(gexec.Exit(0)) //the wrapped command should exit with status 0, eventually
+    Eventually(session).Should(gexec.Exit(0))
+    //the wrapped command should exit with status 0, eventually
+
     Eventually(buffer).Should(Say("something matching this regexp"))
     Eventually(session.Out).Should(Say("Splines reticulated"))
 
-> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- eventually will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
+> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- `Eventually` will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `GomegaMatcher`.
 
 ###Consistently
 
-`Consistently` checks that an assertion passes or a period of time.  It does this by polling its argument for the fixed period of time and fails if the matcher ever fails during that period of time.
+`Consistently` checks that an assertion passes for a period of time.  It does this by polling its argument repeatedly during the period. It fails if the matcher ever fails during that period.
 
 For example:
 
@@ -208,7 +210,7 @@ For example:
         return thing.MemoryUsage()
     }).Should(BeNumerically("<", 10))
 
-`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `GomegaMatcher`.  `Consitently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
+`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
 
 
     Consistently(func() []int {
@@ -217,7 +219,7 @@ For example:
 
 As with `Eventually`, these can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
 
-`Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can asser that:
+`Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can assert that:
 
     Consistently(channel).ShouldNot(Receive())
 
@@ -225,7 +227,7 @@ To assert that nothing gets sent to a channel.
 
 As with `Eventually`, if you pass `Consistently` a function that returns more than one value, it will pass the first value to the matcher and assert that all other values are `nil` or zero-valued.
 
-> Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests....  Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
+> Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
 ###Modifying Default Intervals
 
@@ -242,15 +244,15 @@ By default, `Eventually` will poll every 10 milliseconds for up to 1 second and 
 
 While writing [custom matchers](#adding-your-own-matchers) is an expressive way to make assertions against your code, it is often more convenient to write one-off helper functions like so:
 
-    var _ = Describe("Turboencabulator", func() {
+    var _ = Describe("Turbo-encabulator", func() {
         ...
-        assertTurboencabulatorContains(components ...string) {
-            components, err := turboEncabulator.GetComponents()
+        assertTurboEncabulatorContains(components ...string) {
+            teComponents, err := turboEncabulator.GetComponents()
             Expect(err).NotTo(HaveOccurred())
 
-            Expect(components).To(HaveLen(components))
+            Expect(teComponents).To(HaveLen(components))
             for _, component := range components {
-                Expect(components).To(ContainElement(component))
+                Expect(teComponents).To(ContainElement(component))
             }
         }
 
@@ -265,17 +267,17 @@ To get around this, Gomega provides versions of `Expect`, `Eventually` and `Cons
 
 With this, we can rewrite our helper as:
 
-    assertTurboencabulatorContains(components ...string) {
-        components, err := turboEncabulator.GetComponents()
+    assertTurboEncabulatorContains(components ...string) {
+        teComponents, err := turboEncabulator.GetComponents()
         ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
-        ExpectWithOffset(1, components).To(HaveLen(components))
+        ExpectWithOffset(1, teComponents).To(HaveLen(components))
         for _, component := range components {
-            ExpectWithOffset(1, components).To(ContainElement(component))
+          ExpectWithOffset(1, teComponents).To(ContainElement(component))
         }
     }
 
-now, failed assertions will point to the correct call to the helper in the test.
+Now, failed assertions will point to the correct call to the helper in the test.
 
 ---
 
@@ -293,24 +295,26 @@ These docs only go over the positive assertion case (`Should`), the negative cas
 
 uses [`reflect.DeepEqual`](http://golang.org/pkg/reflect#deepequal) to compare `ACTUAL` with `EXPECTED`.
 
-`reflect.DeepEqual` is awesome.  It will use `==` when appropriate (e.g. when comparing primitives) but will recursively dig into maps, slices, arrays, and even your own structs to ensure deep equality.  `reflect.DeepEqual`, however, is strict about comparing types.  Both `ACTUAL` and `EXPECTED` *must* have the same type.  If you want to compare across different types (e.g. if you've defined a type alias) you should use `BeEquivalentTo`
+`reflect.DeepEqual` is awesome.  It will use `==` when appropriate (e.g. when comparing primitives) but will recursively dig into maps, slices, arrays, and even your own structs to ensure deep equality.  `reflect.DeepEqual`, however, is strict about comparing types.  Both `ACTUAL` and `EXPECTED` *must* have the same type.  If you want to compare across different types (e.g. if you've defined a type alias) you should use `BeEquivalentTo`.
 
 It is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
 
-> For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher
+> For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher.
 
 #### BeEquivalentTo(expected interface{})
 
     Ω(ACTUAL).Should(BeEquivalentTo(EXPECTED))
 
-Like `Equal`, `BeEquivalentTo` uses `reflect.DeepEqual` to compare `ACTUAL` with `EXPECTED`.  Unlike `Equal`, however, `BeEquivalentTo` will first convert `ACTUAL`s type to that of `EXPECTED` before making the comparison with `reflect.DeepEqual`.
+Like `Equal`, `BeEquivalentTo` uses `reflect.DeepEqual` to compare `ACTUAL` with `EXPECTED`.  Unlike `Equal`, however, `BeEquivalentTo` will first convert `ACTUAL`'s type to that of `EXPECTED` before making the comparison with `reflect.DeepEqual`.
 
-This means that `BeEquivalentTo` will succesfully match equivalent values of different type.  This is particularly useful, for example, with type aliases:
+This means that `BeEquivalentTo` will successfully match equivalent values of different types.  This is particularly useful, for example, with type aliases:
 
-    type FoodSource string
+    type FoodSrce string
 
-    Ω(FoodSource("Cheeseboard Pizza")).Should(Equal("Cheeseboard Pizza")) //will fail
-    Ω(FoodSource("Cheeseboard Pizza")).Should(BeEquivalentTo("Cheeseboard Pizza")) //will pass
+    Ω(FoodSrce("Cheeseboard Pizza")
+     ).Should(Equal("Cheeseboard Pizza")) //will fail
+    Ω(FoodSrce("Cheeseboard Pizza")
+     ).Should(BeEquivalentTo("Cheeseboard Pizza")) //will pass
 
 As with `Equal` it is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
 
@@ -349,7 +353,7 @@ succeeds if `ACTUAL` is the zero value for its type *or* if `ACTUAL` is `nil`.
 
 succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error for `ACTUAL` to not be a `bool`.
 
-> Some matcher libraries have a notion of `truthiness` to assert that an object is present.  Gomega is strict, and `BeTrue()` only works with `bool`s.  You can use `Ω(ACTUAL).ShouldNot(BeZero())` or `Ω(ACTUAL).ShouldNot(BeNil())` to verify object presence.
+> Some matcher libraries have a notion of "truthiness" to assert that an object is present.  Gomega is strict, and `BeTrue()` only works with `bool`s.  You can use `Ω(ACTUAL).ShouldNot(BeZero())` or `Ω(ACTUAL).ShouldNot(BeNil())` to verify object presence.
 
 #### BeFalse()
 
@@ -372,7 +376,7 @@ succeeds if `ACTUAL` is a non-nil `error`.  Thus, the typical Go error checking 
 
     Ω(ACTUAL).Should(MatchError(EXPECTED))
 
-succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  Alternatively, `EXPECTED` can be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`.  Any other type for `EXPECTED` is an error.
+succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  Alternatively, `EXPECTED` can be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`. Any other type for `EXPECTED` is an error.
 
 ### Working with Channels
 
@@ -380,7 +384,7 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` c
 
     Ω(ACTUAL).Should(BeClosed())
 
-succeeds if actual is a closed channel. It is an error to pass a non-channel to `BeClosed`, it is also an error to pass `nil`.
+succeeds if `ACTUAL` is a closed channel. It is an error to pass a non-channel to `BeClosed`, it is also an error to pass `nil`.
 
 In order to check whether or not the channel is closed, Gomega must try to read from the channel (even in the `ShouldNot(BeClosed())` case).  You should keep this in mind if you wish to make subsequent assertions about values coming down the channel.
 
@@ -423,7 +427,7 @@ A similar use-case is to assert that no go-routine writes to a channel (for a pe
 
 This assertion will only succeed if `c` receives an object *and* that object satisfies `Equal("foo")`.  Note that `Eventually` will continually poll `c` until this condition is met.  If there are objects coming down the channel that do not satisfy the passed in matcher, they will be pulled off and discarded until an object that *does* satisfy the matcher is received.
 
-Finally, there are occasions when you need to grab the object sent down the channel (e.g. to make several assertions against hte object).  To do this, you can ask the `Receive` matcher for the value passed to the channel by passing it a pointer to a variable of the appropriate type:
+Finally, there are occasions when you need to grab the object sent down the channel (e.g. to make several assertions against the object).  To do this, you can ask the `Receive` matcher for the value passed to the channel by passing it a pointer to a variable of the appropriate type:
 
     var receivedBagel Bagel
     Eventually(bagelChan).Should(Receive(&receivedBagel))
@@ -436,15 +440,15 @@ Of course, this could have been written as `receivedBagel := <-bagelChan` - howe
 
     Ω(ACTUAL).Should(BeSent(VALUE))
 
-attempts to send VALUE to the channel ACTUAL without blocking.  It succeeds if this is possible.
+attempts to send `VALUE` to the channel `ACTUAL` without blocking.  It succeeds if this is possible.
 
-`ACTUAL` must be a channel (and cannot be a receive-only channel) that can sent the type of the `VALUE` passed into `BeSent` -- anything else is an error. In addition, actual must not be closed.
+`ACTUAL` must be a channel (and cannot be a receive-only channel) that can be sent the type of the `VALUE` passed into `BeSent` -- anything else is an error. In addition, `ACTUAL` must not be closed.
 
 `BeSent` never blocks:
 
-- If the channel `c` is not ready to receive then `Ω(c).Should(BeSent("foo"))` will fail immediately
-- If the channel `c` is eventually ready to receive then `Eventually(c).Should(BeSent("foo"))` will succeed.. presuming the channel becomes ready to receive before `Eventually`'s timeout
-- If the channel `c` is closed then `Ω(c).Should(BeSent("foo"))` and `Ω(c).ShouldNot(BeSent("foo"))` will both fail immediately
+- If the channel `c` is not ready to receive then `Ω(c).Should(BeSent("foo"))` will fail immediately.
+- If the channel `c` is eventually ready to receive then `Eventually(c).Should(BeSent("foo"))` will succeed... presuming the channel becomes ready to receive before `Eventually`'s timeout.
+- If the channel `c` is closed then `Ω(c).Should(BeSent("foo"))` and `Ω(c).ShouldNot(BeSent("foo"))` will both fail immediately.
 
 Of course, `VALUE` is actually sent to the channel.  The point of `BeSent` is less to make an assertion about the availability of the channel (which is typically an implementation detail that your test should not be concerned with). Rather, the point of `BeSent` is to make it possible to easily and expressively write tests that can timeout on blocked channel sends.
 
@@ -478,7 +482,7 @@ succeeds if `ACTUAL` is matched by the regular expression string generated by:
 
     Ω(ACTUAL).Should(MatchJSON(EXPECTED))
 
-Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `MatchJSON` succeeds if bth `ACTUAL` and `EXPECTED` are JSON representations of the same object.  This is verified by parsing both `ACTUAL` and `EXPECTED` and then asserting equality on the resulting objects with `reflect.DeepEqual`.  By doing this `MatchJSON` avoids any issues related to white space, formatting, and key-ordering.
+Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `MatchJSON` succeeds if both `ACTUAL` and `EXPECTED` are JSON representations of the same object.  This is verified by parsing both `ACTUAL` and `EXPECTED` and then asserting equality on the resulting objects with `reflect.DeepEqual`.  By doing this `MatchJSON` avoids any issues related to white space, formatting, and key-ordering.
 
 It is an error for either `ACTUAL` or `EXPECTED` to be invalid JSON.
 
@@ -502,19 +506,21 @@ succeeds if the length of `ACTUAL` is `INT`. `ACTUAL` must be of type `string`, 
 
 succeeds if `ACTUAL` contains an element that equals `ELEMENT`.  `ACTUAL` must be an `array`, `slice`, or `map` -- anything else is an error.  For `map`s `ContainElement` searches through the map's values (not keys!).
 
-By default `ContainElement()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `ContainElement` an `GomegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
+By default `ContainElement()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `ContainElement` a `GomegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
 
-    Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
+    Ω([]string{"Foo", "FooBar"}
+     ).Should(ContainElement(ContainSubstring("Bar")))
 
 #### ConsistOf(element ...interface{})
 
-    Ω(ACTUAL).Should(ContainElements(ELEMENT1, ELEMENT2, ELEMENT3, .))
+    Ω(ACTUAL).Should(ConsistOf(ELEMENT1, ELEMENT2, ELEMENT3, ...))
 
 or
 
-    Ω(ACTUAL).Should(ContainElements([]SOME_TYPE{ELEMENT1, ELEMENT2, ELEMENT3, ...}))
+    Ω(ACTUAL).Should(
+        ConsistOf([]SOME_TYPE{ELEMENT1, ELEMENT2, ELEMENT3, ...}))
 
-succeeds if `ACTUAL` contains preciely the elements passed into the matcher.  The ordering of the elements does not matter.
+succeeds if `ACTUAL` contains preciely the elements passed into the matcher. The ordering of the elements does not matter.
 
 By default `ConsistOf()` uses `Equal()` to match the elements, however custom matchers can be passed in instead.  Here are some examples:
 
@@ -529,7 +535,7 @@ is the only element passed in to `ConsistOf`:
 
     Ω([]string{"Foo", "FooBar"}).Should(ConsistOf([]string{"FooBar", "Foo"}))
 
-Note that Go's type system does not allow you to write this as ConsistOf([]string{"FooBar", "Foo"}...) as []string and []interface{} are different types - hence the need for this special rule.
+Note that Go's type system does not allow you to write this as `ConsistOf([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
 
 
 #### HaveKey(key interface{})
@@ -538,7 +544,7 @@ Note that Go's type system does not allow you to write this as ConsistOf([]strin
 
 succeeds if `ACTUAL` is a map with a key that equals `KEY`.  It is an error for `ACTUAL` to not be a `map`.
 
-By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY`.  You can change this, however, by passing `HaveKey` an `GomegaMatcher`. For example, to check that a map has a key that matches a regular expression:
+By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY`.  You can change this, however, by passing `HaveKey` a `GomegaMatcher`. For example, to check that a map has a key that matches a regular expression:
 
     Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
 
@@ -546,9 +552,9 @@ By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equal
 
     Ω(ACTUAL).Should(HaveKeyWithValue(KEY, VALUE))
 
-succeeds if `ACTUAL` is a map with a key that equals `KEY` containing a value that equals `VALUE`.  It is an error for `ACTUAL` to not be a `map`.
+succeeds if `ACTUAL` is a map with a key that equals `KEY` mapping to a value that equals `VALUE`.  It is an error for `ACTUAL` to not be a `map`.
 
-By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY` and between the associated value and `VALUE`.  You can change this, however, by passing `HaveKeyWithValue` an `GomegaMatcher` for either parameter. For example, to check that a map has a key that matches a regular expression, and a value that passes some numerical threshold:
+By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s keys and `KEY` and between the associated value and `VALUE`.  You can change this, however, by passing `HaveKeyWithValue` a `GomegaMatcher` for either parameter. For example, to check that a map has a key that matches a regular expression and which is also associated with a value that passes some numerical threshold:
 
     Ω(map[string]int{"Foo": 3, "BazFoo": 4}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), BeNumerically(">", 3)))
 
@@ -563,22 +569,22 @@ performs numerical assertions in a type-agnostic way.  `ACTUAL` and `EXPECTED` s
 There are six supported comparators:
 
 - `Ω(ACTUAL).Should(BeNumerically("==", EXPECTED))`:
-    Asserts that `ACTUAL` and `EXPECTED` are numerically equal
+    asserts that `ACTUAL` and `EXPECTED` are numerically equal.
 
 - `Ω(ACTUAL).Should(BeNumerically("~", EXPECTED, <THRESHOLD>))`:
-    Asserts that `ACTUAL` and `EXPECTED` are within `<THRESHOLD>` of one another.  By default `<THRESHOLD>` is `1e-8` but you can specify a custom value.
+    asserts that `ACTUAL` and `EXPECTED` are within `<THRESHOLD>` of one another.  By default `<THRESHOLD>` is `1e-8` but you can specify a custom value.
 
 - `Ω(ACTUAL).Should(BeNumerically(">", EXPECTED))`:
-    Asserts that `ACTUAL` is greater than `EXPECTED`
+    asserts that `ACTUAL` is greater than `EXPECTED`.
 
 - `Ω(ACTUAL).Should(BeNumerically(">=", EXPECTED))`:
-    Asserts that `ACTUAL` is greater than or equal to  `EXPECTED`
+    asserts that `ACTUAL` is greater than or equal to  `EXPECTED`.
 
 - `Ω(ACTUAL).Should(BeNumerically("<", EXPECTED))`:
-    Asserts that `ACTUAL` is less than `EXPECTED`
+    asserts that `ACTUAL` is less than `EXPECTED`.
 
 - `Ω(ACTUAL).Should(BeNumerically("<=", EXPECTED))`:
-    Asserts that `ACTUAL` is less than or equal to `EXPECTED`
+    asserts that `ACTUAL` is less than or equal to `EXPECTED`.
 
 Any other comparator is an error.
 
@@ -586,27 +592,27 @@ Any other comparator is an error.
 
     Ω(ACTUAL).Should(BeTemporally(COMPARATOR_STRING, EXPECTED_TIME, <THRESHOLD_DURATION>))
 
-performs time-related assertions.  `ACTUAL` must be a `time.Time`
+performs time-related assertions.  `ACTUAL` must be a `time.Time`.
 
 There are six supported comparators:
 
 - `Ω(ACTUAL).Should(BeTemporally("==", EXPECTED_TIME))`:
-    Asserts that `ACTUAL` and `EXPECTED_TIME` are identical `time.Time`s
+    asserts that `ACTUAL` and `EXPECTED_TIME` are identical `time.Time`s.
 
 - `Ω(ACTUAL).Should(BeTemporally("~", EXPECTED_TIME, <THRESHOLD_DURATION>))`:
-    Asserts that `ACTUAL` and `EXPECTED_TIME` are within `<THRESHOLD_DURATION>` of one another.  By default `<THRESHOLD_DURATION>` is `time.Millisecond` but you can specify a custom value.
+    asserts that `ACTUAL` and `EXPECTED_TIME` are within `<THRESHOLD_DURATION>` of one another.  By default `<THRESHOLD_DURATION>` is `time.Millisecond` but you can specify a custom value.
 
 - `Ω(ACTUAL).Should(BeTemporally(">", EXPECTED_TIME))`:
-    Asserts that `ACTUAL` is after `EXPECTED_TIME`
+    asserts that `ACTUAL` is after `EXPECTED_TIME`.
 
 - `Ω(ACTUAL).Should(BeTemporally(">=", EXPECTED_TIME))`:
-    Asserts that `ACTUAL` is after or at `EXPECTED_TIME`
+    asserts that `ACTUAL` is after or at `EXPECTED_TIME`.
 
 - `Ω(ACTUAL).Should(BeTemporally("<", EXPECTED_TIME))`:
-    Asserts that `ACTUAL` is before `EXPECTED_TIME`
+    asserts that `ACTUAL` is before `EXPECTED_TIME`.
 
 - `Ω(ACTUAL).Should(BeTemporally("<=", EXPECTED_TIME))`:
-    Asserts that `ACTUAL` is before or at `EXPECTED_TIME`
+    asserts that `ACTUAL` is before or at `EXPECTED_TIME`.
 
 Any other comparator is an error.
 
@@ -690,7 +696,7 @@ Let's break this down:
 - Most matchers have a constructor function that returns an instance of the matcher.  In this case we've created `RepresentJSONifiedObject`.  Where possible, your constructor function should take explicit types or interfaces.  For our usecase, however, we need to accept any possible expected type so `RepresentJSONifiedObject` takes an argument with the generic `interface{}` type.
 - The constructor function then initializes and returns an instance of our matcher: the `representJSONMatcher`.  These rarely need to be exported outside of your matcher package.
 - The `representJSONMatcher` must satisfy the `GomegaMatcher` interface.  It does this by implementing the `Match`, `FailureMessage`, and `NegatedFailureMessage` method:
-    - If the `GomegaMatcher` receives invalid inputs `Match` returns a non-Nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
+    - If the `GomegaMatcher` receives invalid inputs `Match` returns a non-nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
     - If the `actual` and `expected` values match, `Match` should return `true`.
     - Similarly, if the `actual` and `expected` values do not match, `Match` should return `false`.
     - If the `GomegaMatcher` was testing the `Should` case, and `Match` returned false, `FailureMessage` will be called to print a message explaining the failure.
@@ -798,10 +804,10 @@ This also offers an example of what using the matcher would look like in your te
 
 ### Aborting Eventually/Consistently
 
-There are sometimes instances where a `Eventually` and `Consistently` should stop polling a matcher because the result of the match simply cannot change.
+There are sometimes instances where `Eventually` or `Consistently` should stop polling a matcher because the result of the match simply cannot change.
 
 For example, consider a test that looks like:
-    
+
     Eventually(myChannel).Should(Receive(Equal("bar")))
 
 `Eventually` will repeatedly invoke the `Receive` matcher against `myChannel` until the match succeeds.  However, if the channel becomes *closed* there is *no way* for the match to ever succeed.  Allowing `Eventually` to conitnue polling is inefficient and slows the test suite down.
@@ -812,9 +818,9 @@ To get around this, a matcher can optionally implement:
 
 This is not part of the `GomegaMatcher` interface and, in general, most matchers do not need to implement `MatchMayChangeInTheFuture`.
 
-If implemented, however, `MatchMayChangeInTheFuture` will be called with the appropriate `actual` value by `Eventually` and `Consistently` *after* the call to `Match` during every polling interval.  If `MatchMayChangeInTheFuture` returns `true`, `Eventually` and `Consistently` will continue polling.  If, however, `MatchMayChangeInTheFuture` returns `false`, `Eventually` and `Consistently` will abort and either fail or pass as appropriate.
+If implemented, however, `MatchMayChangeInTheFuture` will be called with the appropriate `actual` value by `Eventually` and `Consistently` *after* the call to `Match` during every polling interval.  If `MatchMayChangeInTheFuture` returns `true`, `Eventually` and `Consistently` will continue polling.  If, however, `MatchMayChangeInTheFuture` returns `false`, `Eventually` and `Consistently` will stop polling and either fail or pass as appropriate.
 
-If you'd like to look at a simple example `MatchMayChangeInTheFuture` check out [`gexec`'s `Exit` matcher](https://github.com/onsi/gomega/tree/master/gexec/exit_matcher.go).  Here, `MatchMayChangeInTheFuture` returns true if the `gexec.Session` under test has not exited yet, but returns false if it has.  Because of this, if a process exits with status code 3, but an assertion is made of the form:
+If you'd like to look at a simple example of `MatchMayChangeInTheFuture` check out [`gexec`'s `Exit` matcher](https://github.com/onsi/gomega/tree/master/gexec/exit_matcher.go).  Here, `MatchMayChangeInTheFuture` returns true if the `gexec.Session` under test has not exited yet, but returns false if it has.  Because of this, if a process exits with status code 3, but an assertion is made of the form:
 
     Eventually(session, 30).Should(gexec.Exit(0))
 
@@ -822,11 +828,11 @@ If you'd like to look at a simple example `MatchMayChangeInTheFuture` check out 
 
 > Note: `Eventually` and `Consistently` only excercise the `MatchMayChangeInTheFuture` method *if* they are passed a bare value.  If they are passed functions to be polled it is not possible to guarantee that the return value of the function will not change between polling intervals.  In this case, `MatchMayChangeInTheFuture` is not called and the polling continues until either a match is found or the timeout elapses.
 
-### Contibuting to Gomega
+### Contributing to Gomega
 
 Contributions are more than welcome.  Either [open an issue](http://github.com/onsi/gomega/issues) for a matcher you'd like to see or, better yet, test drive the matcher and [send a pull request](https://github.com/onsi/gomega/pulls).
 
-When adding a new matcher please mimic the style use in Gomega's current matchers: you should use the `format` package to format your output, put the matcher and its tests in the `matchers` package, the constructor in the `matchers.go` file in the top-level package.
+When adding a new matcher please mimic the style use in Gomega's current matchers: you should use the `format` package to format your output, put the matcher and its tests in the `matchers` package, and the constructor in the `matchers.go` file in the top-level package.
 
 ## `ghttp`: Testing HTTP CLients
 The `ghttp` package provides support for testing http *clients*.  The typical pattern in Go for testing http clients entails spinning up an `httptest.Server` using the `net/http/httptest` package and attaching test-specific handlers that perform assertions.
@@ -853,7 +859,7 @@ For now, let's not worry about the values returned by `FetchSprockets` but simpl
 
         AfterEach(func() {
             //shut down the server between tests
-            server.Close() 
+            server.Close()
         })
     })
 
@@ -921,7 +927,7 @@ Let's extend the example some more.  In addition to asserting that the request i
         })
 
         AfterEach(func() {
-            server.Close() 
+            server.Close()
         })
 
         Describe("fetching sprockets", func() {
@@ -985,7 +991,7 @@ So far, we've only made assertions about the outgoing request.  Clients are also
         })
     })
 
-We use `ghttp.RespondWith` to specify the response return by the server.  In this case we're passing back a status code of `200` (`http.StatusOK`) and a pile of JSON.  We then asser, in the test, that the client succeeds and returns the correct set of sprockets.
+We use `ghttp.RespondWith` to specify the response return by the server.  In this case we're passing back a status code of `200` (`http.StatusOK`) and a pile of JSON.  We then assert, in the test, that the client succeeds and returns the correct set of sprockets.
 
 The fact that details of the JSON encoding are bleeding into this test is somewhat unfortunate, and there's a lot of repetition going on.  `ghttp` provides a `RepondWithJSONEncoded` handler that accepts an arbitrary object and JSON encodes it for you.  Here's a cleaner test:
 
@@ -1065,7 +1071,7 @@ Our test currently only handles the happy path where the server returns a `200`.
                 BeforeEach(func() {
                     statusCode = http.StatusUnauthorized
                 })
-                
+
                 It("should return the SprocketsErrorUnauthorized error", func() {
                     sprockets, err := client.FetchSprockets("encabulators")
                     Ω(sprockets).Should(BeEmpty())
@@ -1077,7 +1083,7 @@ Our test currently only handles the happy path where the server returns a `200`.
                 BeforeEach(func() {
                     statusCode = http.StatusNotFound
                 })
-                
+
                 It("should return the SprocketsErrorNotFound error", func() {
                     sprockets, err := client.FetchSprockets("encabulators")
                     Ω(sprockets).Should(BeEmpty())
@@ -1148,7 +1154,7 @@ One can take a different testing strategy, however.  Instead of asserting that r
 
 `ghttp` supports these sorts of usecases via `server.RouteToHandler(method, path, handler)`.
 
-Let's cook up an example.  Perhaps, instead of authenticating via basic auth our sprockets client logs in and fetches a token from the server when performing requests that require authentication.  We could pepper our `AppendHandlers` calls with a handler that handles these requests (this is not a terrible idea, of course!) *or* we could set up a single route at the top of our tests. 
+Let's cook up an example.  Perhaps, instead of authenticating via basic auth our sprockets client logs in and fetches a token from the server when performing requests that require authentication.  We could pepper our `AppendHandlers` calls with a handler that handles these requests (this is not a terrible idea, of course!) *or* we could set up a single route at the top of our tests.
 
 Here's what such a test might look like:
 
@@ -1174,7 +1180,7 @@ Here's what such a test might look like:
                         ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
                         ghttp.RespondWithJSONEncoded(http.StatusOK, returnedSprockets),
                     ),
-                )                
+                )
             })
 
             It("should fetch all the sprockets", func() {
@@ -1217,7 +1223,7 @@ It is sometimes useful to have a fake server that simply returns a fixed status 
 
 In addition to returning the registered status code, `ghttp`'s server will also save all received requests.  These can be accessed by calling `server.ReceivedRequests()`.  This is useful for cases where you may want to make assertions against requests *after* they've been made.
 
-To bring it all together: there are three ways to instruct a `ghttp` server to handle requests: you can map routes to handlers using `RouteToHandler`, you can append handlers via `AppendHandlers, and you can `AllowUnhandledRequests` and specify an `UnhandledRequestStatusCode`.
+To bring it all together: there are three ways to instruct a `ghttp` server to handle requests: you can map routes to handlers using `RouteToHandler`, you can append handlers via `AppendHandlers`, and you can `AllowUnhandledRequests` and specify an `UnhandledRequestStatusCode`.
 
 When a `ghttp` server receives a request it first checks against the set of handlers registred via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `AllowUnhandledRequests` is `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with `UnhandledRequestStatusCode`.
 
@@ -1252,10 +1258,10 @@ Say you have an integration test that is streaming output from an external API. 
         })
     })
 
-These assertions will only pass if the strings passed to `Say` (which are interpreted as regular expressions - make sure to escape characters appropriately!) appear in the buffer.  An opaqure read cursor (that you cannot access or modify) is fastforwarded as succesful assertions are made so, for example:
+These assertions will only pass if the strings passed to `Say` (which are interpreted as regular expressions - make sure to escape characters appropriately!) appear in the buffer.  An opaque read cursor (that you cannot access or modify) is fastforwarded as succesful assertions are made. So, for example:
 
     Eventually(buffer).Should(gbytes.Say(`reticulating splines`))
-    Consistently(buffer).ShoudlNot(gbytes.Say(`reticulating splines`))    
+    Consistently(buffer).ShouldNot(gbytes.Say(`reticulating splines`))
 
 will (counterintuitively) pass.  This allows you to write tests like:
 
@@ -1266,7 +1272,7 @@ will (counterintuitively) pass.  This allows you to write tests like:
 
 and ensure that the test is correctly asserting that `reticulating splines` appears *twice*.
 
-At any time, you can access the entire contents written to the buffer via `buffer.Contents()`.  This includes *everything* every written to the buffer regardless of the current position of the read cursor.
+At any time, you can access the entire contents written to the buffer via `buffer.Contents()`.  This includes *everything* ever written to the buffer regardless of the current position of the read cursor.
 
 ### Handling branches
 
@@ -1285,7 +1291,7 @@ Sometimes (rarely!) you must write a test that must perform different actions de
         buffer.CancelDetects()
     }
 
-`buffer.Detect` takes a string (interpreted as a regular expression) and returns a channel that will fire *once* if the requested string is detected.  Upon detection, the buffer's opaque read cursor is fastforwarded to subsequent uses of `gbytes.Say` will pick up from where the succeeding `Detect` left off.  You *must* call `buffer.CancelDetects()` to clean up afterwards (`buffer` spawns one goroutine per call to `Detect`).
+`buffer.Detect` takes a string (interpreted as a regular expression) and returns a channel that will fire *once* if the requested string is detected.  Upon detection, the buffer's opaque read cursor is fastforwarded so subsequent uses of `gbytes.Say` will pick up from where the succeeding `Detect` left off.  You *must* call `buffer.CancelDetects()` to clean up afterwards (`buffer` spawns one goroutine per call to `Detect`).
 
 ## `gexec`: Testing External Processes
 
@@ -1296,7 +1302,7 @@ Sometimes (rarely!) you must write a test that must perform different actions de
 You use `gexec.Build()` to compile Go binaries.  These are built using `go build` and are stored off in a temporary directory.  You'll want to `gexec.CleanupBuildArtifacts()` when you're done with the test.
 
 A common pattern is to compile binaries once at the beginning of the test using `BeforeSuite` and to clean up once at the end of the test using `AfterSuite`:
-    
+
     var pathToSprocketCLI string
 
     BeforeSuite(func() {
@@ -1314,7 +1320,7 @@ A common pattern is to compile binaries once at the beginning of the test using 
 ### Starting external processes
 
 `gexec` provides a `Session` that wraps `exec.Cmd`.  `Session` includes a number of features that will be explored in the next few sections.  You create a `Session` by instructing `gexec` to start a command:
-    
+
     command := exec.Command(pathToSprocketCLI, "-api=127.0.0.1:8899")
     session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
     Ω(err).ShouldNot(HaveOccurred())
@@ -1328,7 +1334,7 @@ A common pattern is to compile binaries once at the beginning of the test using 
 `gexec.Session` makes it easy to send signals to your started command:
 
     session.Kill() //sends SIGKILL
-    session.Interupt() //sends SIGINT
+    session.Interrupt() //sends SIGINT
     session.Terminate() //sends SIGTERM
     session.Signal(signal) //sends the passed in os.Signal signal
 
@@ -1338,7 +1344,7 @@ In addition to starting the wrapped command, `gexec.Session` also *monitors* the
 
     session.Wait()
 
-this will block until the session exits and will *fail* if it does not within the default `Eventually` timeout.  You can override this timeout by specifying a custom one:
+this will block until the session exits and will *fail* if it does not exit within the default `Eventually` timeout.  You can override this timeout by specifying a custom one:
 
     session.Wait(5 * time.Second)
 
@@ -1386,5 +1392,6 @@ Since `gexec.Session` is a `gbytes.BufferProvider` that provides the `Out` buffe
 Using the `Say` matcher is convenient when making *ordered* assertions against a stream of data generated by a live process.  Sometimes, however, all you need is to
 wait for the process to exit and then make assertions against the entire contents of its output.  Since `Wait()` returns `session` you can wait for the process to exit, then grab all its stdout as a `[]byte` buffer with a simple oneliner:
 
-    Ω(session.Wait().Out.Contents()).Should(ContainSubstring("finished succesfully"))
+    Ω(session.Wait().Out.Contents()).Should(ContainSubstring("finished successfully"))
 
+---
