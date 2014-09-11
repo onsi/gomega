@@ -398,7 +398,7 @@ succeeds if there is a message to be received on actual. Actual must be a channe
 
 - If there is nothing on the channel `c` then `Ω(c).Should(Receive())` will fail and `Ω(c).ShouldNot(Receive())` will pass.
 - If there is something on the channel `c` ready to be read, then `Ω(c).Should(Receive())` will pass and `Ω(c).ShouldNot(Receive())` will fail.
-- If the channel `c` is closed then *both* `Ω(c).Should(Receive())` and `Ω(c).ShouldNot(Receive())` will error.
+- If the channel `c` is closed then `Ω(c).Should(Receive())` will fail and `Ω(c).ShouldNot(Receive())` will pass.
 
 If you have a go-routine running in the background that will write to channel `c`, for example:
 
