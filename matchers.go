@@ -84,7 +84,7 @@ func BeClosed() types.GomegaMatcher {
 //
 //- If there is nothing on the channel `c` then Ω(c).Should(Receive()) will fail and Ω(c).ShouldNot(Receive()) will pass.
 //
-//- If the channel `c` is closed then *both* Ω(c).Should(Receive()) and Ω(c).ShouldNot(Receive()) will error.
+//- If the channel `c` is closed then Ω(c).Should(Receive()) will fail and Ω(c).ShouldNot(Receive()) will pass.
 //
 //- If there is something on the channel `c` ready to be read, then Ω(c).Should(Receive()) will pass and Ω(c).ShouldNot(Receive()) will fail.
 //

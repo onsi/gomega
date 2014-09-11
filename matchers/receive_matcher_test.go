@@ -2,6 +2,7 @@ package matchers_test
 
 import (
 	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
@@ -192,21 +193,16 @@ var _ = Describe("ReceiveMatcher", func() {
 				close(channel)
 
 				Ω(channel).Should(Receive())
-
-				success, err := (&ReceiveMatcher{}).Match(channel)
-				Ω(success).Should(BeFalse())
-				Ω(err).Should(HaveOccurred())
+				Ω(channel).ShouldNot(Receive())
 			})
 		})
 
 		Context("for an unbuffered channel", func() {
-			It("should error", func() {
+			It("should always fail", func() {
 				channel := make(chan bool)
 				close(channel)
 
-				success, err := (&ReceiveMatcher{}).Match(channel)
-				Ω(success).Should(BeFalse())
-				Ω(err).Should(HaveOccurred())
+				Ω(channel).ShouldNot(Receive())
 			})
 		})
 	})
