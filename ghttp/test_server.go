@@ -112,6 +112,7 @@ import (
 	"reflect"
 	"regexp"
 	"sync"
+
 	. "github.com/onsi/gomega"
 )
 
@@ -186,17 +187,21 @@ func (s *Server) Close() {
 //   b) If AllowUnhandledRequests is false, the request will not be handled and the current test will be marked as failed.
 func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	s.writeLock.Lock()
-	defer s.writeLock.Unlock()
 	defer func() {
 		recover()
 	}()
 
+	s.receivedRequests = append(s.receivedRequests, req)
 	if routedHandler, ok := s.handlerForRoute(req.Method, req.URL.Path); ok {
+		s.writeLock.Unlock()
 		routedHandler(w, req)
 	} else if s.calls < len(s.requestHandlers) {
-		s.requestHandlers[s.calls](w, req)
+		h := s.requestHandlers[s.calls]
 		s.calls++
+		s.writeLock.Unlock()
+		h(w, req)
 	} else {
+		s.writeLock.Unlock()
 		if s.AllowUnhandledRequests {
 			ioutil.ReadAll(req.Body)
 			req.Body.Close()
@@ -205,7 +210,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Ω(req).Should(BeNil(), "Received Unhandled Request")
 		}
 	}
-	s.receivedRequests = append(s.receivedRequests, req)
 }
 
 //ReceivedRequests is an array containing all requests received by the server (both handled and unhandled requests)
