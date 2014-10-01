@@ -172,6 +172,9 @@ func (s *Server) URL() string {
 
 //Close() should be called at the end of each test.  It spins down and cleans up the test server.
 func (s *Server) Close() {
+	s.writeLock.Lock()
+	defer s.writeLock.Unlock()
+
 	server := s.HTTPTestServer
 	s.HTTPTestServer = nil
 	server.Close()
@@ -304,4 +307,11 @@ func (s *Server) GetHandler(index int) http.HandlerFunc {
 func (s *Server) WrapHandler(index int, handler http.HandlerFunc) {
 	existingHandler := s.GetHandler(index)
 	s.SetHandler(index, CombineHandlers(existingHandler, handler))
+}
+
+func (s *Server) CloseClientConnections() {
+	s.writeLock.Lock()
+	defer s.writeLock.Unlock()
+
+	s.HTTPTestServer.CloseClientConnections()
 }
