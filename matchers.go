@@ -49,6 +49,21 @@ func HaveOccurred() types.GomegaMatcher {
 	return &matchers.HaveOccurredMatcher{}
 }
 
+//Succeed passes if actual is a nil error
+//Succeed is intended to be used with functions that return a single error value. Instead of
+//    err := SomethingThatMightFail()
+//    Ω(err).ShouldNot(HaveOccurred())
+//
+//You can write:
+//    Ω(SomethingThatMightFail()).Should(Succeed())
+//
+//It is a mistake to use Succeed with a function that has multiple return values.  Gomega's Ω and Expect
+//functions automatically trigger failure if any return values after the first return value are non-zero/non-nil.
+//This means that Ω(MultiReturnFunc()).ShouldNot(Succeed()) can never pass.
+func Succeed() types.GomegaMatcher {
+	return &matchers.SucceedMatcher{}
+}
+
 //MatchError succeeds if actual is a non-nil error that matches the passed in string/error.
 //
 //These are valid use-cases:

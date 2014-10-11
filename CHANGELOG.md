@@ -7,6 +7,7 @@ Improvements:
 - `Receive()` no longer errors when passed a closed channel, it's perfectly fine to attempt to read from a closed channel so Ω(c).Should(Receive()) always fails and Ω(c).ShoudlNot(Receive()) always passes with a closed channel.
 - Added `HavePrefix` and `HaveSuffix` matchers.
 - `ghttp` can now handle concurrent requests.
+- Added `Succeed` which allows one to write `Ω(MyFunction()).Should(Succeed())`.
 
 ## 1.0 (8/2/2014)
 
