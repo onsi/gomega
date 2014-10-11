@@ -94,6 +94,23 @@ Gomega streamlines this very common use case.  Both `Ω` and `Expect` accept *mu
 
 This will only pass if the return value of `DoSomethingHard()` is `("foo", nil)`.
 
+Additionally, if you call a function with a single `error` return value you can use the `Succeed` matcher to asser the function has returned without error.  So for a function of the form:
+
+    func DoSomethingSimple() error {
+        ...
+    }
+
+You can either write:
+
+    err := DoSomethingSimple()
+    Ω(err).ShouldNot(HaveOccurred())
+
+Or you can write:
+
+    Ω(DoSomethingSimple()).Should(Succeed())
+
+> You should not use a function with multiple return values (like `DoSomethingHard`) with `Succeed`.  Matchers are only passed the *first* value provided to `Ω`/`Expect`, the subsequent arguments are handled by `Ω` and `Expect` as outlined above.  As a result of this behavior `Ω(DoSomethingHard()).ShouldNot(Succeed())` would never pass.
+
 ### Annotating Assertions
 
 You can annotate any assertion by passing a format string (and optional inputs to format) after the `GomegaMatcher`:
@@ -371,6 +388,16 @@ succeeds if `ACTUAL` is a non-nil `error`.  Thus, the typical Go error checking 
 
     err := SomethingThatMightFail()
     Ω(err).ShouldNot(HaveOccurred())
+
+#### Succeed()
+
+    Ω(ACTUAL).Should(Succeed())
+
+succeeds if `ACTUAL` is `nil`.  The intended usage is
+
+    Ω(FUNCTION()).Should(Succeed())
+
+where `FUNCTION()` is a function call that returns a *single* error-type.  See [Handling Errors](#handling-errors) for a more detailed discussion.
 
 #### MatchError(expected interface{})
 
