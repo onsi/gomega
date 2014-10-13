@@ -88,7 +88,7 @@ To assert on the return value of such a method you might write a test that looks
     Ω(err).ShouldNot(HaveOccurred())
     Ω(result).Should(Equal("foo"))
 
-Gomega streamlines this very common use case.  Both `Ω` and `Expect` accept *multiple* arguments.  The first argument is passed to the matcher, and the match only succeeds if *all* subsequent arguments are required to be `nil` or zero-valued.  With this, we can rewrite the above example as:
+Gomega streamlines this very common use case.  Both `Ω` and `Expect` accept *multiple* arguments.  The first argument is passed to the matcher, and the match only succeeds if *all* subsequent arguments are `nil` or zero-valued.  With this, we can rewrite the above example as:
 
     Ω(DoSomethingHard()).Should(Equal("foo"))
 
