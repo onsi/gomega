@@ -1,7 +1,9 @@
 package gbytes_test
 
 import (
+	"io"
 	"time"
+
 	. "github.com/onsi/gomega/gbytes"
 
 	. "github.com/onsi/ginkgo"
@@ -33,6 +35,41 @@ var _ = Describe("Buffer", func() {
 			Ω(buffer).Should(Say("abc"))
 			Ω(buffer).ShouldNot(Say("abc"))
 			Ω(buffer).Should(Say("def"))
+		})
+	})
+
+	Describe("reading from a buffer", func() {
+		It("should read the current contents of the buffer", func() {
+			buffer := BufferWithBytes([]byte("abcde"))
+
+			dest := make([]byte, 3)
+			n, err := buffer.Read(dest)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(n).Should(Equal(3))
+			Ω(string(dest)).Should(Equal("abc"))
+
+			dest = make([]byte, 3)
+			n, err = buffer.Read(dest)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(n).Should(Equal(2))
+			Ω(string(dest[:n])).Should(Equal("de"))
+
+			n, err = buffer.Read(dest)
+			Ω(err).Should(Equal(io.EOF))
+			Ω(n).Should(Equal(0))
+		})
+
+		Context("after the buffer has been closed", func() {
+			It("returns an error", func() {
+				buffer := BufferWithBytes([]byte("abcde"))
+
+				buffer.Close()
+
+				dest := make([]byte, 3)
+				n, err := buffer.Read(dest)
+				Ω(err).Should(HaveOccurred())
+				Ω(n).Should(Equal(0))
+			})
 		})
 	})
 
