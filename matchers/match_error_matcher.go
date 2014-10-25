@@ -29,7 +29,16 @@ func (matcher *MatchErrorMatcher) Match(actual interface{}) (success bool, err e
 		return reflect.DeepEqual(actualErr, matcher.Expected), nil
 	}
 
-	return false, fmt.Errorf("MatchError must be passed an error or string.  Got:\n%s", format.Object(matcher.Expected, 1))
+	var subMatcher omegaMatcher
+	var hasSubMatcher bool
+	if matcher.Expected != nil {
+		subMatcher, hasSubMatcher = (matcher.Expected).(omegaMatcher)
+		if hasSubMatcher {
+			return subMatcher.Match(actualErr.Error())
+		}
+	}
+
+	return false, fmt.Errorf("MatchError must be passed an error, string, or Matcher that can match on strings.  Got:\n%s", format.Object(matcher.Expected, 1))
 }
 
 func (matcher *MatchErrorMatcher) FailureMessage(actual interface{}) (message string) {
