@@ -41,6 +41,19 @@ var _ = Describe("MatchErrorMatcher", func() {
 			Ω(customErr).Should(MatchError("an error"))
 		})
 
+		Context("when passed a matcher", func() {
+			It("should pass if the matcher passes against the error string", func() {
+				err := errors.New("error 123 abc")
+
+				Ω(err).Should(MatchError(MatchRegexp(`\d{3}`)))
+			})
+
+			It("should fail if the matcher fails against the error string", func() {
+				err := errors.New("no digits")
+				Ω(err).ShouldNot(MatchError(MatchRegexp(`\d`)))
+			})
+		})
+
 		It("should fail when passed anything else", func() {
 			actualErr := errors.New("an error")
 			_, err := (&MatchErrorMatcher{
