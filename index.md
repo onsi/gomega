@@ -403,7 +403,7 @@ where `FUNCTION()` is a function call that returns a *single* error-type.  See [
 
     Ω(ACTUAL).Should(MatchError(EXPECTED))
 
-succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  Alternatively, `EXPECTED` can be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`. Any other type for `EXPECTED` is an error.
+succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  `EXPECTED` can also be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`. Alternatively, `EXPECTED` can be a matcher, in which case it is tested against `ACTUAL.Error()`. Any other type for `EXPECTED` is an error.
 
 ### Working with Channels
 
