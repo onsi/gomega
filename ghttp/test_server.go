@@ -138,6 +138,13 @@ func NewServer() *Server {
 	return s
 }
 
+// NewUnstartedServer return a new, unstarted, `*ghttp.Server`.  Useful for specifying a custom listener on `server.HTTPTestServer`.
+func NewUnstartedServer() *Server {
+	s := new()
+	s.HTTPTestServer = httptest.NewUnstartedServer(s)
+	return s
+}
+
 // NewTLSServer returns a new `*ghttp.Server` that wraps an `httptest` TLS server.  The server is started automatically.
 func NewTLSServer() *Server {
 	s := new()
@@ -163,6 +170,11 @@ type Server struct {
 
 	writeLock *sync.Mutex
 	calls     int
+}
+
+//Start() starts an unstarted ghttp server.  It is a catastrophic error to call Start more than once (thanks, httptest).
+func (s *Server) Start() {
+	s.HTTPTestServer.Start()
 }
 
 //URL() returns a url that will hit the server
