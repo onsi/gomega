@@ -290,6 +290,15 @@ var _ = Describe("TestServer", func() {
 				Ω(failures).Should(HaveLen(1))
 			})
 
+			It("should require basic auth header", func() {
+				req, err := http.NewRequest("GET", s.URL()+"/foo", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				failures := InterceptGomegaFailures(func() {
+					http.DefaultClient.Do(req)
+				})
+				Ω(failures).Should(HaveLen(1))
+			})
 		})
 
 		Describe("VerifyHeader", func() {
