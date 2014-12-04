@@ -182,6 +182,11 @@ func (s *Server) URL() string {
 	return s.HTTPTestServer.URL
 }
 
+//Addr() returns the address on which the server is listening.
+func (s *Server) Addr() string {
+	return s.HTTPTestServer.Listener.Addr().String()
+}
+
 //Close() should be called at the end of each test.  It spins down and cleans up the test server.
 func (s *Server) Close() {
 	s.writeLock.Lock()
