@@ -454,7 +454,7 @@ A similar use-case is to assert that no go-routine writes to a channel (for a pe
 
 This assertion will only succeed if `c` receives an object *and* that object satisfies `Equal("foo")`.  Note that `Eventually` will continually poll `c` until this condition is met.  If there are objects coming down the channel that do not satisfy the passed in matcher, they will be pulled off and discarded until an object that *does* satisfy the matcher is received.
 
-Finally, there are occasions when you need to grab the object sent down the channel (e.g. to make several assertions against the object).  To do this, you can ask the `Receive` matcher for the value passed to the channel by passing it a pointer to a variable of the appropriate type:
+In addition, there are occasions when you need to grab the object sent down the channel (e.g. to make several assertions against the object).  To do this, you can ask the `Receive` matcher for the value passed to the channel by passing it a pointer to a variable of the appropriate type:
 
     var receivedBagel Bagel
     Eventually(bagelChan).Should(Receive(&receivedBagel))
@@ -462,6 +462,8 @@ Finally, there are occasions when you need to grab the object sent down the chan
     Ω(receivedBagel.Kind()).Should(Equal("sesame"))
 
 Of course, this could have been written as `receivedBagel := <-bagelChan` - however using `Receive` makes it easy to avoid hanging the test suite should nothing ever come down the channel.
+
+Finally, `Receive` *never* blocks.  `Eventually(c).Should(Receive())` repeatedly polls `c` in a non-blocking fashion.  That means that you cannot use this pattern to verify that a *non-blocking send* has occured on the channel - [more details at this GitHub issue](https://github.com/onsi/gomega/issues/82).
 
 #### BeSent(value interface{})
 
