@@ -11,6 +11,7 @@ Improvements:
 
 Bug Fixes:
 - gexec: `session.Wait` now uses `EventuallyWithOffset` to get the right line number in the failure.
+- `ContainElement` no longer bails if a passed-in matcher errors.
 
 ## 1.0 (8/2/2014)
 
