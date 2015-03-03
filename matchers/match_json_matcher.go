@@ -57,5 +57,5 @@ func (matcher *MatchJSONMatcher) prettyPrint(actual interface{}) (actualFormatte
 		return "", "", err
 	}
 
-	return actualString, expectedString, nil
+	return abuf.String(), ebuf.String(), nil
 }
