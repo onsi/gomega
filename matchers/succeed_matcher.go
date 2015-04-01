@@ -22,7 +22,7 @@ func (matcher *SucceedMatcher) Match(actual interface{}) (success bool, err erro
 }
 
 func (matcher *SucceedMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected success, but got an error:\n%s", format.Object(actual, 1))
+	return fmt.Sprintf("Expected success, but got an error:\n%s\n%s", format.Object(actual, 1), format.IndentString(actual.(error).Error(), 1))
 }
 
 func (matcher *SucceedMatcher) NegatedFailureMessage(actual interface{}) (message string) {
