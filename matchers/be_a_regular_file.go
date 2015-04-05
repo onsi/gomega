@@ -29,7 +29,7 @@ type BeARegularFileMatcher struct {
 func (matcher *BeARegularFileMatcher) Match(actual interface{}) (success bool, err error) {
 	actualFilename, ok := actual.(string)
 	if !ok {
-		return false, fmt.Errorf("FileExistsMatcher matcher expects a file path")
+		return false, fmt.Errorf("BeARegularFileMatcher matcher expects a file path")
 	}
 
 	fileInfo, err := os.Stat(actualFilename)
