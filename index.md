@@ -481,6 +481,32 @@ attempts to send `VALUE` to the channel `ACTUAL` without blocking.  It succeeds 
 
 Of course, `VALUE` is actually sent to the channel.  The point of `BeSent` is less to make an assertion about the availability of the channel (which is typically an implementation detail that your test should not be concerned with). Rather, the point of `BeSent` is to make it possible to easily and expressively write tests that can timeout on blocked channel sends.
 
+### Working with files
+
+#### BeAnExistingFile
+
+    Ω(ACTUAL).Should(BeAnExistingFile())
+
+succeeds if a file located at `ACTUAL` exists.
+
+`ACTUAL` must be a string representing the filepath.
+
+#### BeARegularFile
+
+    Ω(ACTUAL).Should(BeARegularFile())
+
+succeeds IFF a file located at `ACTUAL` exists and is a regular file.
+
+`ACTUAL` must be a string representing the filepath.
+
+#### BeADirectory
+
+    Ω(ACTUAL).Should(BeADirectory())
+
+succeeds IFF a file is located at `ACTUAL` exists and is a directory.
+
+`ACTUAL` must be a string representing the filepath.
+
 ### Working with Strings and JSON
 
 #### ContainSubstring(substr string, args ...interface{})
