@@ -14,7 +14,7 @@ type BeAnExistingFileMatcher struct {
 func (matcher *BeAnExistingFileMatcher) Match(actual interface{}) (success bool, err error) {
 	actualFilename, ok := actual.(string)
 	if !ok {
-		return false, fmt.Errorf("FileExistsMatcher matcher expects a file path")
+		return false, fmt.Errorf("BeAnExistingFileMatcher matcher expects a file path")
 	}
 
 	if _, err = os.Stat(actualFilename); err != nil {
