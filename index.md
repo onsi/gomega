@@ -397,7 +397,7 @@ succeeds if `ACTUAL` is `nil`.  The intended usage is
 
     Ω(FUNCTION()).Should(Succeed())
 
-where `FUNCTION()` is a function call that returns a *single* error-type.  See [Handling Errors](#handling-errors) for a more detailed discussion.
+where `FUNCTION()` is a function call that returns an error-type as its *first or only* return value.  See [Handling Errors](#handling-errors) for a more detailed discussion.
 
 #### MatchError(expected interface{})
 
