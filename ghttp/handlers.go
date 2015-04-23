@@ -196,9 +196,9 @@ objects.
 Also, RespondWithJSONEncodedPtr can be given an optional http.Header.  The headers defined therein will be added to the response headers.
 Since the http.Header can be mutated after the fact you don't need to pass in a pointer.
 */
-func RespondWithJSONEncodedPtr(statusCode *int, object *interface{}, optionalHeader ...http.Header) http.HandlerFunc {
+func RespondWithJSONEncodedPtr(statusCode *int, object interface{}, optionalHeader ...http.Header) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		data, err := json.Marshal(*object)
+		data, err := json.Marshal(object)
 		Ω(err).ShouldNot(HaveOccurred())
 		if len(optionalHeader) == 1 {
 			copyHeader(optionalHeader[0], w.Header())
