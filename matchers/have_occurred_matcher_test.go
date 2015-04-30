@@ -7,6 +7,14 @@ import (
 	. "github.com/onsi/gomega/matchers"
 )
 
+type CustomErr struct {
+	msg string
+}
+
+func (e *CustomErr) Error() string {
+	return e.msg
+}
+
 var _ = Describe("HaveOccurred", func() {
 	It("should succeed if matching an error", func() {
 		Ω(errors.New("Foo")).Should(HaveOccurred())
@@ -24,5 +32,15 @@ var _ = Describe("HaveOccurred", func() {
 		success, err = (&HaveOccurredMatcher{}).Match("")
 		Ω(success).Should(BeFalse())
 		Ω(err).Should(HaveOccurred())
+	})
+
+	It("should succeed with pointer types that conform to error interface", func() {
+		err := &CustomErr{"ohai"}
+		Ω(err).Should(HaveOccurred())
+	})
+
+	It("should not succeed with nil pointers to types that conform to error interface", func() {
+		var err *CustomErr = nil
+		Ω(err).ShouldNot(HaveOccurred())
 	})
 })
