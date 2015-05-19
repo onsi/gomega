@@ -190,7 +190,9 @@ func RespondWithJSONEncoded(statusCode int, object interface{}, optionalHeader .
 	} else {
 		headers = make(http.Header)
 	}
-	headers["Content-Type"] = []string{"application/json"}
+	if _, found := headers["Content-Type"]; !found {
+		headers["Content-Type"] = []string{"application/json"}
+	}
 	return RespondWith(statusCode, string(data), headers)
 }
 
@@ -214,7 +216,9 @@ func RespondWithJSONEncodedPtr(statusCode *int, object interface{}, optionalHead
 		} else {
 			headers = make(http.Header)
 		}
-		headers["Content-Type"] = []string{"application/json"}
+		if _, found := headers["Content-Type"]; !found {
+			headers["Content-Type"] = []string{"application/json"}
+		}
 		copyHeader(headers, w.Header())
 		w.WriteHeader(*statusCode)
 		w.Write(data)

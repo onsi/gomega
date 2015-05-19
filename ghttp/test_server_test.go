@@ -583,10 +583,15 @@ var _ = Describe("TestServer", func() {
 			})
 
 			Context("when optional headers are set", func() {
+				var headers http.Header
 				BeforeEach(func() {
+					headers = http.Header{"Stuff": []string{"things"}}
+				})
+
+				JustBeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/foo"),
-						RespondWithJSONEncoded(http.StatusCreated, []int{1, 2, 3}, http.Header{"Stuff": []string{"things"}}),
+						RespondWithJSONEncoded(http.StatusCreated, []int{1, 2, 3}, headers),
 					))
 				})
 
@@ -602,6 +607,19 @@ var _ = Describe("TestServer", func() {
 					Ω(err).ShouldNot(HaveOccurred())
 
 					Ω(resp.Header["Content-Type"]).Should(Equal([]string{"application/json"}))
+				})
+
+				Context("when setting the Content-Type explicitly", func() {
+					BeforeEach(func() {
+						headers["Content-Type"] = []string{"not-json"}
+					})
+
+					It("should use the Content-Type header that was explicitly set", func() {
+						resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(resp.Header["Content-Type"]).Should(Equal([]string{"not-json"}))
+					})
 				})
 			})
 		})
@@ -650,12 +668,17 @@ var _ = Describe("TestServer", func() {
 			})
 
 			Context("when optional headers are set", func() {
+				var headers http.Header
 				BeforeEach(func() {
+					headers = http.Header{"Stuff": []string{"things"}}
+				})
+
+				JustBeforeEach(func() {
 					code = http.StatusOK
 					object = testObject{}
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/foo"),
-						RespondWithJSONEncodedPtr(&code, &object, http.Header{"Stuff": []string{"things"}}),
+						RespondWithJSONEncodedPtr(&code, &object, headers),
 					))
 				})
 
@@ -671,6 +694,19 @@ var _ = Describe("TestServer", func() {
 					Ω(err).ShouldNot(HaveOccurred())
 
 					Ω(resp.Header["Content-Type"]).Should(Equal([]string{"application/json"}))
+				})
+
+				Context("when setting the Content-Type explicitly", func() {
+					BeforeEach(func() {
+						headers["Content-Type"] = []string{"not-json"}
+					})
+
+					It("should use the Content-Type header that was explicitly set", func() {
+						resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(resp.Header["Content-Type"]).Should(Equal([]string{"not-json"}))
+					})
 				})
 			})
 		})
