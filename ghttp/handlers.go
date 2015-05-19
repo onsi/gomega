@@ -183,7 +183,17 @@ Also, RespondWithJSONEncoded can be given an optional http.Header.  The headers 
 func RespondWithJSONEncoded(statusCode int, object interface{}, optionalHeader ...http.Header) http.HandlerFunc {
 	data, err := json.Marshal(object)
 	Ω(err).ShouldNot(HaveOccurred())
-	return RespondWith(statusCode, string(data), optionalHeader...)
+
+	var headers http.Header
+	if len(optionalHeader) == 1 {
+		headers = optionalHeader[0]
+	} else {
+		headers = make(http.Header)
+	}
+	if _, found := headers["Content-Type"]; !found {
+		headers["Content-Type"] = []string{"application/json"}
+	}
+	return RespondWith(statusCode, string(data), headers)
 }
 
 /*
@@ -200,9 +210,16 @@ func RespondWithJSONEncodedPtr(statusCode *int, object interface{}, optionalHead
 	return func(w http.ResponseWriter, req *http.Request) {
 		data, err := json.Marshal(object)
 		Ω(err).ShouldNot(HaveOccurred())
+		var headers http.Header
 		if len(optionalHeader) == 1 {
-			copyHeader(optionalHeader[0], w.Header())
+			headers = optionalHeader[0]
+		} else {
+			headers = make(http.Header)
 		}
+		if _, found := headers["Content-Type"]; !found {
+			headers["Content-Type"] = []string{"application/json"}
+		}
+		copyHeader(headers, w.Header())
 		w.WriteHeader(*statusCode)
 		w.Write(data)
 	}
