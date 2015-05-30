@@ -106,6 +106,8 @@ A more comprehensive example is available at https://onsi.github.io/gomega/#_tes
 package ghttp
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -164,6 +166,11 @@ type Server struct {
 	//Defaults to http.StatusInternalServerError.
 	//Only applies if AllowUnhandledRequests is true
 	UnhandledRequestStatusCode int
+
+	//If provided, ghttp will log about each request received to the provided io.Writer
+	//Defaults to nil
+	//If you're using Ginkgo, set this to GinkgoWriter to get improved output during failures
+	Writer io.Writer
 
 	receivedRequests []*http.Request
 	requestHandlers  []http.HandlerFunc
@@ -233,6 +240,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}()
 		Ω(e).Should(BeNil(), "Handler Panicked")
 	}()
+
+	if s.Writer != nil {
+		s.Writer.Write([]byte(fmt.Sprintf("GHTTP Received Request: %s - %s\n", req.Method, req.URL)))
+	}
 
 	s.receivedRequests = append(s.receivedRequests, req)
 	if routedHandler, ok := s.handlerForRoute(req.Method, req.URL.Path); ok {

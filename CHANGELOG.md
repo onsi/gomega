@@ -11,6 +11,7 @@ Improvements:
 - Improved `ghttp`'s behavior around failing assertions and panics:
     - If a registered handler makes a failing assertion `ghttp` will return `500`.
     - If a registered handler panics, `ghttp` will return `500` *and* fail the test.  This is new behavior that may cause existing code to break.  This code is almost certainly incorrect and creating a false positive.
+- `ghttp` servers can take an `io.Writer`.  `ghttp` will write a line to the writer when each request arrives.
 
 Bug Fixes:
 - gexec: `session.Wait` now uses `EventuallyWithOffset` to get the right line number in the failure.

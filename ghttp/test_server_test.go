@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"regexp"
 
+	"github.com/onsi/gomega/gbytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
@@ -234,6 +236,24 @@ var _ = Describe("TestServer", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(resp.StatusCode).Should(Equal(http.StatusInternalServerError))
 			})
+		})
+	})
+
+	Describe("Logging to the Writer", func() {
+		var buf *gbytes.Buffer
+		BeforeEach(func() {
+			buf = gbytes.NewBuffer()
+			s.Writer = buf
+			s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {})
+			s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {})
+		})
+
+		It("should write to the buffer when a request comes in", func() {
+			http.Get(s.URL() + "/foo")
+			Ω(buf).Should(gbytes.Say("GHTTP Received Request: GET - /foo\n"))
+
+			http.Post(s.URL()+"/bar", "", nil)
+			Ω(buf).Should(gbytes.Say("GHTTP Received Request: POST - /bar\n"))
 		})
 	})
 
