@@ -192,6 +192,51 @@ var _ = Describe("TestServer", func() {
 		})
 	})
 
+	Describe("When a handler fails", func() {
+		BeforeEach(func() {
+			s.UnhandledRequestStatusCode = http.StatusForbidden //just to be clear that 500s aren't coming from unhandled requests
+		})
+
+		Context("because the handler has panicked", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {
+					panic("bam")
+				})
+			})
+
+			It("should respond with a 500 and make a failing assertion", func() {
+				var resp *http.Response
+				var err error
+
+				failures := InterceptGomegaFailures(func() {
+					resp, err = http.Get(s.URL())
+				})
+
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(resp.StatusCode).Should(Equal(http.StatusInternalServerError))
+				Ω(failures).Should(ConsistOf(ContainSubstring("Handler Panicked")))
+			})
+		})
+
+		Context("because an assertion has failed", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {
+					// Ω(true).Should(BeFalse()) <-- would be nice to do it this way, but the test just can't be written this way
+
+					By("We're cheating a bit here -- we're throwing a GINKGO_PANIC which simulates a failed assertion")
+					panic(GINKGO_PANIC)
+				})
+			})
+
+			It("should respond with a 500 and *not* make a failing assertion, instead relying on Ginkgo to have already been notified of the error", func() {
+				resp, err := http.Get(s.URL())
+
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(resp.StatusCode).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+	})
+
 	Describe("Request Handlers", func() {
 		Describe("VerifyRequest", func() {
 			BeforeEach(func() {
@@ -310,7 +355,7 @@ var _ = Describe("TestServer", func() {
 				failures := InterceptGomegaFailures(func() {
 					http.DefaultClient.Do(req)
 				})
-				Ω(failures).Should(HaveLen(1))
+				Ω(failures).Should(ContainElement(ContainSubstring("Authorization header must be specified")))
 			})
 		})
 

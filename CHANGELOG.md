@@ -8,6 +8,9 @@ Improvements:
 - Added `HavePrefix` and `HaveSuffix` matchers.
 - `ghttp` can now handle concurrent requests.
 - Added `Succeed` which allows one to write `Ω(MyFunction()).Should(Succeed())`.
+- Improved `ghttp`'s behavior around failing assertions and panics:
+    - If a registered handler makes a failing assertion `ghttp` will return `500`.
+    - If a registered handler panics, `ghttp` will return `500` *and* fail the test.  This is new behavior that may cause existing code to break.  This code is almost certainly incorrect and creating a false positive.
 
 Bug Fixes:
 - gexec: `session.Wait` now uses `EventuallyWithOffset` to get the right line number in the failure.
