@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/onsi/gomega/format"
+	"github.com/yudai/gojsondiff"
+	"github.com/yudai/gojsondiff/printer"
 	"reflect"
 )
 
@@ -30,7 +32,12 @@ func (matcher *MatchJSONMatcher) Match(actual interface{}) (success bool, err er
 
 func (matcher *MatchJSONMatcher) FailureMessage(actual interface{}) (message string) {
 	actualString, expectedString, _ := matcher.prettyPrint(actual)
-	return format.Message(actualString, "to match JSON of", expectedString)
+
+	diff, _ := gojsondiff.Compare([]byte(expectedString), []byte(actualString))
+	printer := printer.NewAsciiPrinter()
+	diff.Iterate(printer)
+
+	return fmt.Sprintf("JSON didn't match:\n%s", printer.ResultWithoutColor())
 }
 
 func (matcher *MatchJSONMatcher) NegatedFailureMessage(actual interface{}) (message string) {
