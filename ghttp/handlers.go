@@ -116,6 +116,27 @@ func VerifyJSONRepresenting(object interface{}) http.HandlerFunc {
 	)
 }
 
+//VerifyForm returns a handler that verifies a request contains the specified form values.
+//
+//The request must contain *all* of the specified values, but it is allowed to have additional
+//form values beyond the passed in set.
+func VerifyForm(values url.Values) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		Ω(err).ShouldNot(HaveOccurred())
+		for key, vals := range values {
+			Ω(r.Form[key]).Should(Equal(vals), "Form mismatch for key: %s", key)
+		}
+	}
+}
+
+//VerifyFormKV returns a handler that verifies a request contains a form key with the specified values.
+//
+//It is a convenience wrapper around `VerifyForm` that lets you avoid having to create a `url.Values` object.
+func VerifyFormKV(key string, values ...string) http.HandlerFunc {
+	return VerifyForm(url.Values{key: values})
+}
+
 func copyHeader(src http.Header, dst http.Header) {
 	for key, value := range src {
 		dst[key] = value
