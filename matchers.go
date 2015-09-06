@@ -5,6 +5,7 @@ import (
 
 	"github.com/onsi/gomega/matchers"
 	"github.com/onsi/gomega/types"
+	"reflect"
 )
 
 //Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
@@ -318,6 +319,21 @@ func BeAssignableToTypeOf(expected interface{}) types.GomegaMatcher {
 	return &matchers.AssignableToTypeOfMatcher{
 		Expected: expected,
 	}
+}
+
+//Implements succeeds if the actual value implements the given interface.
+//This is different from BeAssignableToTypeOf because it matches an interface rather than a concrete type.
+//   var errorInterface = reflect.TypeOf((*error)(nil)).Elem()
+//   var actualErr = errors.New("some error")
+//   Ω(actualErr).Should(Implements(errorInterface))
+func Implements(interfaceType reflect.Type) types.GomegaMatcher {
+	if interfaceType == nil {
+		panic("nil type passed to Implements")
+	}
+	if interfaceType.Kind() != reflect.Interface {
+		panic("non-interface type passed to Implements")
+	}
+	return &matchers.ImplementsMatcher{InterfaceType: interfaceType}
 }
 
 //Panic succeeds if actual is a function that, when invoked, panics.
