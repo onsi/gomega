@@ -323,8 +323,9 @@ func BeAssignableToTypeOf(expected interface{}) types.GomegaMatcher {
 
 //Implements succeeds if the actual value implements the given interface.
 //This is different from BeAssignableToTypeOf because it matches an interface rather than a concrete type.
-//Interface can provided as in this example for `error`:
-//   reflect.TypeOf((*error)(nil)).Elem()
+//   var errorInterface = reflect.TypeOf((*error)(nil)).Elem()
+//   var actualErr = errors.New("some error")
+//   Ω(actualErr).Should(Implements(errorInterface))
 func Implements(interfaceType reflect.Type) types.GomegaMatcher {
 	if interfaceType == nil {
 		panic("nil type passed to Implements")
