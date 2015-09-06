@@ -343,3 +343,41 @@ func BeARegularFile() types.GomegaMatcher {
 func BeADirectory() types.GomegaMatcher {
 	return &matchers.BeADirectoryMatcher{}
 }
+
+//And succeeds only if all of the given matchers succeed.
+//The matchers are tried in order, and will fail-fast if one doesn't succeed.
+//  Expect("hi").To(And(HaveLen(2), Equal("hi"))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func And(ms ...types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.AndMatcher{Matchers: ms}
+}
+
+//Or succeeds if any of the given matchers succeed.
+//The matchers are tried in order and will return immediately upon the first successful match.
+//  Expect("hi").To(Or(HaveLen(3), HaveLen(2))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func Or(ms ...types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.OrMatcher{Matchers: ms}
+}
+
+//Not negates the given matcher; it succeeds if the given matcher fails.
+//  Expect(1).To(Not(Equal(2))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func Not(matcher types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.NotMatcher{Matcher: matcher}
+}
+
+//WithTransform applies the `transform` to the actual value and matches it against `matcher`.
+//  var plus1 = func(i interface{}) interface{} { return i.(int) + 1 }
+//  Expect(1).To(WithTransform(plus1, Equal(2))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func WithTransform(transform func(interface{}) interface{}, matcher types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.WithTransformMatcher{
+		Transform: transform,
+		Matcher:   matcher,
+	}
+}
