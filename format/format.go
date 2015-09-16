@@ -5,6 +5,9 @@ package format
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
 	"reflect"
 	"strconv"
 	"strings"
@@ -45,7 +48,15 @@ var timeType = reflect.TypeOf(time.Time{})
 //The default indentation string emitted by the format package
 var Indent = "    "
 
+// SupportsDiff is true if there is a "diff" tool in the system PATH, false otherwise.
+var SupportsDiff bool
+
 var longFormThreshold = 20
+
+func init() {
+	_, err := exec.LookPath("diff")
+	SupportsDiff = (err == nil)
+}
 
 /*
 Generates a formatted matcher success/failure message of the form:
@@ -60,12 +71,46 @@ If expected is omited, then the message looks like:
 	Expected
 		<pretty printed actual>
 	<message>
+
+A diff of actual and expected is appended to the message if both are strings and the diff utility
+is available.
 */
 func Message(actual interface{}, message string, expected ...interface{}) string {
 	if len(expected) == 0 {
 		return fmt.Sprintf("Expected\n%s\n%s", Object(actual, 1), message)
 	}
-	return fmt.Sprintf("Expected\n%s\n%s\n%s", Object(actual, 1), message, Object(expected[0], 1))
+	prefix := fmt.Sprintf("Expected\n%s\n%s\n%s", Object(actual, 1), message, Object(expected[0], 1))
+	if !SupportsDiff {
+		return prefix
+	}
+	var left, right string
+	var ok bool
+	if left, ok = actual.(string); ok {
+		right, ok = expected[0].(string)
+	}
+	if !ok {
+		return prefix
+	}
+	leftFile, err := createTempFile(left)
+	if err != nil {
+		return prefix
+	}
+	defer os.Remove(leftFile)
+	rightFile, err := createTempFile(right)
+	if err != nil {
+		return prefix
+	}
+	defer os.Remove(rightFile)
+	diff := DoDiff(leftFile, rightFile)
+	return fmt.Sprintf("%s\n\ndiff:\n%s", prefix, diff)
+}
+
+// DoDiff applies the diff tool to the given files.
+// This is done this way to allow for mocking in tests.
+var DoDiff = func(left, right string) string {
+	cmd := exec.Command("diff", left, right)
+	diff, _ := cmd.CombinedOutput() // diff returns status code 1 in case of differences
+	return string(diff)
 }
 
 /*
@@ -123,7 +168,7 @@ func findFirstMismatch(a, b string) int {
 	bSlice := strings.Split(b, "")
 
 	for index, str := range aSlice {
-		if index > len(b) - 1 {
+		if index > len(b)-1 {
 			return index
 		}
 		if str != bSlice[index] {
@@ -376,4 +421,18 @@ func isPrintableString(str string) bool {
 		}
 	}
 	return true
+}
+
+func createTempFile(content string) (string, error) {
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return "", err
+	}
+	_, err = f.WriteString(content)
+	if err != nil {
+		os.Remove(f.Name())
+		return "", err
+	}
+	f.Close()
+	return f.Name(), nil
 }
