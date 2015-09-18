@@ -371,13 +371,11 @@ func Not(matcher types.GomegaMatcher) types.GomegaMatcher {
 }
 
 //WithTransform applies the `transform` to the actual value and matches it against `matcher`.
-//  var plus1 = func(i interface{}) interface{} { return i.(int) + 1 }
+//The given transform must be a function of one parameter that returns one value.
+//  var plus1 = func(i int) int { return i + 1 }
 //  Expect(1).To(WithTransform(plus1, Equal(2))
 //
 //And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
-func WithTransform(transform func(interface{}) interface{}, matcher types.GomegaMatcher) types.GomegaMatcher {
-	return &matchers.WithTransformMatcher{
-		Transform: transform,
-		Matcher:   matcher,
-	}
+func WithTransform(transform interface{}, matcher types.GomegaMatcher) types.GomegaMatcher {
+	return matchers.NewWithTransformMatcher(transform, matcher)
 }

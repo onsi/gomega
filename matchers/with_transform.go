@@ -1,25 +1,61 @@
 package matchers
 
-import "github.com/onsi/gomega/types"
+import (
+	"fmt"
+	"github.com/onsi/gomega/types"
+	"reflect"
+)
 
 type WithTransformMatcher struct {
 	// input
-	Transform func(interface{}) interface{}
+	Transform interface{} // must be a function of one parameter that returns one value
 	Matcher   types.GomegaMatcher
+
+	// cached value
+	transformArgType reflect.Type
 
 	// state
 	transformedValue interface{}
 }
 
+func NewWithTransformMatcher(transform interface{}, matcher types.GomegaMatcher) *WithTransformMatcher {
+	if transform == nil {
+		panic("transform function cannot be nil")
+	}
+	txType := reflect.TypeOf(transform)
+	if txType.NumIn() != 1 {
+		panic("transform function must have 1 argument")
+	}
+	if txType.NumOut() != 1 {
+		panic("transform function must have 1 return value")
+	}
+
+	return &WithTransformMatcher{
+		Transform:        transform,
+		Matcher:          matcher,
+		transformArgType: reflect.TypeOf(transform).In(0),
+	}
+}
+
 func (m *WithTransformMatcher) Match(actual interface{}) (bool, error) {
-	m.transformedValue = m.Transform(actual)
+	// return error if actual's type is incompatible with Transform function's argument type
+	actualType := reflect.TypeOf(actual)
+	if !actualType.AssignableTo(m.transformArgType) {
+		return false, fmt.Errorf("Transform function expects '%s' but we have '%s'", m.transformArgType, actualType)
+	}
+
+	// call the Transform function with `actual`
+	fn := reflect.ValueOf(m.Transform)
+	result := fn.Call([]reflect.Value{reflect.ValueOf(actual)})
+	m.transformedValue = result[0].Interface() // expect exactly one value
+
 	return m.Matcher.Match(m.transformedValue)
 }
 
-func (m *WithTransformMatcher) FailureMessage(actual interface{}) (message string) {
+func (m *WithTransformMatcher) FailureMessage(_ interface{}) (message string) {
 	return m.Matcher.FailureMessage(m.transformedValue)
 }
 
-func (m *WithTransformMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (m *WithTransformMatcher) NegatedFailureMessage(_ interface{}) (message string) {
 	return m.Matcher.NegatedFailureMessage(m.transformedValue)
 }
