@@ -1,6 +1,9 @@
 package matchers
 
-import "github.com/onsi/gomega/types"
+import (
+	"github.com/onsi/gomega/types"
+	"github.com/onsi/gomega/internal/asyncassertion"
+)
 
 type NotMatcher struct {
 	Matcher types.GomegaMatcher
@@ -20,4 +23,8 @@ func (m *NotMatcher) FailureMessage(actual interface{}) (message string) {
 
 func (m *NotMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return m.Matcher.FailureMessage(actual) // works beautifully
+}
+
+func (m *NotMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
+	return asyncassertion.MatchMayChangeInTheFuture(m.Matcher, actual) // just return m.Matcher's value
 }

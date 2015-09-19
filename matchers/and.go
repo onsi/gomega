@@ -24,7 +24,7 @@ func (m *AndMatcher) Match(actual interface{}) (success bool, err error) {
 	return true, nil
 }
 
-func (m *AndMatcher) FailureMessage(actual interface{}) (message string) {
+func (m *AndMatcher) FailureMessage(_ interface{}) (message string) {
 	return m.firstFailedMatchErrMsg
 }
 
