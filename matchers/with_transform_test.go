@@ -4,6 +4,7 @@ import (
 	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/matchers"
 )
 
 var _ = Describe("WithTransformMatcher", func() {
@@ -82,6 +83,26 @@ var _ = Describe("WithTransformMatcher", func() {
 				Expect(result).To(BeFalse())
 				Expect(err).To(MatchError("Transform function expects 'int' but we have 'string'"))
 			})
+		})
+	})
+
+	Context("MatchMayChangeInTheFuture()", func() {
+		It("Propogates value from wrapped matcher on the transformed value", func() {
+			// dummy struct that holds a channel
+			type S struct{ C chan int }
+			getC := func(s S) chan int { return s.C } // extracts channel from struct
+			// wrap a Receive matcher, which does implement this method
+			var i int
+			m := WithTransform(getC, Receive(&i))
+			s := S{make(chan int)}
+			close(s.C)
+			Expect(m.Match(s)).To(BeFalse())
+			Expect(m.(*WithTransformMatcher).MatchMayChangeInTheFuture(s)).To(BeFalse()) // channel closed so Receive return false
+		})
+		It("Defaults to true", func() {
+			m := WithTransform(plus1, Equal(2)) // Equal does not have this method
+			Expect(m.Match(1)).To(BeTrue())
+			Expect(m.(*WithTransformMatcher).MatchMayChangeInTheFuture(1)).To(BeTrue()) // defaults to true
 		})
 	})
 })

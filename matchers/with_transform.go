@@ -2,6 +2,7 @@ package matchers
 
 import (
 	"fmt"
+	"github.com/onsi/gomega/internal/asyncassertion"
 	"github.com/onsi/gomega/types"
 	"reflect"
 )
@@ -58,4 +59,8 @@ func (m *WithTransformMatcher) FailureMessage(_ interface{}) (message string) {
 
 func (m *WithTransformMatcher) NegatedFailureMessage(_ interface{}) (message string) {
 	return m.Matcher.NegatedFailureMessage(m.transformedValue)
+}
+
+func (m *WithTransformMatcher) MatchMayChangeInTheFuture(_ interface{}) bool {
+	return asyncassertion.MatchMayChangeInTheFuture(m.Matcher, m.transformedValue)
 }
