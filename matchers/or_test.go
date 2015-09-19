@@ -17,6 +17,9 @@ var _ = Describe("OrMatcher", func() {
 		Expect(input).To(Or(false1, true2, true3))
 		Expect(input).To(Or(true1, false2, false3))
 		Expect(input).To(Or(false1, false2, true3))
+
+		// use alias
+		Expect(input).To(SatisfyAny(false1, false2, true3))
 	})
 
 	It("works with negative cases", func() {

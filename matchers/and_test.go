@@ -33,6 +33,9 @@ var _ = Describe("AndMatcher", func() {
 		Expect(input).To(And(true1))
 		Expect(input).To(And(true1, true2))
 		Expect(input).To(And(true1, true2, true3))
+
+		// use alias
+		Expect(input).To(SatisfyAll(true1, true2, true3))
 	})
 
 	It("works with negative cases", func() {
