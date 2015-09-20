@@ -87,17 +87,10 @@ var _ = Describe("WithTransformMatcher", func() {
 	})
 
 	Context("MatchMayChangeInTheFuture()", func() {
-		It("Propogates value from wrapped matcher on the transformed value", func() {
-			// dummy struct that holds a channel
-			type S struct{ C chan int }
-			getC := func(s S) chan int { return s.C } // extracts channel from struct
-			// wrap a Receive matcher, which does implement this method
-			var i int
-			m := WithTransform(getC, Receive(&i))
-			s := S{make(chan int)}
-			close(s.C)
-			Expect(m.Match(s)).To(BeFalse())
-			Expect(m.(*WithTransformMatcher).MatchMayChangeInTheFuture(s)).To(BeFalse()) // channel closed so Receive return false
+		It("Propagates value from wrapped matcher on the transformed value", func() {
+			m := WithTransform(plus1, Or()) // empty Or() always returns false, and indicates it cannot change
+			Expect(m.Match(1)).To(BeFalse())
+			Expect(m.(*WithTransformMatcher).MatchMayChangeInTheFuture(1)).To(BeFalse()) // empty Or() indicates cannot change
 		})
 		It("Defaults to true", func() {
 			m := WithTransform(plus1, Equal(2)) // Equal does not have this method

@@ -1,8 +1,8 @@
 package matchers
 
 import (
-	"github.com/onsi/gomega/types"
 	"github.com/onsi/gomega/internal/asyncassertion"
+	"github.com/onsi/gomega/types"
 )
 
 type NotMatcher struct {

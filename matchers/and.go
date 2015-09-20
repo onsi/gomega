@@ -45,7 +45,7 @@ func (m *AndMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
 
 		Match eval: T, T, T  => T
 		So match is currently T, what should MatchMayChangeInTheFuture() return?
-		Answer: Seems to depend on ANY of them being able to change to F.
+		Seems to depend on ANY of them being able to change to F.
 	*/
 
 	if m.firstFailedMatcher == nil {

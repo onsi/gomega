@@ -64,23 +64,19 @@ var _ = Describe("AndMatcher", func() {
 	})
 
 	Context("MatchMayChangeInTheFuture", func() {
-		// setup a closed channel
-		closedChannel := make(chan int)
-		close(closedChannel)
-		var i int
 		Context("Match returned false", func() {
 			Context("returns value of the failed matcher", func() {
 				It("false if failed matcher not going to change", func() {
 					// 3 matchers: 1st returns true, 2nd returns false and is not going to change, 3rd is never called
-					m := And(Not(BeNil()), Receive(&i), Equal(1))
-					Expect(m.Match(closedChannel)).To(BeFalse())
-					Expect(m.(*AndMatcher).MatchMayChangeInTheFuture(closedChannel)).To(BeFalse()) // closed channel, so not going to change
+					m := And(Not(BeNil()), Or(), Equal(1))
+					Expect(m.Match("hi")).To(BeFalse())
+					Expect(m.(*AndMatcher).MatchMayChangeInTheFuture("hi")).To(BeFalse()) // empty Or() indicates not going to change
 				})
 				It("true if failed matcher indicates it might change", func() {
 					// 3 matchers: 1st returns true, 2nd returns false and "might" change, 3rd is never called
 					m := And(Not(BeNil()), Equal(5), Equal(1))
-					Expect(m.Match(closedChannel)).To(BeFalse())
-					Expect(m.(*AndMatcher).MatchMayChangeInTheFuture(closedChannel)).To(BeTrue()) // Equal(5) indicates it might change
+					Expect(m.Match("hi")).To(BeFalse())
+					Expect(m.(*AndMatcher).MatchMayChangeInTheFuture("hi")).To(BeTrue()) // Equal(5) indicates it might change
 				})
 			})
 		})

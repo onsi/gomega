@@ -43,14 +43,10 @@ var _ = Describe("NotMatcher", func() {
 	})
 
 	Context("MatchMayChangeInTheFuture()", func() {
-		It("Propogates value from wrapped matcher", func() {
-			// wrap a Receive matcher, which does implement this method
-			channel := make(chan int)
-			close(channel)
-			var i int
-			m := Not(Receive(&i))
-			Expect(m.Match(channel)).To(BeTrue())
-			Expect(m.(*NotMatcher).MatchMayChangeInTheFuture(channel)).To(BeFalse())
+		It("Propagates value from wrapped matcher", func() {
+			m := Not(Or()) // an empty Or() always returns false, and indicates it cannot change
+			Expect(m.Match("anything")).To(BeTrue())
+			Expect(m.(*NotMatcher).MatchMayChangeInTheFuture("anything")).To(BeFalse())
 		})
 		It("Defaults to true", func() {
 			m := Not(Equal(1)) // Equal does not have this method

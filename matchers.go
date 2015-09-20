@@ -354,7 +354,7 @@ func And(ms ...types.GomegaMatcher) types.GomegaMatcher {
 }
 
 //SatisfyAll is an alias for And().
-//  Ω(foo).Should(SatisfyAll(ContainElement("bar"), HaveLen(3)))
+//  Ω("hi").Should(SatisfyAll(HaveLen(2), Equal("hi")))
 func SatisfyAll(matchers ...types.GomegaMatcher) types.GomegaMatcher {
 	return And(matchers...)
 }
@@ -369,7 +369,7 @@ func Or(ms ...types.GomegaMatcher) types.GomegaMatcher {
 }
 
 //SatisfyAny is an alias for Or().
-//  Expect(foo).To(SatisfyAny(ContainElement("bar"), HaveLen(3)))
+//  Expect("hi").SatisfyAny(Or(HaveLen(3), HaveLen(2))
 func SatisfyAny(matchers ...types.GomegaMatcher) types.GomegaMatcher {
 	return Or(matchers...)
 }
