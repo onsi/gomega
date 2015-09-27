@@ -95,6 +95,12 @@ func (assertion *AsyncAssertion) matcherMayChange(matcher types.GomegaMatcher, v
 		return true
 	}
 
+	return MatchMayChangeInTheFuture(matcher, value)
+}
+
+//MatchMayChangeInTheFuture is a helper to call MatchMayChangeInTheFuture on an unknown matcher.
+//If matcher implements oracleMatcher, it will call the method. Otherwise just returns true.
+func MatchMayChangeInTheFuture(matcher types.GomegaMatcher, value interface{}) bool {
 	oracleMatcher, ok := matcher.(oracleMatcher)
 	if !ok {
 		return true

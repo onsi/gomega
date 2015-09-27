@@ -343,3 +343,51 @@ func BeARegularFile() types.GomegaMatcher {
 func BeADirectory() types.GomegaMatcher {
 	return &matchers.BeADirectoryMatcher{}
 }
+
+//And succeeds only if all of the given matchers succeed.
+//The matchers are tried in order, and will fail-fast if one doesn't succeed.
+//  Expect("hi").To(And(HaveLen(2), Equal("hi"))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func And(ms ...types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.AndMatcher{Matchers: ms}
+}
+
+//SatisfyAll is an alias for And().
+//  Ω("hi").Should(SatisfyAll(HaveLen(2), Equal("hi")))
+func SatisfyAll(matchers ...types.GomegaMatcher) types.GomegaMatcher {
+	return And(matchers...)
+}
+
+//Or succeeds if any of the given matchers succeed.
+//The matchers are tried in order and will return immediately upon the first successful match.
+//  Expect("hi").To(Or(HaveLen(3), HaveLen(2))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func Or(ms ...types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.OrMatcher{Matchers: ms}
+}
+
+//SatisfyAny is an alias for Or().
+//  Expect("hi").SatisfyAny(Or(HaveLen(3), HaveLen(2))
+func SatisfyAny(matchers ...types.GomegaMatcher) types.GomegaMatcher {
+	return Or(matchers...)
+}
+
+//Not negates the given matcher; it succeeds if the given matcher fails.
+//  Expect(1).To(Not(Equal(2))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func Not(matcher types.GomegaMatcher) types.GomegaMatcher {
+	return &matchers.NotMatcher{Matcher: matcher}
+}
+
+//WithTransform applies the `transform` to the actual value and matches it against `matcher`.
+//The given transform must be a function of one parameter that returns one value.
+//  var plus1 = func(i int) int { return i + 1 }
+//  Expect(1).To(WithTransform(plus1, Equal(2))
+//
+//And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
+func WithTransform(transform interface{}, matcher types.GomegaMatcher) types.GomegaMatcher {
+	return matchers.NewWithTransformMatcher(transform, matcher)
+}
