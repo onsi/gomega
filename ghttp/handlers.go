@@ -90,6 +90,19 @@ func VerifyHeaderKV(key string, values ...string) http.HandlerFunc {
 	return VerifyHeader(http.Header{key: values})
 }
 
+//VerifyBody returns a handler that verifies that the body of the request matches the passed in byte array.
+//It does this using Equal().
+func VerifyBody(expectedBody []byte) http.HandlerFunc {
+	return CombineHandlers(
+		func(w http.ResponseWriter, req *http.Request) {
+			body, err := ioutil.ReadAll(req.Body)
+			req.Body.Close()
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(body).Should(Equal(expectedBody), "Body Mismatch")
+		},
+	)
+}
+
 //VerifyJSON returns a handler that verifies that the body of the request is a valid JSON representation
 //matching the passed in JSON string.  It does this using Gomega's MatchJSON method
 //
