@@ -456,6 +456,27 @@ var _ = Describe("TestServer", func() {
 			})
 		})
 
+		Describe("VerifyBody", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(CombineHandlers(
+					VerifyRequest("POST", "/foo"),
+					VerifyBody([]byte("some body")),
+				))
+			})
+
+			It("should verify the body", func() {
+				resp, err = http.Post(s.URL()+"/foo", "", bytes.NewReader([]byte("some body")))
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("should verify the body", func() {
+				failures := InterceptGomegaFailures(func() {
+					http.Post(s.URL()+"/foo", "", bytes.NewReader([]byte("wrong body")))
+				})
+				Ω(failures).Should(HaveLen(1))
+			})
+		})
+
 		Describe("VerifyJSON", func() {
 			BeforeEach(func() {
 				s.AppendHandlers(CombineHandlers(
