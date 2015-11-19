@@ -721,7 +721,7 @@ With these operators you can express multiple requirements in a single `Expect()
 
 It can also provide a lightweight syntax to create new matcher types from existing ones. For example:
 
-    func BeBetween(min, max int) Matcher {
+    func BeBetween(min, max int) GomegaMatcher {
         return SatisfyAll(
                 BeNumerically(">", min),
                 BeNumerically("<", max))
