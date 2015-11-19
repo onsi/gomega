@@ -703,6 +703,87 @@ Any other comparator is an error.
 
 succeeds if `ACTUAL` is a function that, when invoked, panics.  `ACTUAL` must be a function that takes no arguments and returns no result -- any other type for `ACTUAL` is an error.
 
+### Composing Matchers
+
+You may form larger matcher expressions using the following operators: `And()`, `Or()`, `Not()` and `WithTransform()`. 
+
+Note: `And()` and `Or()` can also be referred to as `SatisfyAll()` and `SatisfyAny()`, respectively.
+
+With these operators you can express multiple requirements in a single `Expect()` or `Eventually()` statement. For example:
+
+    Expect(number).To(SatisfyAll(
+                BeNumerically(">", 0),
+                BeNumerically("<", 10)))
+
+    Expect(msg).To(SatisfyAny(
+                Equal("Success"),
+                MatchRegexp(`^Error .+$`)))
+
+It can also provide a lightweight syntax to create new matcher types from existing ones. For example:
+
+    func BeBetween(min, max int) Matcher {
+        return SatisfyAll(
+                BeNumerically(">", min),
+                BeNumerically("<", max))
+    }
+
+    Ω(number).Should(BeBetween(0, 10))
+
+#### And(matchers ...GomegaMatcher)
+
+#### SatisfyAll(matchers ...GomegaMatcher)
+
+    Ω(ACTUAL).Should(And(MATCHER1, MATCHER2, ...))
+
+or
+
+    Ω(ACTUAL).Should(SatisfyAll(MATCHER1, MATCHER2, ...))
+
+succeeds if `ACTUAL` satisfies all of the specified matchers (similar to a logical AND).
+
+Tests the given matchers in order, returning immediately if one fails, without needing to test the remaining matchers.
+
+#### Or(matchers ...GomegaMatcher)
+
+#### SatisfyAny(matchers ...GomegaMatcher)
+
+    Ω(ACTUAL).Should(Or(MATCHER1, MATCHER2, ...))
+
+or
+
+    Ω(ACTUAL).Should(SatisfyAny(MATCHER1, MATCHER2, ...))
+
+succeeds if `ACTUAL` satisfies any of the specified matchers (similar to a logical OR).
+
+Tests the given matchers in order, returning immediately if one succeeds, without needing to test the remaining matchers.
+
+#### Not(matcher GomegaMatcher)
+
+    Ω(ACTUAL).Should(Not(MATCHER))
+
+succeeds if `ACTUAL` does **not** satisfy the specified matcher (similar to a logical NOT).
+
+#### WithTransform(transform interface{}, matcher GomegaMatcher)
+
+    Ω(ACTUAL).Should(WithTransform(TRANSFORM, MATCHER))
+
+succeeds if applying the `TRANSFORM` function to `ACTUAL` (i.e. the value of `TRANSFORM(ACTUAL)`) will satisfy the given `MATCHER`. For example:
+
+    GetColor := func(e Element) Color { return e.Color }
+
+    Ω(element).Should(WithTransform(GetColor, Equal(BLUE)))
+
+Or the same thing expressed by introducing a new, lightweight matcher:
+
+    // HaveColor returns a matcher that expects the element to have the given color.
+    func HaveColor(c Color) GomegaMatcher {
+        return WithTransform(func(e Element) Color {
+            return e.Color
+        }, Equal(c))
+    }
+
+    Ω(element).Should(HaveColor(BLUE)))
+
 ---
 
 ## Adding Your Own Matchers
@@ -715,7 +796,9 @@ A matcher, in Gomega, is any type that satisfies the `GomegaMatcher` interface:
         NegatedFailureMessage(actual interface{}) (message string)
     }
 
-Writing domain-specific custom matchers is trivial and highly encouraged.  Let's work through an example.
+For the simplest cases, new matchers can be [created by composition](#composing-matchers).
+
+But writing domain-specific custom matchers is also trivial and highly encouraged.  Let's work through an example.
 
 > The `GomegaMatcher` interface is defined in the `types` subpackage.
 
