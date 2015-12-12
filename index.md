@@ -1438,7 +1438,7 @@ At any time, you can access the entire contents written to the buffer via `buffe
 
 ### Handling branches
 
-Sometimes (rarely!) you must write a test that must perform different actions depending on the output streamed to the buffer.  This can be accomplishd using `buffer.Detect`. Here's a contrived example:
+Sometimes (rarely!) you must write a test that must perform different actions depending on the output streamed to the buffer.  This can be accomplished using `buffer.Detect`. Here's a contrived example:
 
     func LoginIfNecessary() {
         client.Authorize()
