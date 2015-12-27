@@ -209,6 +209,22 @@ func RespondWith(statusCode int, body interface{}, optionalHeader ...http.Header
 }
 
 /*
+RespondWithCallback returns a handler that responds to a request with the specified status code and result of evaluating the provided callback.
+
+Also, RespondWithCallback can be given an optional http.Header.  The headers defined therein will be added to the response headers.
+*/
+func RespondWithCallback(statusCode int, callback func() []byte, optionalHeader ...http.Header) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		if len(optionalHeader) == 1 {
+			copyHeader(optionalHeader[0], w.Header())
+		}
+		w.WriteHeader(statusCode)
+		body := callback()
+		w.Write(body)
+	}
+}
+
+/*
 RespondWithPtr returns a handler that responds to a request with the specified status code and body
 
 Unlike RespondWith, you pass RepondWithPtr a pointer to the status code and body allowing different tests
