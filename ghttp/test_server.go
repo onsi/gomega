@@ -349,6 +349,17 @@ func (s *Server) GetHandler(index int) http.HandlerFunc {
 	return s.requestHandlers[index]
 }
 
+func (s *Server) Reset() {
+	s.writeLock.Lock()
+	defer s.writeLock.Unlock()
+
+	s.HTTPTestServer.CloseClientConnections()
+	s.calls = 0
+	s.receivedRequests = nil
+	s.requestHandlers = nil
+	s.routedHandlers = nil
+}
+
 //WrapHandler combines the passed in handler with the handler registered at the passed in index.
 //This is useful, for example, when a server has been set up in a shared context but must be tweaked
 //for a particular test.

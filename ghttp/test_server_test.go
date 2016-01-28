@@ -31,6 +31,22 @@ var _ = Describe("TestServer", func() {
 		s.Close()
 	})
 
+	Describe("Resetting the server", func() {
+		BeforeEach(func() {
+			s.RouteToHandler("GET", "/", func(w http.ResponseWriter, req *http.Request) {})
+			s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {})
+			http.Get(s.URL() + "/")
+
+			Ω(s.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("clears all handlers and call counts", func() {
+			s.Reset()
+			Ω(s.ReceivedRequests()).Should(HaveLen(0))
+			Ω(func() {s.GetHandler(0)}).Should(Panic())
+		})
+	})
+
 	Describe("closing client connections", func() {
 		It("closes", func() {
 			s.AppendHandlers(
