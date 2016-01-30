@@ -43,7 +43,7 @@ var _ = Describe("TestServer", func() {
 		It("clears all handlers and call counts", func() {
 			s.Reset()
 			Ω(s.ReceivedRequests()).Should(HaveLen(0))
-			Ω(func() {s.GetHandler(0)}).Should(Panic())
+			Ω(func() { s.GetHandler(0) }).Should(Panic())
 		})
 	})
 
@@ -58,7 +58,7 @@ var _ = Describe("TestServer", func() {
 				},
 			)
 
-			resp, err := http.Get(s.URL())
+			resp, err := http.Post(s.URL(), "application/octet-stream", bytes.NewReader([]byte{}))
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(resp.StatusCode).Should(Equal(200))
 
@@ -67,7 +67,7 @@ var _ = Describe("TestServer", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(body).Should(Equal([]byte("hello")))
 
-			resp, err = http.Get(s.URL())
+			resp, err = http.Post(s.URL(), "application/octet-stream", bytes.NewReader([]byte{}))
 			Ω(err).Should(HaveOccurred())
 			Ω(resp).Should(BeNil())
 		})
