@@ -2,6 +2,7 @@ package ghttp_test
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -49,27 +50,31 @@ var _ = Describe("TestServer", func() {
 
 	Describe("closing client connections", func() {
 		It("closes", func() {
-			s.AppendHandlers(
+			s.RouteToHandler("GET", "/",
 				func(w http.ResponseWriter, req *http.Request) {
-					w.Write([]byte("hello"))
-				},
-				func(w http.ResponseWriter, req *http.Request) {
-					s.CloseClientConnections()
+					io.WriteString(w, req.RemoteAddr)
 				},
 			)
 
-			resp, err := http.Post(s.URL(), "application/octet-stream", bytes.NewReader([]byte{}))
+			resp, err := http.Get(s.URL())
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(resp.StatusCode).Should(Equal(200))
 
 			body, err := ioutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(body).Should(Equal([]byte("hello")))
 
-			resp, err = http.Post(s.URL(), "application/octet-stream", bytes.NewReader([]byte{}))
-			Ω(err).Should(HaveOccurred())
-			Ω(resp).Should(BeNil())
+			s.CloseClientConnections()
+
+			resp, err = http.Get(s.URL())
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(resp.StatusCode).Should(Equal(200))
+
+			body2, err := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Ω(body2).ShouldNot(Equal(body))
 		})
 	})
 
