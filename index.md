@@ -579,6 +579,12 @@ succeeds if `ACTUAL` is, in fact, empty. `ACTUAL` must be of type `string`, `arr
 
 succeeds if the length of `ACTUAL` is `INT`. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`.  It is an error for it to have any other type.
 
+#### HaveCap(count int)
+
+    Ω(ACTUAL).Should(HaveCap(INT))
+
+succeeds if the capacity of `ACTUAL` is `INT`. `ACTUAL` must be of type `array`, `chan`, or `slice`.  It is an error for it to have any other type.
+
 #### ContainElement(element interface{})
 
     Ω(ACTUAL).Should(ContainElement(ELEMENT))
