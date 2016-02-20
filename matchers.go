@@ -217,6 +217,13 @@ func HaveLen(count int) types.GomegaMatcher {
 	}
 }
 
+//HaveCap succeeds if actual has the passed-in capacity.  Actual must be of type array, chan, or slice.
+func HaveCap(count int) types.GomegaMatcher {
+	return &matchers.HaveCapMatcher{
+		Count: count,
+	}
+}
+
 //BeZero succeeds if actual is the zero value for its type or if actual is nil.
 func BeZero() types.GomegaMatcher {
 	return &matchers.BeZeroMatcher{}
