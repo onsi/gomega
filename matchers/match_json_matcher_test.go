@@ -25,15 +25,21 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when either side is not valid JSON", func() {
-		It("should error", func() {
+	Context("when the expected is not valid JSON", func() {
+		It("should error and explain why", func() {
+			success, err := (&MatchJSONMatcher{JSONToMatch: `{}`}).Match(`oops`)
+			Ω(success).Should(BeFalse())
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(ContainSubstring("Actual 'oops' should be valid JSON"))
+		})
+	})
+
+	Context("when the actual is not valid JSON", func() {
+		It("should error and explain why", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: `oops`}).Match(`{}`)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
-
-			success, err = (&MatchJSONMatcher{JSONToMatch: `{}`}).Match(`oops`)
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(ContainSubstring("Expected 'oops' should be valid JSON"))
 		})
 	})
 
