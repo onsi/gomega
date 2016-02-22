@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/onsi/gomega/format"
 	"reflect"
+
+	"github.com/onsi/gomega/format"
 )
 
 type MatchJSONMatcher struct {
@@ -50,11 +51,11 @@ func (matcher *MatchJSONMatcher) prettyPrint(actual interface{}) (actualFormatte
 	ebuf := new(bytes.Buffer)
 
 	if err := json.Indent(abuf, []byte(actualString), "", "  "); err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("Actual '%s' should be valid JSON, but it is not.\nUnderlying error:%s", actualString, err)
 	}
 
 	if err := json.Indent(ebuf, []byte(expectedString), "", "  "); err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("Expected '%s' should be valid JSON, but it is not.\nUnderlying error:%s", expectedString, err)
 	}
 
 	return abuf.String(), ebuf.String(), nil
