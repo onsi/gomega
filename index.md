@@ -342,6 +342,16 @@ As a rule, you **should not** use `BeEquivalentTo` with numbers.  Both of the fo
 
 the first assertion passes because 5.1 will be cast to an integer and will get rounded down!  Such false positives are terrible and should be avoided.  Use [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) to compare numbers instead.
 
+#### BeIdenticalTo(expected interface{})
+
+    Ω(ACTUAL).Should(BeIdenticalTo(EXPECTED))
+
+Like `Equal`, `BeIdenticalTo` compares `ACTUAL` to `EXPECTED` for equality. Unlike `Equal`, however, it uses `==` to compare values. In practice, this means that primitive values like strings, integers and floats are identical to, as well as pointers to values.
+
+`BeIdenticalTo` is most useful when you want to assert that two pointers point to the exact same location in memory.
+
+As with `Equal` it is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
+
 #### BeAssignableToTypeOf(expected interface)
 
     Ω(ACTUAL).Should(BeAssignableToTypeOf(EXPECTED interface))
