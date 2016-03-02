@@ -43,23 +43,31 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when either side is neither a string nor a stringer", func() {
+	Context("when the expected is neither a string nor a stringer or a byte array", func() {
 		It("should error", func() {
-			success, err := (&MatchJSONMatcher{JSONToMatch: "{}"}).Match(2)
+			success, err := (&MatchJSONMatcher{JSONToMatch: 2}).Match("{}")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
-
-			success, err = (&MatchJSONMatcher{JSONToMatch: 2}).Match("{}")
-			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(ContainSubstring("MatchJSONMatcher matcher requires a string, stringer, or []byte.  Got expected:\n    <int>: 2"))
 
 			success, err = (&MatchJSONMatcher{JSONToMatch: nil}).Match("{}")
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(ContainSubstring("MatchJSONMatcher matcher requires a string, stringer, or []byte.  Got expected:\n    <nil>: nil"))
+		})
+	})
 
-			success, err = (&MatchJSONMatcher{JSONToMatch: 2}).Match(nil)
+	Context("when the actual is neither a string nor a stringer", func() {
+		It("should error", func() {
+			success, err := (&MatchJSONMatcher{JSONToMatch: "{}"}).Match(2)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(ContainSubstring("MatchJSONMatcher matcher requires a string, stringer, or []byte.  Got actual:\n    <int>: 2"))
+
+			success, err = (&MatchJSONMatcher{JSONToMatch: "{}"}).Match(nil)
+			Ω(success).Should(BeFalse())
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(ContainSubstring("MatchJSONMatcher matcher requires a string, stringer, or []byte.  Got actual:\n    <nil>: nil"))
 		})
 	})
 })
