@@ -43,7 +43,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when the expected is neither a string nor a stringer or a byte array", func() {
+	Context("when the expected is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: 2}).Match("{}")
 			Ω(success).Should(BeFalse())
@@ -57,7 +57,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when the actual is neither a string nor a stringer", func() {
+	Context("when the actual is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: "{}"}).Match(2)
 			Ω(success).Should(BeFalse())
