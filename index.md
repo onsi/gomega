@@ -7,7 +7,7 @@ title: Gomega
 
 ---
 
-##Getting Gomega
+## Getting Gomega
 
 Just `go get` it:
 
@@ -15,7 +15,7 @@ Just `go get` it:
 
 ---
 
-##Using Gomega with Ginkgo
+## Using Gomega with Ginkgo
 
 When a Gomega assertion fails, Gomega calls a `GomegaFailHandler`.  This is a function that you must provide using `gomega.RegisterFailHandler()`.
 
@@ -53,7 +53,7 @@ There are two caveats:
 
 ---
 
-##Making Assertions
+## Making Assertions
 
 Gomega provides two notations for making assertions.  These notations are functionally equivalent and their differences are purely aesthetic.
 
@@ -162,11 +162,11 @@ If you want to use Gomega's recursive object description in your own code you ca
 
 ---
 
-##Making Asynchronous Assertions
+## Making Asynchronous Assertions
 
 Gomega has support for making *asynchronous* assertions.  There are two functions that provide this support: `Eventually` and `Consistently`.
 
-###Eventually
+### Eventually
 
 `Eventually` checks that an assertion *eventually* passes.  It does this by polling its argument until the matcher succeeds.
 
@@ -217,7 +217,7 @@ This also pairs well with `gexec`'s `Session` command wrappers and `gbyte`'s `Bu
 > Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- `Eventually` will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
 > As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `GomegaMatcher`.
 
-###Consistently
+### Consistently
 
 `Consistently` checks that an assertion passes for a period of time.  It does this by polling its argument repeatedly during the period. It fails if the matcher ever fails during that period.
 
@@ -246,7 +246,7 @@ As with `Eventually`, if you pass `Consistently` a function that returns more th
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
-###Modifying Default Intervals
+### Modifying Default Intervals
 
 By default, `Eventually` will poll every 10 milliseconds for up to 1 second and `Consistently` will monitor every 10 milliseconds for up to 100 milliseconds.  You can modify these defaults across your test suite with:
 
@@ -257,7 +257,7 @@ By default, `Eventually` will poll every 10 milliseconds for up to 1 second and 
 
 ---
 
-##Making Assertions in Helper Functions
+## Making Assertions in Helper Functions
 
 While writing [custom matchers](#adding-your-own-matchers) is an expressive way to make assertions against your code, it is often more convenient to write one-off helper functions like so:
 
