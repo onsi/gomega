@@ -1,5 +1,5 @@
 baseurl: /gomega
 safe: true
 lsi: false
-pygments: true
+highlighter: pygments
 markdown: kramdown
