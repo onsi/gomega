@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/onsi/gomega/matchers/external/yaml"
+	. "github.com/onsi/gomega/matchers/extensions/yaml"
 )
 
 var _ = Describe("MatchYAMLMatcher", func() {
