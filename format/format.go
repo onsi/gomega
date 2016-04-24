@@ -143,9 +143,6 @@ func formatValue(value reflect.Value, indentation uint) string {
 	case reflect.Ptr:
 		return formatValue(value.Elem(), indentation)
 	case reflect.Slice:
-		if value.Type().Elem().Kind() == reflect.Uint8 {
-			return formatString(value.Bytes(), indentation)
-		}
 		return formatSlice(value, indentation)
 	case reflect.String:
 		return formatString(value.String(), indentation)
