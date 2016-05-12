@@ -383,7 +383,7 @@ var _ = Describe("Format", func() {
         intValue: 3,
         uintValue: 4,
         uintptrValue: 0x5,
-        floatValue: 6,
+        floatValue: 6.000000,
         complexValue: \(5\+3i\),
         chanValue: %p,
         funcValue: %p,

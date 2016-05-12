@@ -133,7 +133,7 @@ func formatValue(value reflect.Value, indentation uint) string {
 	case reflect.Uintptr:
 		return fmt.Sprintf("0x%x", value.Uint())
 	case reflect.Float32, reflect.Float64:
-		return fmt.Sprintf("%v", value.Float())
+		return fmt.Sprintf("%f", value.Float())
 	case reflect.Complex64, reflect.Complex128:
 		return fmt.Sprintf("%v", value.Complex())
 	case reflect.Chan:
