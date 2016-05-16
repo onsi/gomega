@@ -583,20 +583,6 @@ Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `Mat
 
 It is an error for either `ACTUAL` or `EXPECTED` to be invalid YAML.
 
-The YAML matcher is packaged in the extensions matcher directory as it depends on `gopkg.in/yaml.v2`.
-
-The yaml matcher needs to be fetched separately. To use it, just `go get` it.
-
-
-    $ go get gomega/matchers/extensions/yaml
-
-
-And import it for use.
-
-
-    import . "github.com/onsi/gomega/matchers/extensions/yaml"
-
-
 ### Working with Collections
 
 #### BeEmpty()
