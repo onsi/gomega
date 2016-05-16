@@ -1,10 +1,10 @@
-package yaml_test
+package matchers_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/onsi/gomega/matchers/extensions/yaml"
+	. "github.com/onsi/gomega/matchers"
 )
 
 var _ = Describe("MatchYAMLMatcher", func() {
