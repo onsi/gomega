@@ -9,12 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func MatchYAML(yaml interface{}) *MatchYAMLMatcher {
-	return &MatchYAMLMatcher{
-		YAMLToMatch: yaml,
-	}
-}
-
 type MatchYAMLMatcher struct {
 	YAMLToMatch interface{}
 }
