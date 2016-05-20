@@ -94,6 +94,7 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 		go session.monitorForExit(exited)
 	}
 
+	trackedSessions = append(trackedSessions, session)
 	return session, err
 }
 
@@ -179,7 +180,7 @@ func (s *Session) Terminate() *Session {
 }
 
 /*
-Terminate sends the running command the passed in signal.  It does not wait for the process to exit.
+Signal sends the running command the passed in signal.  It does not wait for the process to exit.
 
 If the command has already exited, Signal returns silently.
 
@@ -211,4 +212,85 @@ func (s *Session) monitorForExit(exited chan<- struct{}) {
 	s.lock.Unlock()
 
 	close(exited)
+}
+
+var trackedSessions = []*Session{}
+
+/*
+Resets the sessions tracked by gexec after Run is called.
+*/
+func ResetTrackedSessions() {
+	trackedSessions = []*Session{}
+}
+
+/*
+Kill sends a SIGKILL signal to all the processes started by Run, and waits for them to exit.
+The timeout specified is applied to each process killed.
+
+If any of the processes already exited, KillAndWait returns silently.
+*/
+func KillAndWait(timeout ...interface{}) {
+	for _, session := range trackedSessions {
+		session.Kill().Wait(timeout...)
+	}
+}
+
+/*
+Kill sends a SIGTERM signal to all the processes started by Run, and waits for them to exit.
+The timeout specified is applied to each process killed.
+
+If any of the processes already exited, TerminateAndWait returns silently.
+*/
+func TerminateAndWait(timeout ...interface{}) {
+	for _, session := range trackedSessions {
+		session.Terminate().Wait(timeout...)
+	}
+}
+
+/*
+Kill sends a SIGKILL signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Kill returns silently.
+*/
+func Kill() {
+	for _, session := range trackedSessions {
+		session.Kill()
+	}
+}
+
+/*
+Terminate sends a SIGTERM signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Terminate returns silently.
+*/
+func Terminate() {
+	for _, session := range trackedSessions {
+		session.Terminate()
+	}
+}
+
+/*
+Signal sends the passed in signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Signal returns silently.
+*/
+func Signal(signal os.Signal) {
+	for _, session := range trackedSessions {
+		session.Signal(signal)
+	}
+}
+
+/*
+Interrupt sends the SIGINT signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Interrupt returns silently.
+*/
+func Interrupt() {
+	for _, session := range trackedSessions {
+		session.Interrupt()
+	}
 }
