@@ -721,7 +721,7 @@ succeeds if `ACTUAL` is a function that, when invoked, panics.  `ACTUAL` must be
 
 ### Composing Matchers
 
-You may form larger matcher expressions using the following operators: `And()`, `Or()`, `Not()` and `WithTransform()`. 
+You may form larger matcher expressions using the following operators: `And()`, `Or()`, `Not()` and `WithTransform()`.
 
 Note: `And()` and `Or()` can also be referred to as `SatisfyAll()` and `SatisfyAny()`, respectively.
 
@@ -1571,5 +1571,35 @@ Using the `Say` matcher is convenient when making *ordered* assertions against a
 wait for the process to exit and then make assertions against the entire contents of its output.  Since `Wait()` returns `session` you can wait for the process to exit, then grab all its stdout as a `[]byte` buffer with a simple oneliner:
 
     Ω(session.Wait().Out.Contents()).Should(ContainSubstring("finished successfully"))
+
+### Signaling all processes
+`gexec` provides methods to track and send signals to all processes that it starts.
+
+    gexec.Kill() //sends SIGKILL to all processes
+    gexec.Terminate() //sends SIGTERM to all processes
+    gexec.Signal(int)  //sends the passed in os.Signal signal to all the processes
+    gexec.Interrupt() //sends SIGINT to all processes
+
+If the any of the processes have already exited these signal calls are no-ops.
+
+`gexec` also provides methods to cleanup and wait for all the processes it started.
+
+    gexec.KillAndWait()
+    gexec.TerminateAndWait()
+
+You can specify a custom timeout by:
+
+    gexec.KillAndWait(5 * time.Second)
+    gexec.TerminateAndWait(2 * time.Second)
+
+The timeout is applied for each of the processes.
+
+It is considered good practice to ensure all of your processes have been killed before the end of the test suite. If you are using `ginkgo` you can use:
+
+    AfterSuite(func(){
+        gexec.KillAndWait()
+    })
+
+Due to the global nature of these methods, keep in mind that signaling processes will affect all processes started by `gexec`, in any context. For example if these methods where used in an `AfterEach`, then processes started in `BeforeSuite` would also be signaled.
 
 ---
