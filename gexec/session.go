@@ -215,13 +215,7 @@ func (s *Session) monitorForExit(exited chan<- struct{}) {
 }
 
 var trackedSessions = []*Session{}
-
-/*
-Resets the sessions tracked by gexec after Run is called.
-*/
-func ResetTrackedSessions() {
-	trackedSessions = []*Session{}
-}
+var trackedSessionsMutex = &sync.Mutex{}
 
 /*
 Kill sends a SIGKILL signal to all the processes started by Run, and waits for them to exit.
@@ -230,6 +224,8 @@ The timeout specified is applied to each process killed.
 If any of the processes already exited, KillAndWait returns silently.
 */
 func KillAndWait(timeout ...interface{}) {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
 	for _, session := range trackedSessions {
 		session.Kill().Wait(timeout...)
 	}
@@ -242,6 +238,8 @@ The timeout specified is applied to each process killed.
 If any of the processes already exited, TerminateAndWait returns silently.
 */
 func TerminateAndWait(timeout ...interface{}) {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
 	for _, session := range trackedSessions {
 		session.Terminate().Wait(timeout...)
 	}
@@ -254,6 +252,8 @@ It does not wait for the processes to exit.
 If any of the processes already exited, Kill returns silently.
 */
 func Kill() {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
 	for _, session := range trackedSessions {
 		session.Kill()
 	}
@@ -266,6 +266,8 @@ It does not wait for the processes to exit.
 If any of the processes already exited, Terminate returns silently.
 */
 func Terminate() {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
 	for _, session := range trackedSessions {
 		session.Terminate()
 	}
@@ -278,6 +280,8 @@ It does not wait for the processes to exit.
 If any of the processes already exited, Signal returns silently.
 */
 func Signal(signal os.Signal) {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
 	for _, session := range trackedSessions {
 		session.Signal(signal)
 	}
@@ -290,6 +294,8 @@ It does not wait for the processes to exit.
 If any of the processes already exited, Interrupt returns silently.
 */
 func Interrupt() {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
 	for _, session := range trackedSessions {
 		session.Interrupt()
 	}

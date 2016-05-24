@@ -128,7 +128,10 @@ var _ = Describe("Session", func() {
 	})
 
 	Context("tracking sessions", func() {
-		BeforeEach(ResetTrackedSessions)
+		BeforeEach(func() {
+			KillAndWait()
+		})
+
 		Describe("kill", func() {
 			It("should kill all the started sessions, and not wait", func() {
 				session1, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
@@ -254,28 +257,6 @@ var _ = Describe("Session", func() {
 				Eventually(session1).Should(Exit(128 + 2))
 				Eventually(session2).Should(Exit(128 + 2))
 				Eventually(session3).Should(Exit(128 + 2))
-			})
-		})
-
-		Describe("reset", func() {
-			It("should not track process before the reset", func() {
-				session1, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
-				Ω(err).ShouldNot(HaveOccurred())
-				defer func() { session1.Kill().Wait() }()
-
-				ResetTrackedSessions()
-
-				session2, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				session3, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				KillAndWait()
-
-				Ω(session1).ShouldNot(Exit(), "Should not have exited")
-				Ω(session2).Should(Exit(128+9), "Should have exited")
-				Ω(session3).Should(Exit(128+9), "Should have exited")
 			})
 		})
 	})
