@@ -94,7 +94,7 @@ Gomega streamlines this very common use case.  Both `Ω` and `Expect` accept *mu
 
 This will only pass if the return value of `DoSomethingHard()` is `("foo", nil)`.
 
-Additionally, if you call a function with a single `error` return value you can use the `Succeed` matcher to asser the function has returned without error.  So for a function of the form:
+Additionally, if you call a function with a single `error` return value you can use the `Succeed` matcher to assert the function has returned without error.  So for a function of the form:
 
     func DoSomethingSimple() error {
         ...
@@ -280,7 +280,7 @@ While writing [custom matchers](#adding-your-own-matchers) is an expressive way 
 
 This makes your tests more expressive and reduces boilerplate.  However, when an assertion in the helper fails the line numbers provided by Gomega are unhelpful.  Instead of pointing you to the line in your test that failed, they point you the line in the helper.
 
-To get around this, Gomega provides versions of `Expect`, `Eventually` and `Consistently` named `ExpectWithOffset`, `EventuallyWithOffset` and `ConsistentlyWithOffset` that allow you to specify an *offset* in the callstack.  The offset is the first argument to these functions.
+To get around this, Gomega provides versions of `Expect`, `Eventually` and `Consistently` named `ExpectWithOffset`, `EventuallyWithOffset` and `ConsistentlyWithOffset` that allow you to specify an *offset* in the call stack.  The offset is the first argument to these functions.
 
 With this, we can rewrite our helper as:
 
@@ -473,7 +473,7 @@ In addition, there are occasions when you need to grab the object sent down the 
 
 Of course, this could have been written as `receivedBagel := <-bagelChan` - however using `Receive` makes it easy to avoid hanging the test suite should nothing ever come down the channel.
 
-Finally, `Receive` *never* blocks.  `Eventually(c).Should(Receive())` repeatedly polls `c` in a non-blocking fashion.  That means that you cannot use this pattern to verify that a *non-blocking send* has occured on the channel - [more details at this GitHub issue](https://github.com/onsi/gomega/issues/82).
+Finally, `Receive` *never* blocks.  `Eventually(c).Should(Receive())` repeatedly polls `c` in a non-blocking fashion.  That means that you cannot use this pattern to verify that a *non-blocking send* has occurred on the channel - [more details at this GitHub issue](https://github.com/onsi/gomega/issues/82).
 
 #### BeSent(value interface{})
 
@@ -623,7 +623,7 @@ or
     Ω(ACTUAL).Should(
         ConsistOf([]SOME_TYPE{ELEMENT1, ELEMENT2, ELEMENT3, ...}))
 
-succeeds if `ACTUAL` contains preciely the elements passed into the matcher. The ordering of the elements does not matter.
+succeeds if `ACTUAL` contains precisely the elements passed into the matcher. The ordering of the elements does not matter.
 
 By default `ConsistOf()` uses `Equal()` to match the elements, however custom matchers can be passed in instead.  Here are some examples:
 
@@ -879,7 +879,7 @@ Say you're working on a JSON API and you want to assert that your server returns
 
 Let's break this down:
 
-- Most matchers have a constructor function that returns an instance of the matcher.  In this case we've created `RepresentJSONifiedObject`.  Where possible, your constructor function should take explicit types or interfaces.  For our usecase, however, we need to accept any possible expected type so `RepresentJSONifiedObject` takes an argument with the generic `interface{}` type.
+- Most matchers have a constructor function that returns an instance of the matcher.  In this case we've created `RepresentJSONifiedObject`.  Where possible, your constructor function should take explicit types or interfaces.  For our use case, however, we need to accept any possible expected type so `RepresentJSONifiedObject` takes an argument with the generic `interface{}` type.
 - The constructor function then initializes and returns an instance of our matcher: the `representJSONMatcher`.  These rarely need to be exported outside of your matcher package.
 - The `representJSONMatcher` must satisfy the `GomegaMatcher` interface.  It does this by implementing the `Match`, `FailureMessage`, and `NegatedFailureMessage` method:
     - If the `GomegaMatcher` receives invalid inputs `Match` returns a non-nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
@@ -890,7 +890,7 @@ Let's break this down:
     - It is guaranteed that `FailureMessage` and `NegatedFailureMessage` will only be called *after* `Match`, so you can save off any state you need to compute the messages in `Match`.
 - Finally, it is common for matchers to make extensive use of the `reflect` library to interpret the generic inputs they receive.  In this case, the `representJSONMatcher` goes through some `reflect` gymnastics to create a pointer to a new object with the same type as the `expected` object, read and decode JSON from `actual` into that pointer, and then deference the pointer and compare the result to the `expected` object.
 
-You might testdrive this matcher while writing it using Ginkgo.  Your test might look like:
+You might test drive this matcher while writing it using Ginkgo.  Your test might look like:
 
     package json_response_matcher_test
 
@@ -996,7 +996,7 @@ For example, consider a test that looks like:
 
     Eventually(myChannel).Should(Receive(Equal("bar")))
 
-`Eventually` will repeatedly invoke the `Receive` matcher against `myChannel` until the match succeeds.  However, if the channel becomes *closed* there is *no way* for the match to ever succeed.  Allowing `Eventually` to conitnue polling is inefficient and slows the test suite down.
+`Eventually` will repeatedly invoke the `Receive` matcher against `myChannel` until the match succeeds.  However, if the channel becomes *closed* there is *no way* for the match to ever succeed.  Allowing `Eventually` to continue polling is inefficient and slows the test suite down.
 
 To get around this, a matcher can optionally implement:
 
@@ -1012,7 +1012,7 @@ If you'd like to look at a simple example of `MatchMayChangeInTheFuture` check o
 
 `Eventually` will not block for 30 seconds but will return (and fail, correctly) as soon as the mismatched exit code arrives!
 
-> Note: `Eventually` and `Consistently` only excercise the `MatchMayChangeInTheFuture` method *if* they are passed a bare value.  If they are passed functions to be polled it is not possible to guarantee that the return value of the function will not change between polling intervals.  In this case, `MatchMayChangeInTheFuture` is not called and the polling continues until either a match is found or the timeout elapses.
+> Note: `Eventually` and `Consistently` only exercise the `MatchMayChangeInTheFuture` method *if* they are passed a bare value.  If they are passed functions to be polled it is not possible to guarantee that the return value of the function will not change between polling intervals.  In this case, `MatchMayChangeInTheFuture` is not called and the polling continues until either a match is found or the timeout elapses.
 
 ### Contributing to Gomega
 
@@ -1411,7 +1411,7 @@ In addition to returning the registered status code, `ghttp`'s server will also 
 
 To bring it all together: there are three ways to instruct a `ghttp` server to handle requests: you can map routes to handlers using `RouteToHandler`, you can append handlers via `AppendHandlers`, and you can `AllowUnhandledRequests` and specify an `UnhandledRequestStatusCode`.
 
-When a `ghttp` server receives a request it first checks against the set of handlers registred via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `AllowUnhandledRequests` is `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with `UnhandledRequestStatusCode`.
+When a `ghttp` server receives a request it first checks against the set of handlers registered via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `AllowUnhandledRequests` is `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with `UnhandledRequestStatusCode`.
 
 ## `gbytes`: Testing Streaming Buffers
 
@@ -1444,7 +1444,7 @@ Say you have an integration test that is streaming output from an external API. 
         })
     })
 
-These assertions will only pass if the strings passed to `Say` (which are interpreted as regular expressions - make sure to escape characters appropriately!) appear in the buffer.  An opaque read cursor (that you cannot access or modify) is fastforwarded as succesful assertions are made. So, for example:
+These assertions will only pass if the strings passed to `Say` (which are interpreted as regular expressions - make sure to escape characters appropriately!) appear in the buffer.  An opaque read cursor (that you cannot access or modify) is fast-forwarded as successful assertions are made. So, for example:
 
     Eventually(buffer).Should(gbytes.Say(`reticulating splines`))
     Consistently(buffer).ShouldNot(gbytes.Say(`reticulating splines`))
@@ -1477,11 +1477,11 @@ Sometimes (rarely!) you must write a test that must perform different actions de
         buffer.CancelDetects()
     }
 
-`buffer.Detect` takes a string (interpreted as a regular expression) and returns a channel that will fire *once* if the requested string is detected.  Upon detection, the buffer's opaque read cursor is fastforwarded so subsequent uses of `gbytes.Say` will pick up from where the succeeding `Detect` left off.  You *must* call `buffer.CancelDetects()` to clean up afterwards (`buffer` spawns one goroutine per call to `Detect`).
+`buffer.Detect` takes a string (interpreted as a regular expression) and returns a channel that will fire *once* if the requested string is detected.  Upon detection, the buffer's opaque read cursor is fast-forwarded so subsequent uses of `gbytes.Say` will pick up from where the succeeding `Detect` left off.  You *must* call `buffer.CancelDetects()` to clean up afterwards (`buffer` spawns one goroutine per call to `Detect`).
 
 ## `gexec`: Testing External Processes
 
-`gexec` simplifies testing external processes.  It can help you [compile go binaries](#compiling-external-binaries), [start external processes](#starting-external-processes), [send signals and wait for them to exit](#sending-signals-and-waiting-for-the-process-to-exit), make [assertions agains the exit code](#asserting-against-exit-code), and stream output into `gbytes.Buffer`s to allow you [make assertions against output](#making-assertions-against-the-process-output).
+`gexec` simplifies testing external processes.  It can help you [compile go binaries](#compiling-external-binaries), [start external processes](#starting-external-processes), [send signals and wait for them to exit](#sending-signals-and-waiting-for-the-process-to-exit), make [assertions against the exit code](#asserting-against-exit-code), and stream output into `gbytes.Buffer`s to allow you [make assertions against output](#making-assertions-against-the-process-output).
 
 ### Compiling external binaries
 
@@ -1513,7 +1513,7 @@ A common pattern is to compile binaries once at the beginning of the test using 
 
 `gexec.Start` calls `command.Start` for you and forwards the command's `stdout` and `stderr` to `io.Writer`s that you provide. In the code above, we pass in Ginkgo's `GinkgoWriter`.  This makes working with external processes quite convenient: when a test passes no output is printed to screen, however if a test fails then any output generated by the command will be provided.
 
-> If you want to see all your ouput regardless of test status, just run `ginkgo` in verbose mode (`-v`) - now everything written to `GinkgoWriter` makes it onto the screen.
+> If you want to see all your output regardless of test status, just run `ginkgo` in verbose mode (`-v`) - now everything written to `GinkgoWriter` makes it onto the screen.
 
 ### Sending signals and waiting for the process to exit
 
@@ -1571,12 +1571,12 @@ This allows you to make assertions against the stream of output:
     Eventually(session.Out).Should(gbytes.Say("hello [A-Za-z], nice to meet you"))
     Eventually(session.Err).Should(gbytes.Say("oops!"))
 
-Since `gexec.Session` is a `gbytes.BufferProvider` that provides the `Out` buffer you can write assertions against `stdout` ouptut like so:
+Since `gexec.Session` is a `gbytes.BufferProvider` that provides the `Out` buffer you can write assertions against `stdout` output like so:
 
     Eventually(session).Should(gbytes.Say("hello [A-Za-z], nice to meet you"))
 
 Using the `Say` matcher is convenient when making *ordered* assertions against a stream of data generated by a live process.  Sometimes, however, all you need is to
-wait for the process to exit and then make assertions against the entire contents of its output.  Since `Wait()` returns `session` you can wait for the process to exit, then grab all its stdout as a `[]byte` buffer with a simple oneliner:
+wait for the process to exit and then make assertions against the entire contents of its output.  Since `Wait()` returns `session` you can wait for the process to exit, then grab all its stdout as a `[]byte` buffer with a simple one-liner:
 
     Ω(session.Wait().Out.Contents()).Should(ContainSubstring("finished successfully"))
 
