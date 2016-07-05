@@ -202,7 +202,9 @@ func (s *Server) Close() {
 
 	server := s.HTTPTestServer
 	s.HTTPTestServer = nil
-	server.Close()
+	if server != nil {
+		server.Close()
+	}
 }
 
 //ServeHTTP() makes Server an http.Handler

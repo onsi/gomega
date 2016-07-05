@@ -78,6 +78,13 @@ var _ = Describe("TestServer", func() {
 		})
 	})
 
+	Describe("closing server mulitple times", func() {
+		It("should not fail", func() {
+			s.Close()
+			Ω(s.Close).ShouldNot(Panic())
+		})
+	})
+
 	Describe("allowing unhandled requests", func() {
 		Context("when true", func() {
 			BeforeEach(func() {
