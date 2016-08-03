@@ -92,9 +92,9 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 	err := command.Start()
 	if err == nil {
 		go session.monitorForExit(exited)
+		trackedSessions = append(trackedSessions, session)
 	}
 
-	trackedSessions = append(trackedSessions, session)
 	return session, err
 }
 

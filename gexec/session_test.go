@@ -152,6 +152,25 @@ var _ = Describe("Session", func() {
 				Eventually(session2).Should(Exit(128 + 9))
 				Eventually(session3).Should(Exit(128 + 9))
 			})
+
+			It("should not track unstarted sessions", func() {
+				_, err := Start(exec.Command("does not exist", "10000000"), GinkgoWriter, GinkgoWriter)
+				Ω(err).Should(HaveOccurred())
+
+				session2, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				session3, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Kill()
+				Ω(session2).ShouldNot(Exit(), "Should not exit immediately...")
+				Ω(session3).ShouldNot(Exit(), "Should not exit immediately...")
+
+				Eventually(session2).Should(Exit(128 + 9))
+				Eventually(session3).Should(Exit(128 + 9))
+			})
+
 		})
 
 		Describe("killAndWait", func() {
