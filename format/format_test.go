@@ -162,13 +162,19 @@ var _ = Describe("Format", func() {
 		})
 
 		Describe("formatting []byte slices", func() {
-			It("should present them as strings", func() {
-				b := []byte("a\nb\nc")
-				Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a
-    b
-    c`))
-			})
-		})
+      Context("when the slice is made of printable bytes", func () {
+        It("should present it as string", func() {
+          b := []byte("a b c")
+          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
+        })
+      })
+      Context("when the slice contains non-printable bytes", func () {
+        It("should present it as slice", func() {
+          b := []byte("a b c\n\x01\x02\x03\xff\x1bH")
+          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:12, cap:\d+`,  `\[97, 32, 98, 32, 99, 10, 1, 2, 3, 255, 27, 72\]`))
+        })
+      })
+    })
 
 		Describe("formatting functions", func() {
 			It("should give the type and format values correctly", func() {
