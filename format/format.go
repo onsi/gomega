@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"strconv"
 )
 
 // Use MaxDepth to set the maximum recursion depth when printing deeply nested objects
@@ -186,6 +187,10 @@ func formatString(object interface{}, indentation uint) string {
 }
 
 func formatSlice(v reflect.Value, indentation uint) string {
+	if v.Kind() == reflect.Slice && v.Type().Elem().Kind() == reflect.Uint8 && isPrintableString(string(v.Bytes())){
+		return formatString(v.Bytes(), indentation)
+	}
+
 	l := v.Len()
 	result := make([]string, l)
 	longest := 0
@@ -257,4 +262,16 @@ func isNilValue(a reflect.Value) bool {
 	}
 
 	return false
+}
+
+/*
+Returns true when the string is entirely made of printable runes, false otherwise.
+*/
+func isPrintableString(str string) bool {
+	for _, runeValue := range str {
+		if !strconv.IsPrint(runeValue) {
+			return false
+		}
+	}
+	return true
 }

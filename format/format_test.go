@@ -162,11 +162,19 @@ var _ = Describe("Format", func() {
 		})
 
 		Describe("formatting []byte slices", func() {
-			It("should present them as slices", func() {
-				b := []byte("a\nb\nc")
-				Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `\[97, 10, 98, 10, 99\]`))
-			})
-		})
+      Context("when the slice is made of printable bytes", func () {
+        It("should present it as string", func() {
+          b := []byte("a b c")
+          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
+        })
+      })
+      Context("when the slice contains non-printable bytes", func () {
+        It("should present it as slice", func() {
+          b := []byte("a b c\n\x01\x02\x03\xff\x1bH")
+          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:12, cap:\d+`,  `\[97, 32, 98, 32, 99, 10, 1, 2, 3, 255, 27, 72\]`))
+        })
+      })
+    })
 
 		Describe("formatting functions", func() {
 			It("should give the type and format values correctly", func() {
@@ -253,11 +261,10 @@ var _ = Describe("Format", func() {
 					m["Toby Ziegler"] = []byte("Richard Schiff")
 					m["CJ Cregg"] = []byte("Allison Janney")
 					expected := `{
-(        "Josiah Edward Bartlet": \[77, 97, 114, 116, 105, 110, 32, 83, 104, 101, 101, 110\],
-|        "Toby Ziegler": \[82, 105, 99, 104, 97, 114, 100, 32, 83, 99, 104, 105, 102, 102\],
-|        "CJ Cregg": \[65, 108, 108, 105, 115, 111, 110, 32, 74, 97, 110, 110, 101, 121\],
-){3}    }`
-
+        ("Josiah Edward Bartlet": "Martin Sheen"|"Toby Ziegler": "Richard Schiff"|"CJ Cregg": "Allison Janney"),
+        ("Josiah Edward Bartlet": "Martin Sheen"|"Toby Ziegler": "Richard Schiff"|"CJ Cregg": "Allison Janney"),
+        ("Josiah Edward Bartlet": "Martin Sheen"|"Toby Ziegler": "Richard Schiff"|"CJ Cregg": "Allison Janney"),
+    }`
 					Ω(Object(m, 1)).Should(matchRegexp(`map\[string\]\[\]uint8 \| len:3`, expected))
 				})
 			})
@@ -269,11 +276,11 @@ var _ = Describe("Format", func() {
 					Name:        "Oswald",
 					Enumeration: 17,
 					Veritas:     true,
-					Data:        []byte(""),
+					Data:        []byte("datum"),
 					secret:      1983,
 				}
 
-				Ω(Object(s, 1)).Should(match("format_test.SimpleStruct", `{Name: "Oswald", Enumeration: 17, Veritas: true, Data: [], secret: 1983}`))
+				Ω(Object(s, 1)).Should(match("format_test.SimpleStruct", `{Name: "Oswald", Enumeration: 17, Veritas: true, Data: "datum", secret: 1983}`))
 			})
 
 			Context("when the struct contains long entries", func() {
@@ -290,7 +297,7 @@ var _ = Describe("Format", func() {
         Name: "Mithrandir Gandalf Greyhame",
         Enumeration: 2021,
         Veritas: true,
-        Data: [119, 105, 122, 97, 114, 100],
+        Data: "wizard",
         secret: 3,
     }`))
 				})
@@ -314,7 +321,7 @@ var _ = Describe("Format", func() {
 		Describe("formatting aliased types", func() {
 			It("should print out the correct alias type", func() {
 				Ω(Object(StringAlias("alias"), 1)).Should(match("format_test.StringAlias", `alias`))
-				Ω(Object(ByteAlias("alias"), 1)).Should(matchRegexp(`format_test\.ByteAlias \| len:5, cap:\d+`, `\[97, 108, 105, 97, 115\]`))
+				Ω(Object(ByteAlias("alias"), 1)).Should(matchRegexp(`format_test\.ByteAlias \| len:5, cap:\d+`, `alias`))
 				Ω(Object(IntAlias(3), 1)).Should(match("format_test.IntAlias", "3"))
 			})
 		})
@@ -324,7 +331,7 @@ var _ = Describe("Format", func() {
 				s := ComplexStruct{
 					Strings: []string{"lots", "of", "short", "strings"},
 					SimpleThings: []*SimpleStruct{
-						{"short", 7, true, []byte("sm"), 17},
+						{"short", 7, true, []byte("succinct"), 17},
 						{"something longer", 427, true, []byte("designed to wrap around nicely"), 30},
 					},
 					DataMaps: map[int]ByteAlias{
@@ -335,19 +342,19 @@ var _ = Describe("Format", func() {
 				expected := `{
         Strings: \["lots", "of", "short", "strings"\],
         SimpleThings: \[
-            {Name: "short", Enumeration: 7, Veritas: true, Data: \[115, 109\], secret: 17},
+            {Name: "short", Enumeration: 7, Veritas: true, Data: "succinct", secret: 17},
             {
                 Name: "something longer",
                 Enumeration: 427,
                 Veritas: true,
-                Data: \[100, 101, 115, 105, 103, 110, 101, 100, 32, 116, 111, 32, 119, 114, 97, 112, 32, 97, 114, 111, 117, 110, 100, 32, 110, 105, 99, 101, 108, 121\],
+                Data: "designed to wrap around nicely",
                 secret: 30,
             },
         \],
         DataMaps: {
-(            17: \[115, 111, 109, 101, 32, 115, 117, 98, 115, 116, 97, 110, 116, 105, 97, 108, 108, 121, 32, 108, 111, 110, 103, 101, 114, 32, 99, 104, 117, 110, 107, 115, 32, 111, 102, 32, 100, 97, 116, 97\],
-|            1138: \[116, 104, 97, 116, 32, 115, 104, 111, 117, 108, 100, 32, 109, 97, 107, 101, 32, 116, 104, 105, 110, 103, 115, 32, 119, 114, 97, 112\],
-){2}        },
+            (17: "some substantially longer chunks of data"|1138: "that should make things wrap"),
+            (17: "some substantially longer chunks of data"|1138: "that should make things wrap"),
+        },
     }`
 				Ω(Object(s, 1)).Should(matchRegexp(`format_test\.ComplexStruct`, expected))
 			})
@@ -388,7 +395,7 @@ var _ = Describe("Format", func() {
         funcValue: %p,
         pointerValue: 5,
         sliceValue: \["string", "slice"\],
-        byteSliceValue: \[98, 121, 116, 101, 115\],
+        byteSliceValue: "bytes",
         stringValue: "a string",
         arrValue: \[11, 12, 13\],
         byteArrValue: \[17, 20, 32\],
