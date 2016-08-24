@@ -302,6 +302,8 @@ Now, failed assertions will point to the correct call to the helper in the test.
 
 Gomega comes with a bunch of `GomegaMatcher`s.  They're all documented here.  If there's one you'd like to see written either [send a pull request or open an issue](http://github.com/onsi/gomega).
 
+A number of community-supported matchers have appeared as well.  A list is maintained on the Gomega [wiki](https://github.com/onsi/gomega/wiki).
+
 These docs only go over the positive assertion case (`Should`), the negative case (`ShouldNot`) is simply the negation of the positive case.  They also use the `Ω` notation, but - as mentioned above - the `Expect` notation is equivalent.
 
 ### Asserting Equivalence
