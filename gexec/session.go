@@ -60,7 +60,7 @@ Instead, to assert that the command has exited you can use the gexec.Exit matche
 	Ω(session).Should(gexec.Exit())
 
 When the session exits it closes the stdout and stderr gbytes buffers.  This will short circuit any
-Eventuallys waiting fo the buffers to Say something.
+Eventuallys waiting for the buffers to Say something.
 */
 func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Session, error) {
 	exited := make(chan struct{})
