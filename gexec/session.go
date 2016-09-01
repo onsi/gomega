@@ -229,6 +229,7 @@ func KillAndWait(timeout ...interface{}) {
 	for _, session := range trackedSessions {
 		session.Kill().Wait(timeout...)
 	}
+	trackedSessions = []*Session{}
 }
 
 /*
