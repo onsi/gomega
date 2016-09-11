@@ -1582,4 +1582,130 @@ wait for the process to exit and then make assertions against the entire content
 
     Ω(session.Wait().Out.Contents()).Should(ContainSubstring("finished successfully"))
 
+## `gstruct`: Testing Complex Data Types
+
+`gstruct` simplifies testing large and nested structs and slices. It is used for building up complex matchers that apply different tests to each field or element.
+
+### Testing type `struct`
+
+`gstruct` provides the `FieldsMatcher` through the `MatchAllFields` and `MatchFields` functions for applying a separate matcher to each field of a struct:
+
+    actual := struct{
+        A int
+        B bool
+        C string
+    }{5, true, "foo"}
+    Expect(actual).To(MatchAllFields(Fields{
+        "A": BeNumerically("<", 10),
+        "B": BeTrue(),
+        "C": Equal("foo"),
+    })
+
+`MatchAllFields` requires that every field is matched, and each matcher is mapped to a field. To match a subset or superset of a struct, you should use the `MatchFields` function with the `IgnoreExtras` and `IgnoreMissing` options. `IgnoreExtras` will ignore fields that don't map to a matcher, e.g.
+
+    Expect(actual).To(MatchFields(IgnoreExtras, Fields{
+        "A": BeNumerically("<", 10),
+        "B": BeTrue(),
+        // Ignore lack of "C" in the matcher.
+    })
+
+`IgnoreMissing` will ignore matchers that don't map to a field, e.g.
+
+    Expect(actual).To(MatchFields(IgnoreExtras, Fields{
+        "A": BeNumerically("<", 10),
+        "B": BeTrue(),
+        "C": Equal("foo"),
+        "D": Equal("bar"), // Ignored, since actual.D does not exist.
+    })
+
+The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
+
+### Testing type slice
+
+`gstruct` provides the `ElementsMatcher` through the `MatchAllElements` and `MatchElements` function for applying a separate matcher to each element, identified by an `Identifier` function:
+
+    actual := []string{
+        "A: foo bar baz",
+        "B: once upon a time",
+        "C: the end",
+    }
+    id := func(element interface{}) {
+        return element.(string)[0]
+    }
+    Expect(actual).To(MatchAllElements(id, Elements{
+        "A": Not(BeZero()),
+        "B": MatchRegexp("[A-Z]: [a-z ]+"),
+        "C": ContainSubstring("end"),
+    })
+
+`MatchAllElements` requires that there is a 1:1 mapping from every element to every matcher. To match a subset or superset of elements, you should use the `MatchElements` function with the `IgnoreExtras` and `IgnoreMissing` options. `IgnoreExtras` will ignore elements that don't map to a matcher, e.g.
+
+    Expect(actual).To(MatchElements(IgnoreExtras, Fields{
+        "A": Not(BeZero()),
+        "B": MatchRegexp("[A-Z]: [a-z ]+"),
+        // Ignore lack of "C" in the matcher.
+    })
+
+`IgnoreMissing` will ignore matchers that don't map to an element, e.g.
+
+    Expect(actual).To(MatchFields(IgnoreExtras, Fields{
+        "A": Not(BeZero()),
+        "B": MatchRegexp("[A-Z]: [a-z ]+"),
+        "C": ContainSubstring("end"),
+        "D": Equal("bar"), // Ignored, since actual.D does not exist.
+    })
+
+The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
+
+### Testing pointer values
+
+`gstruct` provides the `PointTo` function to apply a matcher to the value pointed-to. It will fail if the pointer value is `nil`:
+
+    foo := 5
+    Expect(&foo).To(PointTo(Equal(5)))
+    var bar *int
+    Expect(bar).NotTo(PointTo(BeNil()))
+
+### Putting it all together: testing complex structures
+
+The `gsturct` matchers are intended to be composable, and can be combined to apply fuzzy-matching to large and deeply nested structures. The additional `Ignore()` and `Reject()` matchers are provided for ignoring (always succeed) fields and elements, or rejecting (always fail) fields and elements.
+
+Example:
+
+    coreID := func(element interface{}) string {
+        return strconv.Itoa(element.(CoreStats).Index)
+    }
+    Expect(actual).To(MatchAllFields(Fields{
+	    "Name":      Ignore(),
+		"StartTime": BeTemporally(">=", time.Now().Add(-100 * time.Hour)),
+		"CPU": PointTo(MatchAllFields(Fields{
+			"Time":                 BeTemporally(">=", time.Now().Add(-time.Hour)),
+			"UsageNanoCores":       BeNumerically("~", 1E9, 1E8),
+			"UsageCoreNanoSeconds": BeNumerically(">", 1E6),
+            "Cores": MatchElements(coreID, IgnoreExtras, Elements{
+                "0": MatchAllFields(Fields{
+                    Index: Ignore(),
+	                "UsageNanoCores":       BeNumerically("<", 1E9),
+	                "UsageCoreNanoSeconds": BeNumerically(">", 1E5),
+                }),
+                "1": MatchAllFields(Fields{
+                    Index: Ignore(),
+	                "UsageNanoCores":       BeNumerically("<", 1E9),
+	                "UsageCoreNanoSeconds": BeNumerically(">", 1E5),
+                }),
+            }),
+		})),
+		"Memory": PointTo(MatchAllFields(Fields{
+			"Time": BeTemporally(">=", time.Now().Add(-time.Hour)),
+			"AvailableBytes":  BeZero(),
+			"UsageBytes":      BeNumerically(">", 5E6),
+			"WorkingSetBytes": BeNumerically(">", 5E6),
+			"RSSBytes":        BeNumerically("<", 1E9),
+			"PageFaults":      BeNumerically("~", 1000, 100),
+			"MajorPageFaults": BeNumerically("~", 100, 50),
+		})),
+		"Rootfs":             m.Ignore(),
+		"Logs":               m.Ignore(),
+	}))
+
 ---
