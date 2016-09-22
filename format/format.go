@@ -5,6 +5,7 @@ package format
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"strconv"
@@ -134,7 +135,11 @@ func formatValue(value reflect.Value, indentation uint) string {
 	case reflect.Uintptr:
 		return fmt.Sprintf("0x%x", value.Uint())
 	case reflect.Float32, reflect.Float64:
-		return fmt.Sprintf("%v", value.Float())
+		if math.Trunc(value.Float()) == value.Float() {
+			return fmt.Sprintf("%0.1f", value.Float())
+		} else {
+			return fmt.Sprintf("%v", value.Float())
+		}
 	case reflect.Complex64, reflect.Complex128:
 		return fmt.Sprintf("%v", value.Complex())
 	case reflect.Chan:

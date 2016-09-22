@@ -2,11 +2,12 @@ package format_test
 
 import (
 	"fmt"
+	"strings"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
-	"strings"
 )
 
 //recursive struct
@@ -34,23 +35,24 @@ type ComplexStruct struct {
 }
 
 type SecretiveStruct struct {
-	boolValue      bool
-	intValue       int
-	uintValue      uint
-	uintptrValue   uintptr
-	floatValue     float32
-	complexValue   complex64
-	chanValue      chan bool
-	funcValue      func()
-	pointerValue   *int
-	sliceValue     []string
-	byteSliceValue []byte
-	stringValue    string
-	arrValue       [3]int
-	byteArrValue   [3]byte
-	mapValue       map[string]int
-	structValue    AStruct
-	interfaceValue interface{}
+	boolValue                bool
+	intValue                 int
+	uintValue                uint
+	uintptrValue             uintptr
+	floatWithoutDecimalValue float32
+	floatWithDecimalValue    float32
+	complexValue             complex64
+	chanValue                chan bool
+	funcValue                func()
+	pointerValue             *int
+	sliceValue               []string
+	byteSliceValue           []byte
+	stringValue              string
+	arrValue                 [3]int
+	byteArrValue             [3]byte
+	mapValue                 map[string]int
+	structValue              AStruct
+	interfaceValue           interface{}
 }
 
 type GoStringer struct {
@@ -365,23 +367,24 @@ var _ = Describe("Format", func() {
 		It("should handle all the various types correctly", func() {
 			a := int(5)
 			s := SecretiveStruct{
-				boolValue:      true,
-				intValue:       3,
-				uintValue:      4,
-				uintptrValue:   5,
-				floatValue:     6.0,
-				complexValue:   complex(5.0, 3.0),
-				chanValue:      make(chan bool, 2),
-				funcValue:      func() {},
-				pointerValue:   &a,
-				sliceValue:     []string{"string", "slice"},
-				byteSliceValue: []byte("bytes"),
-				stringValue:    "a string",
-				arrValue:       [3]int{11, 12, 13},
-				byteArrValue:   [3]byte{17, 20, 32},
-				mapValue:       map[string]int{"a key": 20, "b key": 30},
-				structValue:    AStruct{"exported"},
-				interfaceValue: map[string]int{"a key": 17},
+				boolValue:                true,
+				intValue:                 3,
+				uintValue:                4,
+				uintptrValue:             5,
+				floatWithoutDecimalValue: 6.0,
+				floatWithDecimalValue:    7.123456954956055,
+				complexValue:             complex(5.0, 3.0),
+				chanValue:                make(chan bool, 2),
+				funcValue:                func() {},
+				pointerValue:             &a,
+				sliceValue:               []string{"string", "slice"},
+				byteSliceValue:           []byte("bytes"),
+				stringValue:              "a string",
+				arrValue:                 [3]int{11, 12, 13},
+				byteArrValue:             [3]byte{17, 20, 32},
+				mapValue:                 map[string]int{"a key": 20, "b key": 30},
+				structValue:              AStruct{"exported"},
+				interfaceValue:           map[string]int{"a key": 17},
 			}
 
 			expected := fmt.Sprintf(`{
@@ -389,7 +392,8 @@ var _ = Describe("Format", func() {
         intValue: 3,
         uintValue: 4,
         uintptrValue: 0x5,
-        floatValue: 6,
+        floatWithoutDecimalValue: 6.0,
+        floatWithDecimalValue: 7.123456954956055,
         complexValue: \(5\+3i\),
         chanValue: %p,
         funcValue: %p,
