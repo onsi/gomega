@@ -92,6 +92,8 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 	err := command.Start()
 	if err == nil {
 		go session.monitorForExit(exited)
+		trackedSessionsMutex.Lock()
+		defer trackedSessionsMutex.Unlock()
 		trackedSessions = append(trackedSessions, session)
 	}
 
