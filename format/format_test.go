@@ -2,11 +2,12 @@ package format_test
 
 import (
 	"fmt"
+	"strings"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
-	"strings"
 )
 
 //recursive struct
@@ -162,19 +163,19 @@ var _ = Describe("Format", func() {
 		})
 
 		Describe("formatting []byte slices", func() {
-      Context("when the slice is made of printable bytes", func () {
-        It("should present it as string", func() {
-          b := []byte("a b c")
-          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
-        })
-      })
-      Context("when the slice contains non-printable bytes", func () {
-        It("should present it as slice", func() {
-          b := []byte("a b c\n\x01\x02\x03\xff\x1bH")
-          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:12, cap:\d+`,  `\[97, 32, 98, 32, 99, 10, 1, 2, 3, 255, 27, 72\]`))
-        })
-      })
-    })
+			Context("when the slice is made of printable bytes", func() {
+				It("should present it as string", func() {
+					b := []byte("a b c")
+					Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
+				})
+			})
+			Context("when the slice contains non-printable bytes", func() {
+				It("should present it as slice", func() {
+					b := []byte("a b c\n\x01\x02\x03\xff\x1bH")
+					Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:12, cap:\d+`, `\[97, 32, 98, 32, 99, 10, 1, 2, 3, 255, 27, 72\]`))
+				})
+			})
+		})
 
 		Describe("formatting functions", func() {
 			It("should give the type and format values correctly", func() {
@@ -428,6 +429,18 @@ var _ = Describe("Format", func() {
 			m["integer"] = 2
 			m["map"] = m
 			Ω(Object(m, 1)).Should(ContainSubstring("..."))
+		})
+
+		It("really should not go crazy...", func() {
+			type complexKey struct {
+				Value map[interface{}]int
+			}
+
+			complexObject := complexKey{}
+			complexObject.Value = make(map[interface{}]int)
+
+			complexObject.Value[&complexObject] = 2
+			Ω(Object(complexObject, 1)).Should(ContainSubstring("..."))
 		})
 	})
 
