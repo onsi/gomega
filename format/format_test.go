@@ -1,8 +1,11 @@
 package format_test
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"strings"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -462,6 +465,34 @@ var _ = Describe("Format", func() {
 		Context("when passed a stringer", func() {
 			It("should use what String() returns", func() {
 				Ω(Object(Stringer{}, 1)).Should(ContainSubstring("<format_test.Stringer>: string"))
+			})
+		})
+	})
+
+	Describe("Printing a context.Context field", func() {
+		req, _ := http.NewRequest("GET", "http://example.com/test", nil)
+		ctx, _ := context.WithTimeout(context.Background(), time.Second)
+		reqWithContext := req.WithContext(ctx)
+
+		It("Suppresses the content by default", func() {
+			Ω(Object(reqWithContext, 1)).Should(ContainSubstring("<suppressed>"))
+		})
+
+		It("Doesn't supress the context if it's the object being printed", func() {
+			Ω(Object(ctx, 1)).ShouldNot(MatchRegexp("^.*<suppressed>$"))
+		})
+
+		Context("PrintContextObjects is set", func() {
+			BeforeEach(func() {
+				PrintContextObjects = true
+			})
+
+			AfterEach(func() {
+				PrintContextObjects = false
+			})
+
+			It("Prints the context", func() {
+				Ω(Object(reqWithContext, 1)).ShouldNot(ContainSubstring("<suppressed>"))
 			})
 		})
 	})

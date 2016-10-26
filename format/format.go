@@ -4,6 +4,7 @@ Gomega's format package pretty-prints objects.  It explores input objects recurs
 package format
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -21,6 +22,14 @@ Set UseStringerRepresentation = true to use GoString (for fmt.GoStringers) or St
 Note that GoString and String don't always have all the information you need to understand why a test failed!
 */
 var UseStringerRepresentation = false
+
+/*
+Print the content of context objects. By default it will be suppressed.
+
+Set PrintContextObjects = true to enable printing of the context internals.
+*/
+var PrintContextObjects = false
+var contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
 
 //The default indentation string emitted by the format package
 var Indent = "    "
@@ -57,6 +66,8 @@ Object recurses into deeply nested objects emitting pretty-printed representatio
 Modify format.MaxDepth to control how deep the recursion is allowed to go
 Set format.UseStringerRepresentation to true to return object.GoString() or object.String() when available instead of
 recursing into the object.
+
+Set PrintContextObjects to true to print the content of objects implementing context.Context
 */
 func Object(object interface{}, indentation uint) string {
 	indent := strings.Repeat(Indent, int(indentation))
@@ -121,6 +132,12 @@ func formatValue(value reflect.Value, indentation uint) string {
 			case fmt.Stringer:
 				return x.String()
 			}
+		}
+	}
+
+	if !PrintContextObjects {
+		if value.Type().Implements(contextType) && indentation > 1 {
+			return "<suppressed>"
 		}
 	}
 
