@@ -1,9 +1,7 @@
 package format_test
 
 import (
-	"context"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -73,6 +71,25 @@ type Stringer struct {
 
 func (g Stringer) String() string {
 	return "string"
+}
+
+type ctx struct {
+}
+
+func (c *ctx) Deadline() (deadline time.Time, ok bool) {
+	return time.Time{}, false
+}
+
+func (c *ctx) Done() <-chan struct{} {
+	return nil
+}
+
+func (c *ctx) Err() error {
+	return nil
+}
+
+func (c *ctx) Value(key interface{}) interface{} {
+	return nil
 }
 
 var _ = Describe("Format", func() {
@@ -470,16 +487,21 @@ var _ = Describe("Format", func() {
 	})
 
 	Describe("Printing a context.Context field", func() {
-		req, _ := http.NewRequest("GET", "http://example.com/test", nil)
-		ctx, _ := context.WithTimeout(context.Background(), time.Second)
-		reqWithContext := req.WithContext(ctx)
+
+		type structWithContext struct {
+			Context Ctx
+			Value   string
+		}
+
+		context := ctx{}
+		objWithContext := structWithContext{Value: "some-value", Context: &context}
 
 		It("Suppresses the content by default", func() {
-			Ω(Object(reqWithContext, 1)).Should(ContainSubstring("<suppressed>"))
+			Ω(Object(objWithContext, 1)).Should(ContainSubstring("<suppressed context>"))
 		})
 
 		It("Doesn't supress the context if it's the object being printed", func() {
-			Ω(Object(ctx, 1)).ShouldNot(MatchRegexp("^.*<suppressed>$"))
+			Ω(Object(context, 1)).ShouldNot(MatchRegexp("^.*<suppressed context>$"))
 		})
 
 		Context("PrintContextObjects is set", func() {
@@ -492,7 +514,7 @@ var _ = Describe("Format", func() {
 			})
 
 			It("Prints the context", func() {
-				Ω(Object(reqWithContext, 1)).ShouldNot(ContainSubstring("<suppressed>"))
+				Ω(Object(objWithContext, 1)).ShouldNot(ContainSubstring("<suppressed context>"))
 			})
 		})
 	})

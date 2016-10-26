@@ -4,11 +4,11 @@ Gomega's format package pretty-prints objects.  It explores input objects recurs
 package format
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Use MaxDepth to set the maximum recursion depth when printing deeply nested objects
@@ -29,7 +29,17 @@ Print the content of context objects. By default it will be suppressed.
 Set PrintContextObjects = true to enable printing of the context internals.
 */
 var PrintContextObjects = false
-var contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
+
+// Ctx interface defined here to keep backwards compatability with go < 1.7
+// It matches the context.Context interface
+type Ctx interface {
+	Deadline() (deadline time.Time, ok bool)
+	Done() <-chan struct{}
+	Err() error
+	Value(key interface{}) interface{}
+}
+
+var contextType = reflect.TypeOf((*Ctx)(nil)).Elem()
 
 //The default indentation string emitted by the format package
 var Indent = "    "
@@ -137,7 +147,7 @@ func formatValue(value reflect.Value, indentation uint) string {
 
 	if !PrintContextObjects {
 		if value.Type().Implements(contextType) && indentation > 1 {
-			return "<suppressed>"
+			return "<suppressed context>"
 		}
 	}
 
