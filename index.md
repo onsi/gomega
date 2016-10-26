@@ -154,7 +154,10 @@ These recursive object renditions are performed by the `format` subpackage.  `fo
 - `format.MaxDepth = 10`: Gomega will recursively traverse nested data structures as it produces output.  By default the maximum depth of this recursion is set to `10` you can adjust this to see deeper or shallower representations of objects.
 - `format.UseStringerRepresentation = false`: Gomega does *not* call `String` or `GoString` on objects that satisfy the `Stringer` and `GoStringer` interfaces.  Oftentimes such representations, while more human readable, do not contain all the relevant information associated with an object thereby making it harder to understand why a test might be failing.  If you'd rather see the output of `String` or `GoString` set this property to `true`.
 
+
 > For a tricky example of why `format.UseStringerRepresentation = false` is your friend, check out issue [#37](https://github.com/onsi/gomega/issues/37).
+
+- `format.PrintContextObjects = false`: Gomega by default will not print the content of objects satisfying the context.Context interface, due to too much output. If you want to enable displaying that content, set this property to `true`.
 
 If you want to use Gomega's recursive object description in your own code you can call into the `format` package directly:
 
