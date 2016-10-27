@@ -42,5 +42,5 @@ func (matcher *PanicMatcher) FailureMessage(actual interface{}) (message string)
 }
 
 func (matcher *PanicMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, fmt.Sprintf("not to panic, but panicked with <%T>: %v", matcher.object, matcher.object))
+	return format.Message(actual, fmt.Sprintf("not to panic, but panicked with\n%s", format.Object(matcher.object, 1)))
 }

@@ -39,7 +39,7 @@ var _ = Describe("Panic", func() {
 			failuresMessages := InterceptGomegaFailures(func() {
 				Ω(func() { panic("ack!") }).ShouldNot(Panic())
 			})
-			Ω(failuresMessages).Should(ConsistOf(ContainSubstring("not to panic, but panicked with <string>: ack!")))
+			Ω(failuresMessages).Should(ConsistOf(MatchRegexp("not to panic, but panicked with\\s*<string>: ack!")))
 		})
 	})
 })
