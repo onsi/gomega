@@ -24,25 +24,24 @@ A path pointing to this binary is returned.
 Build uses the $GOPATH set in your environment.  It passes the variadic args on to `go build`.
 */
 func Build(packagePath string, args ...string) (compiledPath string, err error) {
-	return BuildIn(os.Getenv("GOPATH"), packagePath, args...)
+	return doBuild(os.Getenv("GOPATH"), packagePath, nil, args...)
 }
 
 /*
 BuildWithEnvironment is identical to Build but allows you to specify env vars to be set at build time.
 */
 func BuildWithEnvironment(packagePath string, env map[string]string, args ...string) (compiledPath string, err error) {
-	for key, val := range env {
-		os.Setenv(key, val)
-		defer os.Unsetenv(key)
-	}
-
-	return BuildIn(os.Getenv("GOPATH"), packagePath, args...)
+	return doBuild(os.Getenv("GOPATH"), packagePath, env, args...)
 }
 
 /*
 BuildIn is identical to Build but allows you to specify a custom $GOPATH (the first argument).
 */
 func BuildIn(gopath string, packagePath string, args ...string) (compiledPath string, err error) {
+	return doBuild(gopath, packagePath, nil, args...)
+}
+
+func doBuild(gopath, packagePath string, env map[string]string, args ...string) (compiledPath string, err error) {
 	tmpDir, err := temporaryDirectory()
 	if err != nil {
 		return "", err
@@ -62,6 +61,11 @@ func BuildIn(gopath string, packagePath string, args ...string) (compiledPath st
 
 	build := exec.Command("go", cmdArgs...)
 	build.Env = append([]string{"GOPATH=" + gopath}, os.Environ()...)
+
+	for k, v := range env {
+		envVar := k + "=" + v
+		build.Env = append(build.Env, envVar)
+	}
 
 	output, err := build.CombinedOutput()
 	if err != nil {
