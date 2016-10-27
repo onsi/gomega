@@ -1,14 +1,16 @@
 package gexec_test
 
 import (
+	"os"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe(".Build", func() {
-	var packagePath = "./_fixture/firefly"
+var packagePath = "./_fixture/firefly"
 
+var _ = Describe(".Build", func() {
 	Context("when there have been previous calls to Build", func() {
 		BeforeEach(func() {
 			_, err := gexec.Build(packagePath)
@@ -33,5 +35,33 @@ var _ = Describe(".Build", func() {
 				Ω(fireflyPath).Should(BeAnExistingFile())
 			})
 		})
+	})
+})
+
+var _ = Describe(".BuildWithEnvironment", func() {
+	var err error
+
+	It("compiles the specified package with the specified env vars", func() {
+		env := map[string]string{
+			"GOOS":   "linux",
+			"GOARCH": "amd64",
+		}
+
+		compiledPath, err := gexec.BuildWithEnvironment(packagePath, env)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(compiledPath).Should(BeAnExistingFile())
+	})
+
+	It("returns the environment to a good state", func() {
+		knownGoodEnv := os.Environ()
+
+		env := map[string]string{
+			"THIS_ENV_VAR": "SHOULD_NOT_BE_SET",
+		}
+
+		_, err = gexec.BuildWithEnvironment(packagePath, env)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		Ω(os.Environ()).Should(Equal(knownGoodEnv))
 	})
 })

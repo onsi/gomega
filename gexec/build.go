@@ -28,6 +28,18 @@ func Build(packagePath string, args ...string) (compiledPath string, err error) 
 }
 
 /*
+BuildWithEnvironment is identical to Build but allows you to specify env vars to be set at build time.
+*/
+func BuildWithEnvironment(packagePath string, env map[string]string, args ...string) (compiledPath string, err error) {
+	for key, val := range env {
+		os.Setenv(key, val)
+		defer os.Unsetenv(key)
+	}
+
+	return BuildIn(os.Getenv("GOPATH"), packagePath, args...)
+}
+
+/*
 BuildIn is identical to Build but allows you to specify a custom $GOPATH (the first argument).
 */
 func BuildIn(gopath string, packagePath string, args ...string) (compiledPath string, err error) {
