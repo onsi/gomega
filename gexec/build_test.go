@@ -40,9 +40,9 @@ var _ = Describe(".Build", func() {
 
 var _ = Describe(".BuildWithEnvironment", func() {
 	var err error
-	env := map[string]string{
-		"GOOS":   "linux",
-		"GOARCH": "amd64",
+	env := []string{
+		"GOOS=linux",
+		"GOARCH=amd64",
 	}
 
 	It("compiles the specified package with the specified env vars", func() {

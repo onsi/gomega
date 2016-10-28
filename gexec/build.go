@@ -30,7 +30,7 @@ func Build(packagePath string, args ...string) (compiledPath string, err error) 
 /*
 BuildWithEnvironment is identical to Build but allows you to specify env vars to be set at build time.
 */
-func BuildWithEnvironment(packagePath string, env map[string]string, args ...string) (compiledPath string, err error) {
+func BuildWithEnvironment(packagePath string, env []string, args ...string) (compiledPath string, err error) {
 	return doBuild(os.Getenv("GOPATH"), packagePath, env, args...)
 }
 
@@ -41,7 +41,7 @@ func BuildIn(gopath string, packagePath string, args ...string) (compiledPath st
 	return doBuild(gopath, packagePath, nil, args...)
 }
 
-func doBuild(gopath, packagePath string, env map[string]string, args ...string) (compiledPath string, err error) {
+func doBuild(gopath, packagePath string, env []string, args ...string) (compiledPath string, err error) {
 	tmpDir, err := temporaryDirectory()
 	if err != nil {
 		return "", err
@@ -61,11 +61,7 @@ func doBuild(gopath, packagePath string, env map[string]string, args ...string) 
 
 	build := exec.Command("go", cmdArgs...)
 	build.Env = append([]string{"GOPATH=" + gopath}, os.Environ()...)
-
-	for k, v := range env {
-		envVar := k + "=" + v
-		build.Env = append(build.Env, envVar)
-	}
+	build.Env = append(build.Env, env...)
 
 	output, err := build.CombinedOutput()
 	if err != nil {
