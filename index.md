@@ -1508,6 +1508,8 @@ A common pattern is to compile binaries once at the beginning of the test using 
 
 > By default, `gexec.Build` uses the GOPATH specified in your environment.  You can also use `gexec.BuildIn(gopath string, packagePath string)` to specify a custom GOPATH for the build command.  This is useful to, for example, build a binary against its vendored Godeps.
 
+> You can specify arbitrary environment variables for the build command – such as GOOS and GOARCH for building on other platforms – using `gexec.BuildWithEnvironment(packagePath string, envs []string)`.
+
 ### Starting external processes
 
 `gexec` provides a `Session` that wraps `exec.Cmd`.  `Session` includes a number of features that will be explored in the next few sections.  You create a `Session` by instructing `gexec` to start a command:
