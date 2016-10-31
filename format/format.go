@@ -40,6 +40,7 @@ type Ctx interface {
 }
 
 var contextType = reflect.TypeOf((*Ctx)(nil)).Elem()
+var timeType = reflect.TypeOf(time.Time{})
 
 //The default indentation string emitted by the format package
 var Indent = "    "
@@ -179,6 +180,10 @@ func formatValue(value reflect.Value, indentation uint) string {
 	case reflect.Map:
 		return formatMap(value, indentation)
 	case reflect.Struct:
+		if value.Type() == timeType {
+			t, _ := value.Interface().(time.Time)
+			return t.Format(time.RFC3339Nano)
+		}
 		return formatStruct(value, indentation)
 	case reflect.Interface:
 		return formatValue(value.Elem(), indentation)

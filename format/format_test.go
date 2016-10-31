@@ -380,6 +380,13 @@ var _ = Describe("Format", func() {
 				Ω(Object(s, 1)).Should(matchRegexp(`format_test\.ComplexStruct`, expected))
 			})
 		})
+
+		Describe("formatting times", func() {
+			It("should format time as RFC3339", func() {
+				t := time.Date(2016, 10, 31, 9, 57, 23, 12345, time.UTC)
+				Ω(Object(t, 1)).Should(match("time.Time", `2016-10-31T09:57:23.000012345Z`))
+			})
+		})
 	})
 
 	Describe("Handling unexported fields in structs", func() {
