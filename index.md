@@ -1692,7 +1692,19 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
         "D": Equal("bar"), // Ignored, since actual.D does not exist.
     })
 
-The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
+You can also use the flag `AllowDuplicates` to permit multiple elements in your slice to map to a single key and matcher in your fields (this flag is not meaningful when applied to structs).
+
+    everyElementID := func(element interface{}) {
+        return "a constant" // Every element will map to the same key in this case; you can group them into multiple keys, however.
+    }
+    Expect(actual).To(MatchElements(everyElementID, AllowDuplicates, Elements{
+        "a constant": ContainSubstring(": "), // Because every element passes this test
+    }))
+    Expect(actual).NotTo(MatchElements(everyElementID, AllowDuplicates, Elements{
+        "a constant": ContainSubstring("foo bar baz"), // Only the first element passes this test
+    }))
+
+The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras|AllowDuplicates`.
 
 ### Testing pointer values
 
