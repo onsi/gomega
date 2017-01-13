@@ -70,6 +70,74 @@ func Message(actual interface{}, message string, expected ...interface{}) string
 }
 
 /*
+
+Generates a nicely formatted matcher success / failure message
+
+Much like Message(...), but it attempts to pretty print diffs in strings
+
+Expected
+    <string>: "...aaaaabaaaaa..."
+to equal               |
+    <string>: "...aaaaazaaaaa..."
+
+*/
+
+func MessageWithDiff(actual, message, expected string) string {
+	if len(actual) >= truncateThreshold && len(expected) >= truncateThreshold {
+		diffPoint := findFirstMismatch(actual, expected)
+		formattedActual := truncateAndFormat(actual, diffPoint)
+		formattedExpected := truncateAndFormat(expected, diffPoint)
+
+		spacesBeforeFormattedMismatch := findFirstMismatch(formattedActual, formattedExpected)
+
+		tabLength := 4
+		spaceFromMessageToActual := tabLength + len("<string>: ") - len(message)
+		padding := strings.Repeat(" ", spaceFromMessageToActual+spacesBeforeFormattedMismatch) + "|"
+		return Message(formattedActual, message+padding, formattedExpected)
+	}
+	return Message(actual, message, expected)
+}
+
+func truncateAndFormat(str string, index int) string {
+	leftPadding := `...`
+	rightPadding := `...`
+
+	start := index - charactersAroundMismatchToInclude
+	if start < 0 {
+		start = 0
+		leftPadding = ""
+	}
+
+	// slice index must include the mis-matched character
+	lengthOfMismatchedCharacter := 1
+	end := index + charactersAroundMismatchToInclude + lengthOfMismatchedCharacter
+	if end > len(str) {
+		end = len(str)
+		rightPadding = ""
+
+	}
+	return fmt.Sprintf("\"%s\"", leftPadding+str[start:end]+rightPadding)
+}
+
+func findFirstMismatch(a, b string) int {
+	aSlice := strings.Split(a, "")
+	bSlice := strings.Split(b, "")
+
+	for index, str := range aSlice {
+		if str != bSlice[index] {
+			return index
+		}
+	}
+
+	return 0
+}
+
+const (
+	truncateThreshold                 = 50
+	charactersAroundMismatchToInclude = 5
+)
+
+/*
 Pretty prints the passed in object at the passed in indentation level.
 
 Object recurses into deeply nested objects emitting pretty-printed representations of their components.

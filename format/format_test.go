@@ -130,6 +130,29 @@ var _ = Describe("Format", func() {
 		})
 	})
 
+	Describe("MessageWithDiff", func() {
+		It("shows the exact point where two long strings differ", func() {
+			stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+			Ω(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedLongStringFailureMessage))
+		})
+
+		It("truncates the start of long strings that differ only at their end", func() {
+			stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"
+			stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaz"
+
+			Ω(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedTruncatedStartStringFailureMessage))
+		})
+
+		It("truncates the end of long strings that differ only at their start", func() {
+			stringWithB := "baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			stringWithZ := "zaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+			Ω(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedTruncatedEndStringFailureMessage))
+		})
+	})
+
 	Describe("IndentString", func() {
 		It("should indent the string", func() {
 			Ω(IndentString("foo\n  bar\nbaz", 2)).Should(Equal("        foo\n          bar\n        baz"))
@@ -526,3 +549,28 @@ var _ = Describe("Format", func() {
 		})
 	})
 })
+
+var expectedShortStringFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: tim
+to equal
+    <string>: eric
+`)
+var expectedLongStringFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaabaaaaa..."
+to equal               |
+    <string>: "...aaaaazaaaaa..."
+`)
+var expectedTruncatedEndStringFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: "baaaaa..."
+to equal       |
+    <string>: "zaaaaa..."
+`)
+var expectedTruncatedStartStringFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaab"
+to equal               |
+    <string>: "...aaaaaz"
+`)
