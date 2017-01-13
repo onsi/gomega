@@ -321,6 +321,8 @@ uses [`reflect.DeepEqual`](http://golang.org/pkg/reflect#deepequal) to compare `
 
 It is an error for both `ACTUAL` and `EXPECTED` to be nil, you should use `BeNil()` instead.
 
+When both `ACTUAL` and `EXPECTED` are a very long strings, it will attempt to pretty-print the diff and display exactly where they differ.
+
 > For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher.
 
 #### BeEquivalentTo(expected interface{})
