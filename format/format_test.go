@@ -550,12 +550,6 @@ var _ = Describe("Format", func() {
 	})
 })
 
-var expectedShortStringFailureMessage = strings.TrimSpace(`
-Expected
-    <string>: tim
-to equal
-    <string>: eric
-`)
 var expectedLongStringFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaaabaaaaa..."
