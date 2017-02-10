@@ -145,6 +145,14 @@ var _ = Describe("Format", func() {
 			Ω(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedTruncatedStartStringFailureMessage))
 		})
 
+		It("truncates the start of long strings that differ only in length", func() {
+			smallString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			largeString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+			Ω(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessage))
+			Ω(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessage))
+		})
+
 		It("truncates the end of long strings that differ only at their start", func() {
 			stringWithB := "baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 			stringWithZ := "zaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -550,12 +558,6 @@ var _ = Describe("Format", func() {
 	})
 })
 
-var expectedShortStringFailureMessage = strings.TrimSpace(`
-Expected
-    <string>: tim
-to equal
-    <string>: eric
-`)
 var expectedLongStringFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaaabaaaaa..."
@@ -573,4 +575,16 @@ Expected
     <string>: "...aaaaab"
 to equal               |
     <string>: "...aaaaaz"
+`)
+var expectedTruncatedStartSizeFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaaa"
+to equal               |
+    <string>: "...aaaaa"
+`)
+var expectedTruncatedStartSizeSwappedFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: "...aaaa"
+to equal              |
+    <string>: "...aaaaa"
 `)
