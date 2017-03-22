@@ -25,24 +25,6 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when a key mismatch is found", func() {
-		It("reports the first found mismatch", func() {
-			subject := MatchJSONMatcher{JSONToMatch: `5`}
-			actual := `7`
-			subject.Match(actual)
-
-			failureMessage := subject.FailureMessage(`7`)
-			Ω(failureMessage).ToNot(ContainSubstring("first mismatched key"))
-
-			subject = MatchJSONMatcher{JSONToMatch: `{"a": 1, "b.g": {"c": 2, "1": ["hello", "see ya"]}}`}
-			actual = `{"a": 1, "b.g": {"c": 2, "1": ["hello", "goodbye"]}}`
-			subject.Match(actual)
-
-			failureMessage = subject.FailureMessage(actual)
-			Ω(failureMessage).To(ContainSubstring(`first mismatched key: "b.g"."1"[1]`))
-		})
-	})
-
 	Context("when the expected is not valid JSON", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: `{}`}).Match(`oops`)
