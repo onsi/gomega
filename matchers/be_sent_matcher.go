@@ -41,17 +41,7 @@ func (matcher *BeSentMatcher) Match(actual interface{}) (success bool, err error
 		}
 	}()
 
-	winnerIndex, _, _ := reflect.Select([]reflect.SelectCase{
-		reflect.SelectCase{Dir: reflect.SelectSend, Chan: channelValue, Send: argValue},
-		reflect.SelectCase{Dir: reflect.SelectDefault},
-	})
-
-	var didSend bool
-	if winnerIndex == 0 {
-		didSend = true
-	}
-
-	return didSend, nil
+	return channelValue.TrySend(argValue), nil
 }
 
 func (matcher *BeSentMatcher) FailureMessage(actual interface{}) (message string) {
