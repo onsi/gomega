@@ -214,6 +214,20 @@ func MatchJSON(json interface{}) types.GomegaMatcher {
 	}
 }
 
+//MatchXML succeeds if actual is a string or stringer of XML that matches
+//the expected XML.  The XMLs are decoded and the resulting objects are compared via
+//reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
+//The comparison of attribute values is not supported for go1.7 and before.
+//For go1.7, the two following XMLs are equal:
+//<person gender="female">
+//
+//<person gender="male">
+func MatchXML(xml interface{}) types.GomegaMatcher {
+	return &matchers.MatchXMLMatcher{
+		XMLToMatch: xml,
+	}
+}
+
 //MatchYAML succeeds if actual is a string or stringer of YAML that matches
 //the expected YAML.  The YAML's are decoded and the resulting objects are compared via
 //reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
