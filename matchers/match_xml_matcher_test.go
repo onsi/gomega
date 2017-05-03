@@ -17,6 +17,8 @@ var _ = Describe("MatchXMLMatcher", func() {
 		sample_06 = readFileContents("test_data/xml/sample_06.xml")
 		sample_07 = readFileContents("test_data/xml/sample_07.xml")
 		sample_08 = readFileContents("test_data/xml/sample_08.xml")
+
+		sample_11 = readFileContents("test_data/xml/sample_11.xml")
 	)
 
 	Context("When passed stringifiables", func() {
@@ -28,6 +30,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 			Ω(sample_01).ShouldNot(MatchXML(sample_05)) // different structures
 			Ω(sample_06).ShouldNot(MatchXML(sample_07)) // same xml names with different namespaces
 			Ω(sample_07).ShouldNot(MatchXML(sample_08)) // same structures with different values
+			Ω(sample_11).Should(MatchXML(sample_11))    // with non UTF-8 encoding
 		})
 
 		It("should work with byte arrays", func() {

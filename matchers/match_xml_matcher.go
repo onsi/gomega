@@ -3,9 +3,12 @@ package matchers
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"reflect"
+	"strings"
 
 	"github.com/onsi/gomega/format"
+	"golang.org/x/net/html/charset"
 )
 
 type MatchXMLMatcher struct {
@@ -21,10 +24,10 @@ func (matcher *MatchXMLMatcher) Match(actual interface{}) (success bool, err err
 	aval := &xmlNode{}
 	eval := &xmlNode{}
 
-	if err := xml.Unmarshal([]byte(actualString), aval); err != nil {
+	if err := newXmlDecoder(strings.NewReader(actualString)).Decode(aval); err != nil {
 		return false, fmt.Errorf("Actual '%s' should be valid XML, but it is not.\nUnderlying error:%s", actualString, err)
 	}
-	if err := xml.Unmarshal([]byte(expectedString), eval); err != nil {
+	if err := newXmlDecoder(strings.NewReader(expectedString)).Decode(eval); err != nil {
 		return false, fmt.Errorf("Expected '%s' should be valid XML, but it is not.\nUnderlying error:%s", expectedString, err)
 	}
 
@@ -55,4 +58,10 @@ func (matcher *MatchXMLMatcher) formattedPrint(actual interface{}) (actualString
 		return "", "", fmt.Errorf("MatchXMLMatcher matcher requires a string, stringer, or []byte.  Got expected:\n%s", format.Object(matcher.XMLToMatch, 1))
 	}
 	return actualString, expectedString, nil
+}
+
+func newXmlDecoder(reader io.Reader) *xml.Decoder {
+	dec := xml.NewDecoder(reader)
+	dec.CharsetReader = charset.NewReaderLabel
+	return dec
 }
