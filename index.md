@@ -590,18 +590,6 @@ Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `Mat
 
 It is an error for either `ACTUAL` or `EXPECTED` to be invalid XML.
 
-##### Partial support for Go1.7 and before
-
-Because the underlying Go standard library package `encoding/xml` has no support for collecting all XML attributes before 1.8 (see [here](https://github.com/golang/go/commit/c1a1328c5f004c62b8c08faf0d0d2845e0be5d37)), the two following XMLs will be equal for 1.7 and before:
-
-```
-<person gender="female">
-```
-
-```
-<person gender="male">
-```
-
 #### MatchYAML(yaml interface{})
 
     Ω(ACTUAL).Should(MatchYAML(EXPECTED))
