@@ -3,6 +3,7 @@ package gexec
 import (
 	"errors"
 	"fmt"
+        "go/build"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -24,14 +25,14 @@ A path pointing to this binary is returned.
 Build uses the $GOPATH set in your environment.  It passes the variadic args on to `go build`.
 */
 func Build(packagePath string, args ...string) (compiledPath string, err error) {
-	return doBuild(os.Getenv("GOPATH"), packagePath, nil, args...)
+	return doBuild(build.Default.GOPATH, packagePath, nil, args...)
 }
 
 /*
 BuildWithEnvironment is identical to Build but allows you to specify env vars to be set at build time.
 */
 func BuildWithEnvironment(packagePath string, env []string, args ...string) (compiledPath string, err error) {
-	return doBuild(os.Getenv("GOPATH"), packagePath, env, args...)
+	return doBuild(build.Default.GOPATH, packagePath, env, args...)
 }
 
 /*
