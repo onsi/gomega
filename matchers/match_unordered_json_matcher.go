@@ -59,32 +59,6 @@ func (matcher *MatchUnorderedJSONMatcher) NegatedFailureMessage(actual interface
 	return formattedMessage(format.Message(actualString, "not to match JSON of", expectedString), matcher.firstFailurePath)
 }
 
-func formattedMessage(comparisonMessage string, failurePath []interface{}) string {
-	var diffMessage string
-	if len(failurePath) == 0 {
-		diffMessage = ""
-	} else {
-		diffMessage = fmt.Sprintf("\n\nfirst mismatched key: %s", formattedFailurePath(failurePath))
-	}
-	return fmt.Sprintf("%s%s", comparisonMessage, diffMessage)
-}
-
-func formattedFailurePath(failurePath []interface{}) string {
-	formattedPaths := []string{}
-	for i := len(failurePath) - 1; i >= 0; i-- {
-		switch p := failurePath[i].(type) {
-		case int:
-			formattedPaths = append(formattedPaths, fmt.Sprintf(`[%d]`, p))
-		default:
-			if i != len(failurePath)-1 {
-				formattedPaths = append(formattedPaths, ".")
-			}
-			formattedPaths = append(formattedPaths, fmt.Sprintf(`"%s"`, p))
-		}
-	}
-	return strings.Join(formattedPaths, "")
-}
-
 func (matcher *MatchUnorderedJSONMatcher) prettyPrint(actual interface{}) (actualFormatted, expectedFormatted string, err error) {
 	actualString, ok := toString(actual)
 	if !ok {
