@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
