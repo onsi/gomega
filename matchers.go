@@ -214,6 +214,16 @@ func MatchJSON(json interface{}) types.GomegaMatcher {
 	}
 }
 
+//MatchUnorderedJSON succeeds if actual is a string or stringer of JSON that matches
+//the expected JSON, however all arrays are treeted as un-ordered.
+//The JSONs are decoded and the resulting objects are compared via
+//reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
+func MatchUnorderedJSON(json interface{}) types.GomegaMatcher {
+	return &matchers.MatchUnorderedJSONMatcher{
+		JSONToMatch: json,
+	}
+}
+
 //MatchYAML succeeds if actual is a string or stringer of YAML that matches
 //the expected YAML.  The YAML's are decoded and the resulting objects are compared via
 //reflect.DeepEqual so things like key-ordering and whitespace shouldn't matter.
