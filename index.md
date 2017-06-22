@@ -582,6 +582,8 @@ Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `Mat
 
 It is an error for either `ACTUAL` or `EXPECTED` to be invalid JSON.
 
+In some cases it is useful to match two JSON strings while ignoring list order.  For this you can use the community maintained [MatchUnorderedJSON](https://github.com/Benjamintf1/Expanded-Unmarshalled-Matchers) matcher.
+
 #### MatchXML(xml interface{})
 
     Ω(ACTUAL).Should(MatchXML(EXPECTED))
