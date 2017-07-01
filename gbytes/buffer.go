@@ -223,7 +223,6 @@ func (b *Buffer) didSay(re *regexp.Regexp) (bool, []byte) {
 	if loc != nil {
 		b.readCursor += uint64(loc[1])
 		return true, copyOfUnreadBytes
-	} else {
-		return false, copyOfUnreadBytes
 	}
+	return false, copyOfUnreadBytes
 }
