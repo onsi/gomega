@@ -1477,6 +1477,26 @@ and ensure that the test is correctly asserting that `reticulating splines` appe
 
 At any time, you can access the entire contents written to the buffer via `buffer.Contents()`.  This includes *everything* ever written to the buffer regardless of the current position of the read cursor.
 
+### Testing `io.Reader`s
+
+Implementations of `io.Reader` typically block.  This makes the following class of tests unsafe:
+
+    It("should read something", func() {
+        p := make([]byte, 5)
+        _, err := reader.Read(p)  //unsafe! this could block forever
+        Ω(err).ShouldNot(HaveOccurred())
+        Ω(p).Should(Equal([]byte("abcde")))
+    })
+
+It is safer to make assyncronous assertions against the reader.  You can do this with the `gbytes` package like so:
+
+    It("should read something", func() {
+        Eventually(gbytes.BufferReader(reader)).Should(gbytes.Say("abcde"))
+    })
+
+`gbytes.BufferReader` takes an `io.Reader` and returns a `gbytes.Buffer`.  Under the hood an `io.Copy` goroutine is launched to copy data from the `io.Reader` into the `gbytes.Buffer`.  The `gbytes.Buffer` is closed when the `io.Copy` completes.  Because the `io.Copy` is launched asynchronously you *must* make assertions against the reader using `Eventually`.
+
+
 ### Handling branches
 
 Sometimes (rarely!) you must write a test that must perform different actions depending on the output streamed to the buffer.  This can be accomplished using `buffer.Detect`. Here's a contrived example:
