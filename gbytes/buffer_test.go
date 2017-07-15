@@ -58,6 +58,7 @@ var _ = Describe("Buffer", func() {
 				Eventually(buffer).Should(Say("abc"))
 				Ω(buffer).ShouldNot(Say("abc"))
 				Eventually(buffer).Should(Say("def"))
+				Eventually(buffer.Closed).Should(BeTrue())
 			})
 		})
 
@@ -79,6 +80,7 @@ var _ = Describe("Buffer", func() {
 				}
 				buffer = BufferReader(fastReader)
 				Eventually(buffer, 100*time.Millisecond).Should(Say("abc"))
+				Eventually(buffer.Closed).Should(BeTrue())
 			})
 		})
 	})
