@@ -1477,26 +1477,6 @@ and ensure that the test is correctly asserting that `reticulating splines` appe
 
 At any time, you can access the entire contents written to the buffer via `buffer.Contents()`.  This includes *everything* ever written to the buffer regardless of the current position of the read cursor.
 
-### Testing `io.Reader`s
-
-Implementations of `io.Reader` typically block.  This makes the following class of tests unsafe:
-
-    It("should read something", func() {
-        p := make([]byte, 5)
-        _, err := reader.Read(p)  //unsafe! this could block forever
-        Ω(err).ShouldNot(HaveOccurred())
-        Ω(p).Should(Equal([]byte("abcde")))
-    })
-
-It is safer to make assyncronous assertions against the reader.  You can do this with the `gbytes` package like so:
-
-    It("should read something", func() {
-        Eventually(gbytes.BufferReader(reader)).Should(gbytes.Say("abcde"))
-    })
-
-`gbytes.BufferReader` takes an `io.Reader` and returns a `gbytes.Buffer`.  Under the hood an `io.Copy` goroutine is launched to copy data from the `io.Reader` into the `gbytes.Buffer`.  The `gbytes.Buffer` is closed when the `io.Copy` completes.  Because the `io.Copy` is launched asynchronously you *must* make assertions against the reader using `Eventually`.
-
-
 ### Handling branches
 
 Sometimes (rarely!) you must write a test that must perform different actions depending on the output streamed to the buffer.  This can be accomplished using `buffer.Detect`. Here's a contrived example:
@@ -1515,6 +1495,37 @@ Sometimes (rarely!) you must write a test that must perform different actions de
     }
 
 `buffer.Detect` takes a string (interpreted as a regular expression) and returns a channel that will fire *once* if the requested string is detected.  Upon detection, the buffer's opaque read cursor is fast-forwarded so subsequent uses of `gbytes.Say` will pick up from where the succeeding `Detect` left off.  You *must* call `buffer.CancelDetects()` to clean up afterwards (`buffer` spawns one goroutine per call to `Detect`).
+
+### Testing `io.Reader`s, `io.Writer`s, and `io.Closer`s
+
+Implementations of `io.Reader`, `io.Writer`, and `io.Closer` are expected to be blocking.  This makes the following class of tests unsafe:
+
+    It("should read something", func() {
+        p := make([]byte, 5)
+        _, err := reader.Read(p)  //unsafe! this could block forever
+        Ω(err).ShouldNot(HaveOccurred())
+        Ω(p).Should(Equal([]byte("abcde")))
+    })
+
+It is safer to wrap `io.Reader`s, `io.Writer`s, and `io.Closer`s with explicit timeouts.  You can do this with `gbytes.TimeoutReader`, `gbytes.TimeoutWriter`, and `gbytes.TimeoutCloser` like so:
+
+    It("should read something", func() {
+        p := make([]byte, 5)
+        _, err := gbytes.TimeoutReader(reader, time.Second).Read(p)
+        Ω(err).ShouldNot(HaveOccurred())
+        Ω(p).Should(Equal([]byte("abcde")))
+    })
+
+The `gbytes` wrappers will return `gbytes.ErrTimeout` if a timeout occurs.
+
+In the case of `io.Reader`s you can leverage the `Say` matcher and the functionality of `gbytes.Buffer` by building a `gbytes.Buffer` that reads from the `io.Reader` asynchronously.  You can do this with the `gbytes` package like so:
+
+    It("should read something", func() {
+        Eventually(gbytes.BufferReader(reader)).Should(gbytes.Say("abcde"))
+    })
+
+`gbytes.BufferReader` takes an `io.Reader` and returns a `gbytes.Buffer`.  Under the hood an `io.Copy` goroutine is launched to copy data from the `io.Reader` into the `gbytes.Buffer`.  The `gbytes.Buffer` is closed when the `io.Copy` completes.  Because the `io.Copy` is launched asynchronously you *must* make assertions against the reader using `Eventually`.
+
 
 ## `gexec`: Testing External Processes
 
