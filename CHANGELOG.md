@@ -1,5 +1,7 @@
 ## HEAD
 
+## 1.2.0
+
 Improvements:
 
 - Added `BeSent` which attempts to send a value down a channel and fails if the attempt blocks.  Can be paired with `Eventually` to safely send a value down a channel with a timeout.
