@@ -14,6 +14,8 @@ Improvements:
 - `ghttp` servers can take an `io.Writer`.  `ghttp` will write a line to the writer when each request arrives.
 - Added `WithTransform` matcher to allow munging input data before feeding into the relevant matcher
 - Added boolean `And`, `Or`, and `Not` matchers to allow creating composite matchers
+- Added `gbytes.TimeoutCloser`, `gbytes.TimeoutReader`, and `gbytes.TimeoutWriter` - these are convenience wrappers that timeout if the underlying Closer/Reader/Writer does not return within the alloted time.
+- Added `gbytes.BufferReader` - this constructs a `gbytes.Buffer` that asynchronously reads the passed-in `io.Reader` into its buffer.
 
 Bug Fixes:
 - gexec: `session.Wait` now uses `EventuallyWithOffset` to get the right line number in the failure.
