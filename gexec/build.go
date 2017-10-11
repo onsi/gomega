@@ -59,8 +59,17 @@ func doBuild(gopath, packagePath string, env []string, args ...string) (compiled
 	cmdArgs := append([]string{"build"}, args...)
 	cmdArgs = append(cmdArgs, "-o", executable, packagePath)
 
+	oldGoPath := os.Getenv("GOPATH")
+	defer func() {
+		os.Setenv("GOPATH", oldGoPath)
+	}()
+	err = os.Setenv("GOPATH", gopath)
+	if err != nil {
+		return "", err
+	}
+
 	build := exec.Command("go", cmdArgs...)
-	build.Env = append([]string{"GOPATH=" + gopath}, os.Environ()...)
+	build.Env = os.Environ()
 	build.Env = append(build.Env, env...)
 
 	output, err := build.CombinedOutput()
