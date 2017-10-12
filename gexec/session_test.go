@@ -2,6 +2,7 @@ package gexec_test
 
 import (
 	"io"
+	"io/ioutil"
 	"os/exec"
 	"syscall"
 	"time"
@@ -324,7 +325,10 @@ var _ = Describe("Session", func() {
 	})
 
 	Context("when wrapping out and err", func() {
-		var outWriterBuffer, errWriterBuffer *Buffer
+		var (
+			outWriterBuffer, errWriterBuffer *Buffer
+		)
+
 		BeforeEach(func() {
 			outWriterBuffer = NewBuffer()
 			outWriter = outWriterBuffer
@@ -343,6 +347,17 @@ var _ = Describe("Session", func() {
 
 			Ω(outWriterBuffer.Contents()).Should(Equal(session.Out.Contents()))
 			Ω(errWriterBuffer.Contents()).Should(Equal(session.Err.Contents()))
+		})
+
+		Context("when discarding the output of the command", func() {
+			BeforeEach(func() {
+				outWriter = ioutil.Discard
+				errWriter = ioutil.Discard
+			})
+
+			It("executes succesfuly", func() {
+				Eventually(session).Should(Exit())
+			})
 		})
 	})
 
