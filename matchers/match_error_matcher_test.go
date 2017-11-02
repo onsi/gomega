@@ -90,4 +90,16 @@ var _ = Describe("MatchErrorMatcher", func() {
 			Ω(err).Should(HaveOccurred())
 		})
 	})
+
+	Context("when passed an error that is also a string", func() {
+		It("should use it as an error", func() {
+			var e mockErr = "mockErr"
+
+			// this fails if the matcher casts e to a string before comparison
+			Ω(e).Should(MatchError(e))
+		})
+	})
 })
+
+type mockErr string
+func (m mockErr) Error() string {return string(m)}
