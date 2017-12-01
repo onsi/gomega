@@ -23,7 +23,7 @@ Build uses go build to compile the package at packagePath.  The resulting binary
 A path pointing to this binary is returned.
 
 Build uses the $GOPATH set in your environment. If $GOPATH is not set and you are using Go 1.8+, 
-$HOME/go directory is used instead.  It passes the variadic args on to `go build`.
+it will use the default GOPATH instead.  It passes the variadic args on to `go build`.
 */
 func Build(packagePath string, args ...string) (compiledPath string, err error) {
 	return doBuild(build.Default.GOPATH, packagePath, nil, args...)
