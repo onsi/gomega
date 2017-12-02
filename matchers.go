@@ -269,7 +269,7 @@ func ContainElement(element interface{}) types.GomegaMatcher {
 	}
 }
 
-//ConsistOf succeeds if actual contains preciely the elements passed into the matcher.  The ordering of the elements does not matter.
+//ConsistOf succeeds if actual contains precisely the elements passed into the matcher.  The ordering of the elements does not matter.
 //By default ConsistOf() uses Equal() to match the elements, however custom matchers can be passed in instead.  Here are some examples:
 //
 //    Ω([]string{"Foo", "FooBar"}).Should(ConsistOf("FooBar", "Foo"))
