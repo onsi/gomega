@@ -366,7 +366,7 @@ func BeAnExistingFile() types.GomegaMatcher {
 	return &matchers.BeAnExistingFileMatcher{}
 }
 
-//BeARegularFile succeeds iff a file exists and is a regular file.
+//BeARegularFile succeeds if a file exists and is a regular file.
 //Actual must be a string representing the abs path to the file being checked.
 func BeARegularFile() types.GomegaMatcher {
 	return &matchers.BeARegularFileMatcher{}
