@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 	. "github.com/onsi/gomega/matchers"
 )
 
@@ -48,6 +49,10 @@ var _ = Describe("Equal", func() {
 
 	Describe("failure messages", func() {
 		It("shows the two strings simply when they are short", func() {
+			var diff bool
+			diff, format.SupportsDiff = format.SupportsDiff, false
+			defer func() { format.SupportsDiff = diff }()
+
 			subject := EqualMatcher{Expected: "eric"}
 
 			failureMessage := subject.FailureMessage("tim")
@@ -55,6 +60,10 @@ var _ = Describe("Equal", func() {
 		})
 
 		It("shows the exact point where two long strings differ", func() {
+			var diff bool
+			diff, format.SupportsDiff = format.SupportsDiff, false
+			defer func() { format.SupportsDiff = diff }()
+
 			stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 			stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 

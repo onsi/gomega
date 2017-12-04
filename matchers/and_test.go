@@ -3,6 +3,7 @@ package matchers_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 	. "github.com/onsi/gomega/matchers"
 	"github.com/onsi/gomega/types"
 )
@@ -23,6 +24,10 @@ var (
 
 // verifyFailureMessage expects the matcher to fail with the given input, and verifies the failure message.
 func verifyFailureMessage(m types.GomegaMatcher, input string, expectedFailureMsgFragment string) {
+	var diff bool
+	diff, format.SupportsDiff = format.SupportsDiff, false
+	defer func() { format.SupportsDiff = diff }()
+
 	Expect(m.Match(input)).To(BeFalse())
 	Expect(m.FailureMessage(input)).To(Equal(
 		"Expected\n    <string>: " + input + "\n" + expectedFailureMsgFragment))

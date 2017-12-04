@@ -128,9 +128,62 @@ var _ = Describe("Format", func() {
 				Ω(Message(3, "to equal", 4)).Should(Equal("Expected\n    <int>: 3\nto equal\n    <int>: 4"))
 			})
 		})
+
+		Context("with an actual and and expected value of type string", func() {
+			const left = "left"
+			const right = "right"
+			var diff bool
+
+			Context("without diff available", func() {
+				BeforeEach(func() {
+					diff = SupportsDiff
+					SupportsDiff = false
+				})
+
+				AfterEach(func() {
+					SupportsDiff = diff
+				})
+
+				It("should print out an indented formatted representation of both values, and the message", func() {
+					Ω(Message(left, "to equal", right)).Should(Equal("Expected\n    <string>: " + left + "\nto equal\n    <string>: " + right))
+				})
+			})
+
+			Context("with the diff tool available", func() {
+				const fakeOutput = "DIFF CALLED"
+				var doDiff func(string, string) string
+
+				BeforeEach(func() {
+					diff = SupportsDiff
+					SupportsDiff = true
+					doDiff = DoDiff
+					DoDiff = func(left, right string) string { return fakeOutput }
+				})
+
+				AfterEach(func() {
+					SupportsDiff = diff
+					DoDiff = doDiff
+				})
+
+				It("should append a diff of the actual and expected values", func() {
+					Ω(Message(left, "to equal", right)).Should(Equal("Expected\n    <string>: " + left + "\nto equal\n    <string>: " + right + "\n\ndiff:\n" + fakeOutput))
+				})
+			})
+		})
 	})
 
 	Describe("MessageWithDiff", func() {
+		var diff bool
+
+		BeforeEach(func() {
+			diff = SupportsDiff
+			SupportsDiff = false
+		})
+
+		AfterEach(func() {
+			SupportsDiff = diff
+		})
+
 		It("shows the exact point where two long strings differ", func() {
 			stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 			stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
