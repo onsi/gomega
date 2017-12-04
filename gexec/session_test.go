@@ -96,6 +96,17 @@ var _ = Describe("Session", func() {
 		})
 	})
 
+	Describe("killAndWait", func() {
+		It("should kill the command and wait for it to exit", func() {
+			session, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			newSession := session.KillAndWait()
+			Ω(session).Should(Exit(128 + 9), "Should exit immediately...")
+			Ω(newSession).Should(BeIdenticalTo(session))
+		})
+	})
+
 	Describe("interrupt", func() {
 		It("should interrupt the command", func() {
 			session, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
@@ -115,6 +126,17 @@ var _ = Describe("Session", func() {
 			session.Terminate()
 			Ω(session).ShouldNot(Exit(), "Should not exit immediately...")
 			Eventually(session).Should(Exit(128 + 15))
+		})
+	})
+
+	Describe("terminateAndWait", func() {
+		It("should terminate the command and wait for it to terminate", func() {
+			session, err := Start(exec.Command("sleep", "10000000"), GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			newSession := session.TerminateAndWait()
+			Ω(session).Should(Exit(128 + 15), "Should exit immediately...")
+			Ω(newSession).Should(BeIdenticalTo(session))
 		})
 	})
 

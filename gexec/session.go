@@ -159,6 +159,19 @@ func (s *Session) Kill() *Session {
 }
 
 /*
+KillAndWait sends the running command a SIGKILL signal.  It waits for the process to exit.
+
+If the command has already exited, Kill returns silently.
+
+KillAndWait uses Kill and Wait under the hood and accepts the same timeout/polling intervals that Wait does.
+
+The session is returned to enable chaining.
+*/
+func (s *Session) KillAndWait(timeout ...interface{}) *Session {
+	return s.Kill().Wait(timeout...)
+}
+
+/*
 Interrupt sends the running command a SIGINT signal.  It does not wait for the process to exit.
 
 If the command has already exited, Interrupt returns silently.
@@ -178,6 +191,19 @@ The session is returned to enable chaining.
 */
 func (s *Session) Terminate() *Session {
 	return s.Signal(syscall.SIGTERM)
+}
+
+/*
+TerminateAndWait sends the running command a SIGTERM signal.  It waits for the process to exit.
+
+If the command has already exited, Terminate returns silently.
+
+TerminateAndWait uses Terminate and Wait under the hood and accepts the same timeout/polling intervals that Wait does.
+
+The session is returned to enable chaining.
+*/
+func (s *Session) TerminateAndWait(timeout ...interface{}) *Session {
+	return s.Terminate().Wait(timeout...)
 }
 
 /*
