@@ -1769,11 +1769,11 @@ Example:
     }
     Expect(actual).To(MatchAllFields(Fields{
 	    "Name":      Ignore(),
-		"StartTime": BeTemporally(">=", time.Now().Add(-100 * time.Hour)),
-		"CPU": PointTo(MatchAllFields(Fields{
-			"Time":                 BeTemporally(">=", time.Now().Add(-time.Hour)),
-			"UsageNanoCores":       BeNumerically("~", 1E9, 1E8),
-			"UsageCoreNanoSeconds": BeNumerically(">", 1E6),
+	    "StartTime": BeTemporally(">=", time.Now().Add(-100 * time.Hour)),
+	    "CPU": PointTo(MatchAllFields(Fields{
+            "Time":                 BeTemporally(">=", time.Now().Add(-time.Hour)),
+            "UsageNanoCores":       BeNumerically("~", 1E9, 1E8),
+            "UsageCoreNanoSeconds": BeNumerically(">", 1E6),
             "Cores": MatchElements(coreID, IgnoreExtras, Elements{
                 "0": MatchAllFields(Fields{
                     Index: Ignore(),
@@ -1786,8 +1786,8 @@ Example:
 	                "UsageCoreNanoSeconds": BeNumerically(">", 1E5),
                 }),
             }),
-		})),
-		"Memory": PointTo(MatchAllFields(Fields{
+        })),
+        "Memory": PointTo(MatchAllFields(Fields{
 			"Time": BeTemporally(">=", time.Now().Add(-time.Hour)),
 			"AvailableBytes":  BeZero(),
 			"UsageBytes":      BeNumerically(">", 5E6),
@@ -1795,7 +1795,7 @@ Example:
 			"RSSBytes":        BeNumerically("<", 1E9),
 			"PageFaults":      BeNumerically("~", 1000, 100),
 			"MajorPageFaults": BeNumerically("~", 100, 50),
-		})),
-		"Rootfs":             m.Ignore(),
-		"Logs":               m.Ignore(),
+        })),
+        "Rootfs":             m.Ignore(),
+        "Logs":               m.Ignore(),
 	}))
