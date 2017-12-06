@@ -1760,7 +1760,7 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras|Allo
 
 ### Putting it all together: testing complex structures
 
-The `gsturct` matchers are intended to be composable, and can be combined to apply fuzzy-matching to large and deeply nested structures. The additional `Ignore()` and `Reject()` matchers are provided for ignoring (always succeed) fields and elements, or rejecting (always fail) fields and elements.
+The `gstruct` matchers are intended to be composable, and can be combined to apply fuzzy-matching to large and deeply nested structures. The additional `Ignore()` and `Reject()` matchers are provided for ignoring (always succeed) fields and elements, or rejecting (always fail) fields and elements.
 
 Example:
 
