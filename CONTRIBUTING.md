@@ -6,6 +6,7 @@ Your contributions to Gomega are essential for its long-term maintenance and imp
 - Ensure adequate test coverage:
     - Make sure to add appropriate unit tests
     - Please run all tests locally (`ginkgo -r -p`) and make sure they go green before submitting the PR
+    - Please run following linter locally `go vet ./...` and make sure output does not contain any warnings
 - Update the documentation.  In addition to standard `godoc` comments Gomega has extensive documentation on the `gh-pages` branch.  If relevant, please submit a docs PR to that branch alongside your code PR.
 
 Thanks for supporting Gomega!
