@@ -3,6 +3,7 @@ package matchers_test
 import (
 	"errors"
 	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
@@ -102,4 +103,5 @@ var _ = Describe("MatchErrorMatcher", func() {
 })
 
 type mockErr string
-func (m mockErr) Error() string {return string(m)}
+
+func (m mockErr) Error() string { return string(m) }
