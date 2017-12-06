@@ -1691,7 +1691,7 @@ Due to the global nature of these methods, keep in mind that signaling processes
 
 `IgnoreMissing` will ignore matchers that don't map to a field, e.g.
 
-    Expect(actual).To(MatchFields(IgnoreExtras, Fields{
+    Expect(actual).To(MatchFields(IgnoreMissing, Fields{
         "A": BeNumerically("<", 10),
         "B": BeTrue(),
         "C": Equal("foo"),
@@ -1709,7 +1709,7 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
         "B: once upon a time",
         "C: the end",
     }
-    id := func(element interface{}) {
+    id := func(element interface{}) string {
         return element.(string)[0]
     }
     Expect(actual).To(MatchAllElements(id, Elements{
@@ -1720,7 +1720,7 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
 
 `MatchAllElements` requires that there is a 1:1 mapping from every element to every matcher. To match a subset or superset of elements, you should use the `MatchElements` function with the `IgnoreExtras` and `IgnoreMissing` options. `IgnoreExtras` will ignore elements that don't map to a matcher, e.g.
 
-    Expect(actual).To(MatchElements(IgnoreExtras, Fields{
+    Expect(actual).To(MatchElements(IgnoreExtras, Elements{
         "A": Not(BeZero()),
         "B": MatchRegexp("[A-Z]: [a-z ]+"),
         // Ignore lack of "C" in the matcher.
@@ -1728,7 +1728,7 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
 
 `IgnoreMissing` will ignore matchers that don't map to an element, e.g.
 
-    Expect(actual).To(MatchFields(IgnoreExtras, Fields{
+    Expect(actual).To(MatchElements(IgnoreMissing, Elements{
         "A": Not(BeZero()),
         "B": MatchRegexp("[A-Z]: [a-z ]+"),
         "C": ContainSubstring("end"),
