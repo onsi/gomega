@@ -26,7 +26,7 @@ For example, import gomega in your test code:
 Use `go get -t` to retrieve the packages referenced in your test code:
 
     $ cd /path/to/my/app
-    $ go get ./... -t
+    $ go get -t ./...
 
 ---
 
