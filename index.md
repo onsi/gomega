@@ -11,7 +11,22 @@ title: Gomega
 
 Just `go get` it:
 
-    $ go get github.com/onsi/gomega
+    $ go get github.com/onsi/gomega/...
+
+---
+
+## Getting Gomega as needed
+
+Instead of getting all of Gomega and it's dependency tree, you can use the go command to get the dependencies as needed.
+
+For example, import gomega in your test code:
+
+    import "github.com/onsi/gomega"
+
+Use `go get -t` to retrieve the packages referenced in your test code:
+
+    $ cd /path/to/my/app
+    $ go get ./... -t
 
 ---
 
