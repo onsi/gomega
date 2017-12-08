@@ -17,7 +17,7 @@ Just `go get` it:
 
 ## Getting Gomega as needed
 
-Instead of getting all of Gomega and it's dependency tree, you can let go get the dependencies as needed.
+Instead of getting all of Gomega and it's dependency tree, you can use the go command to get the dependencies as needed.
 
 For example, import gomega in your test code:
 
