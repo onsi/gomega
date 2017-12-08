@@ -9,9 +9,18 @@ title: Gomega
 
 ## Getting Gomega
 
-Just `go get` it:
+Just `go get` the Gomega application:
 
     $ go get github.com/onsi/gomega
+
+---
+
+## Missing test dependencies
+
+If you ever find that a dependency is missing inside one of your tests, this Go idiom will fetch all your app's dependencies including those for tests:
+
+    $ cd my-app
+    $ go get ./... -t
 
 ---
 
