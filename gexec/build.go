@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 )
 
@@ -43,6 +44,16 @@ func BuildIn(gopath string, packagePath string, args ...string) (compiledPath st
 	return doBuild(gopath, packagePath, nil, args...)
 }
 
+func replaceGoPath(environ []string, newGoPath string) []string {
+	newEnviron := []string{}
+	for _, v := range environ {
+		if !strings.HasPrefix(v, "GOPATH=") {
+			newEnviron = append(newEnviron, v)
+		}
+	}
+	return append(newEnviron, "GOPATH="+newGoPath)
+}
+
 func doBuild(gopath, packagePath string, env []string, args ...string) (compiledPath string, err error) {
 	tmpDir, err := temporaryDirectory()
 	if err != nil {
@@ -61,17 +72,8 @@ func doBuild(gopath, packagePath string, env []string, args ...string) (compiled
 	cmdArgs := append([]string{"build"}, args...)
 	cmdArgs = append(cmdArgs, "-o", executable, packagePath)
 
-	oldGoPath := os.Getenv("GOPATH")
-	defer func() {
-		os.Setenv("GOPATH", oldGoPath)
-	}()
-	err = os.Setenv("GOPATH", gopath)
-	if err != nil {
-		return "", err
-	}
-
 	build := exec.Command("go", cmdArgs...)
-	build.Env = os.Environ()
+	build.Env = replaceGoPath(os.Environ(), gopath)
 	build.Env = append(build.Env, env...)
 
 	output, err := build.CombinedOutput()
