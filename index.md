@@ -53,18 +53,13 @@ Though Gomega is tailored to work best with Ginkgo it is easy to use Gomega with
 To use Gomega with Golang's XUnit style tests:
 
     func TestFarmHasCow(t *testing.T) {
-        RegisterTestingT(t)
+        g := NewGomegaWithT(t)
 
         f := farm.New([]string{"Cow", "Horse"})
-        Expect(f.HasCow()).To(BeTrue(), "Farm should have cow")
+        g.Expect(f.HasCow()).To(BeTrue(), "Farm should have cow")
     }
 
-There are two caveats:
-
-- You **must** register the `t *testing.T` passed to your test with Gomega before you make any assertions associated with that test.  So every `Test...` function in your suite should have the `RegisterTestingT(t)` line.
-- Gomega uses a global (singleton) fail handler.  This has the benefit that you don't need to pass the fail handler down to each test, but does mean that *you cannot run your XUnit style tests in parallel with Gomega*.  If you find this odious, open an issue on Github and let me know.
-
-> Gomega tests written with Ginkgo *can* be run in parallel using the `ginkgo` CLI.  This is because Ginkgo runs its parallel specs in different *processes* whereas the default Golang test runner runs parallel tests in the *same* process.  The latter approach makes your test suite susceptible to test pollution and is avoided by Ginkgo.
+`NewGomegaWithT(t)` wraps a `*testing.T` and returns a struct that supports `Expect`, `Eventually`, and `Consistently`.
 
 ---
 
