@@ -1,5 +1,9 @@
 ## HEAD
 
+Improvements:
+
+- XUnit style golang tests have much more useful stack trace in Golang 1.9 thanks to t.Helper.
+
 ## 1.3.0
 
 Improvements:
