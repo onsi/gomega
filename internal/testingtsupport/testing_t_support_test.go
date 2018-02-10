@@ -1,7 +1,10 @@
 package testingtsupport_test
 
 import (
+	"regexp"
 	"time"
+
+	"github.com/onsi/gomega/internal/testingtsupport"
 
 	. "github.com/onsi/gomega"
 
@@ -25,6 +28,8 @@ func (f *FakeTWithHelper) Fatalf(format string, args ...interface{}) {
 func TestGomegaWithTWithoutHelper(t *testing.T) {
 	g := NewGomegaWithT(t)
 
+	testingtsupport.StackTracePruneRE = regexp.MustCompile(`\/ginkgo\/`)
+
 	f := &FakeTWithHelper{}
 	testG := NewGomegaWithT(f)
 
@@ -33,6 +38,7 @@ func TestGomegaWithTWithoutHelper(t *testing.T) {
 
 	testG.Expect("foo").To(Equal("bar"))
 	g.Expect(f.LastFatal).To(ContainSubstring("<string>: foo"))
+	g.Expect(f.LastFatal).To(ContainSubstring("testingtsupport_test"), "It should include a stacktrace")
 
 	testG.Eventually("foo2", time.Millisecond).Should(Equal("bar"))
 	g.Expect(f.LastFatal).To(ContainSubstring("<string>: foo2"))
@@ -71,6 +77,7 @@ func TestGomegaWithTWithHelper(t *testing.T) {
 
 	testG.Expect("foo").To(Equal("bar"))
 	g.Expect(f.LastFatal).To(ContainSubstring("<string>: foo"))
+	g.Expect(f.LastFatal).NotTo(ContainSubstring("testingtsupport_test"), "It should _not_ include a stacktrace")
 	g.Expect(f.HelperCount).To(BeNumerically(">", 0))
 	f.ResetHelper()
 
