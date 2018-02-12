@@ -276,7 +276,7 @@ While writing [custom matchers](#adding-your-own-matchers) is an expressive way 
 
     var _ = Describe("Turbo-encabulator", func() {
         ...
-        assertTurboEncabulatorContains(components ...string) {
+        func assertTurboEncabulatorContains(components ...string) {
             teComponents, err := turboEncabulator.GetComponents()
             Expect(err).NotTo(HaveOccurred())
 
@@ -297,7 +297,7 @@ To get around this, Gomega provides versions of `Expect`, `Eventually` and `Cons
 
 With this, we can rewrite our helper as:
 
-    assertTurboEncabulatorContains(components ...string) {
+    func assertTurboEncabulatorContains(components ...string) {
         teComponents, err := turboEncabulator.GetComponents()
         ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
@@ -1720,34 +1720,34 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
         "C: the end",
     }
     id := func(element interface{}) string {
-        return element.(string)[0]
+        return string(element.(string)[0])
     }
     Expect(actual).To(MatchAllElements(id, Elements{
         "A": Not(BeZero()),
         "B": MatchRegexp("[A-Z]: [a-z ]+"),
         "C": ContainSubstring("end"),
-    })
+    }))
 
 `MatchAllElements` requires that there is a 1:1 mapping from every element to every matcher. To match a subset or superset of elements, you should use the `MatchElements` function with the `IgnoreExtras` and `IgnoreMissing` options. `IgnoreExtras` will ignore elements that don't map to a matcher, e.g.
 
-    Expect(actual).To(MatchElements(IgnoreExtras, Elements{
+    Expect(actual).To(MatchElements(id, IgnoreExtras, Elements{
         "A": Not(BeZero()),
         "B": MatchRegexp("[A-Z]: [a-z ]+"),
         // Ignore lack of "C" in the matcher.
-    })
+    }))
 
 `IgnoreMissing` will ignore matchers that don't map to an element, e.g.
 
-    Expect(actual).To(MatchElements(IgnoreMissing, Elements{
+    Expect(actual).To(MatchElements(id, IgnoreMissing, Elements{
         "A": Not(BeZero()),
         "B": MatchRegexp("[A-Z]: [a-z ]+"),
         "C": ContainSubstring("end"),
         "D": Equal("bar"), // Ignored, since actual.D does not exist.
-    })
+    }))
 
 You can also use the flag `AllowDuplicates` to permit multiple elements in your slice to map to a single key and matcher in your fields (this flag is not meaningful when applied to structs).
 
-    everyElementID := func(element interface{}) {
+    everyElementID := func(element interface{}) string {
         return "a constant" // Every element will map to the same key in this case; you can group them into multiple keys, however.
     }
     Expect(actual).To(MatchElements(everyElementID, AllowDuplicates, Elements{
