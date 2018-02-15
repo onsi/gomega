@@ -92,7 +92,7 @@ func (c *ctx) Value(key interface{}) interface{} {
 	return nil
 }
 
-var _ = FDescribe("Format", func() {
+var _ = Describe("Format", func() {
 	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
