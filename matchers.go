@@ -314,7 +314,7 @@ func HaveKeyWithValue(key interface{}, value interface{}) types.GomegaMatcher {
 
 //BeNumerically performs numerical assertions in a type-agnostic way.
 //Actual and expected should be numbers, though the specific type of
-//number is irrelevant (floa32, float64, uint8, etc...).
+//number is irrelevant (float32, float64, uint8, etc...).
 //
 //There are six, self-explanatory, supported comparators:
 //    Ω(1.0).Should(BeNumerically("==", 1))
