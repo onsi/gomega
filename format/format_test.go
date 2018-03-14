@@ -166,6 +166,23 @@ var _ = Describe("Format", func() {
 
 			Expect(MessageWithDiff(stringA, "to equal", stringB)).Should(Equal(expectedTruncatedMultiByteFailureMessage))
 		})
+
+		Context("With truncated diff disabled", func() {
+			BeforeEach(func() {
+				TruncatedDiff = false
+			})
+
+			AfterEach(func() {
+				TruncatedDiff = true
+			})
+
+			It("should show the full diff", func() {
+				stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+				Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedFullFailureDiff))
+			})
+		})
 	})
 
 	Describe("IndentString", func() {
@@ -600,4 +617,11 @@ Expected
     <string>: "...tuvwxyz1"
 to equal                 |
     <string>: "...tuvwxyz"
+`)
+
+var expectedFullFailureDiff = strings.TrimSpace(`
+Expected
+    <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+to equal
+    <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 `)
