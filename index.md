@@ -173,6 +173,10 @@ If you want to use Gomega's recursive object description in your own code you ca
 
     fmt.Println(format.Object(theThingYouWantToPrint, 1))
 
+
+- `format.TruncatedDiff = true`: Gomega will truncate long strings and only show where they differ. You can set this to `false` if
+you want to see the full strings.
+
 ---
 
 ## Making Asynchronous Assertions
