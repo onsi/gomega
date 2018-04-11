@@ -1436,13 +1436,13 @@ Here, saving a sprocket triggers authentication, which is handled by the registe
 
 By default, `ghttp`'s server marks the test as failed if a request is made for which there is no registered handler.
 
-It is sometimes useful to have a fake server that simply returns a fixed status code for all unhandled incoming requests.  `ghttp` supports this: just set `server.AllowUnhandledRequests = true` and `server.UnhandledRequestStatusCode` to whatever status code you'd like to return.
+It is sometimes useful to have a fake server that simply returns a fixed status code for all unhandled incoming requests.  `ghttp` supports this: just call `server.SetAllowUnhandledRequests(true)` and `server.SetUnhandledRequestStatusCode(statusCode)`, passing whatever status code you'd like to return.
 
 In addition to returning the registered status code, `ghttp`'s server will also save all received requests.  These can be accessed by calling `server.ReceivedRequests()`.  This is useful for cases where you may want to make assertions against requests *after* they've been made.
 
-To bring it all together: there are three ways to instruct a `ghttp` server to handle requests: you can map routes to handlers using `RouteToHandler`, you can append handlers via `AppendHandlers`, and you can `AllowUnhandledRequests` and specify an `UnhandledRequestStatusCode`.
+To bring it all together: there are three ways to instruct a `ghttp` server to handle requests: you can map routes to handlers using `RouteToHandler`, you can append handlers via `AppendHandlers`, and you can `SetAllowUnhandledRequests` and specify the status code by calling `SetUnhandledRequestStatusCode`.
 
-When a `ghttp` server receives a request it first checks against the set of handlers registered via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `AllowUnhandledRequests` is `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with `UnhandledRequestStatusCode`.
+When a `ghttp` server receives a request it first checks against the set of handlers registered via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `GetAllowUnhandledRequests` returns `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with whatever `GetUnhandledRequestStatusCode` returns.
 
 ## `gbytes`: Testing Streaming Buffers
 
