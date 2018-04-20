@@ -28,7 +28,7 @@ func (matcher *MatchJSONMatcher) Match(actual interface{}) (success bool, err er
 	json.Unmarshal([]byte(actualString), &aval)
 	json.Unmarshal([]byte(expectedString), &eval)
 	var equal bool
-	equal, matcher.firstFailurePath = deepEqual(aval, eval)
+	equal, matcher.firstFailurePath = deepEqualJSON(aval, eval)
 	return equal, nil
 }
 
@@ -92,7 +92,7 @@ func (matcher *MatchJSONMatcher) prettyPrint(actual interface{}) (actualFormatte
 	return abuf.String(), ebuf.String(), nil
 }
 
-func deepEqual(a interface{}, b interface{}) (bool, []interface{}) {
+func deepEqualJSON(a interface{}, b interface{}) (bool, []interface{}) {
 	var errorPath []interface{}
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {
 		return false, errorPath
@@ -105,7 +105,7 @@ func deepEqual(a interface{}, b interface{}) (bool, []interface{}) {
 		}
 
 		for i, v := range a.([]interface{}) {
-			elementEqual, keyPath := deepEqual(v, b.([]interface{})[i])
+			elementEqual, keyPath := deepEqualJSON(v, b.([]interface{})[i])
 			if !elementEqual {
 				return false, append(keyPath, i)
 			}
@@ -122,7 +122,7 @@ func deepEqual(a interface{}, b interface{}) (bool, []interface{}) {
 			if !ok {
 				return false, errorPath
 			}
-			elementEqual, keyPath := deepEqual(v1, v2)
+			elementEqual, keyPath := deepEqualJSON(v1, v2)
 			if !elementEqual {
 				return false, append(keyPath, k)
 			}
