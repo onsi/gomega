@@ -10,11 +10,6 @@
 - Use setters and getters to avoid race condition (#262) [13057c3, a9c79f1]
 - Avoid sending a signal if the process is not alive (#259) [b8043e5, 4fc1762]
 
-### Maintenance
-- change Ω to Expect in most places (#268) [de89e61]
-- Add go 1.10 to travis (#271) [ef159cb, 49e4233]
-- Remove tests that tried to verify signals as async [7c333ae]
-
 ## 1.3.0
 
 Improvements:
