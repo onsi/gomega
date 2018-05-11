@@ -27,7 +27,7 @@ var _ = Describe("AssignableToTypeOf", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 
-		Context("When expected is not nil", func() {
+		Context("When actual is nil and expected is not nil", func() {
 			It("should return false without error", func() {
 				success, err := (&AssignableToTypeOfMatcher{Expected: 17}).Match(nil)
 				Expect(success).Should(BeFalse())
@@ -35,11 +35,11 @@ var _ = Describe("AssignableToTypeOf", func() {
 			})
 		})
 
-		Context("When actual is not nil", func() {
-			It("should return false without error", func() {
+		Context("When actual is not nil and expected is nil", func() {
+			It("should error", func() {
 				success, err := (&AssignableToTypeOfMatcher{Expected: nil}).Match(17)
 				Expect(success).Should(BeFalse())
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).Should(HaveOccurred())
 			})
 		})
 	})
