@@ -492,7 +492,7 @@ In addition, there are occasions when you need to grab the object sent down the 
     Ω(receivedBagel.Contents()).Should(ContainElement("cream cheese"))
     Ω(receivedBagel.Kind()).Should(Equal("sesame"))
 
-Of course, this could have been written as `receivedBagel := <-bagelChan` - however using `Receive` makes it easy to avoid hanging the test suite should nothing ever come down the channel.
+Of course, this could have been written as `receivedBagel := <-bagelChan` - however using `Receive` makes it easy to avoid hanging the test suite should nothing ever come down the channel. The pointer can point to any variable whose type is assignable from the channel element type, or if the channel type is an interface and the underlying type is assignable to the pointer.
 
 Finally, `Receive` *never* blocks.  `Eventually(c).Should(Receive())` repeatedly polls `c` in a non-blocking fashion.  That means that you cannot use this pattern to verify that a *non-blocking send* has occurred on the channel - [more details at this GitHub issue](https://github.com/onsi/gomega/issues/82).
 
