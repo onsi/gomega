@@ -20,6 +20,10 @@ func (j *jackie) DrunkenMaster() bool {
 	return true
 }
 
+type someError struct{ s string }
+
+func (e *someError) Error() string { return e.s }
+
 var _ = Describe("ReceiveMatcher", func() {
 	Context("with no argument", func() {
 		Context("for a buffered channel", func() {
@@ -51,6 +55,24 @@ var _ = Describe("ReceiveMatcher", func() {
 	})
 
 	Context("with a pointer argument", func() {
+		Context("of the correct type", func() {
+			Context("when the channel has an interface type", func() {
+				It("should write the value received on the channel to the pointer", func() {
+					channel := make(chan error, 1)
+
+					var value *someError
+
+					Ω(channel).ShouldNot(Receive(&value))
+					Ω(value).Should(BeZero())
+
+					channel <- &someError{"boooom!"}
+
+					Ω(channel).Should(Receive(&value))
+					Ω(value).Should(MatchError("boooom!"))
+				})
+			})
+		})
+
 		Context("of the correct type", func() {
 			It("should write the value received on the channel to the pointer", func() {
 				channel := make(chan int, 1)
@@ -107,7 +129,9 @@ var _ = Describe("ReceiveMatcher", func() {
 
 		Context("of the wrong type", func() {
 			It("should error", func() {
-				channel := make(chan int)
+				channel := make(chan int, 1)
+				channel <- 10
+
 				var incorrectType bool
 
 				success, err := (&ReceiveMatcher{Arg: &incorrectType}).Match(channel)
