@@ -125,9 +125,7 @@ func Ω(actual interface{}, extra ...interface{}) GomegaAssertion {
 //
 //Then:
 //    Expect(MyAmazingThing()).Should(Equal(3))
-//Will succeed only if:
-//    MyAmazingThing()
-//    // Output: (3, nil)
+//Will succeed only if `MyAmazingThing()` returns `(3, nil)`
 //
 //Expect and Ω are identical
 func Expect(actual interface{}, extra ...interface{}) GomegaAssertion {
