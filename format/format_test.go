@@ -11,6 +11,12 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
+type myerror struct{}
+
+func (myerror) Error() string {
+	return "123"
+}
+
 //recursive struct
 
 type StringAlias string
@@ -307,6 +313,26 @@ var _ = Describe("Format", func() {
 			It("should include the length and capacity in the type information", func() {
 				s := make([]bool, 3, 4)
 				Expect(Object(s, 1)).Should(match("[]bool | len:3, cap:4", "[false, false, false]"))
+			})
+
+			It("should include the concrete type if it's a slice of empty interfaces", func() {
+				s := []interface{}{1, 2}
+				Expect(Object(s, 1)).Should(match("[]interface {} | Concrete type detected []int | len:2, cap:2", "[1, 2]"))
+			})
+
+			It("should not include the concrete type if it's a slice of interfaces", func() {
+				s := []error{myerror{}}
+				Expect(Object(s, 1)).Should(match("[]error | len:1, cap:1", "[{}]"))
+			})
+
+			It("should not include details if the elements are nil", func() {
+				s := make([]interface{}, 3, 4)
+				Expect(Object(s, 1)).Should(match("[]interface {} | len:3, cap:4", "[nil, nil, nil]"))
+			})
+
+			It("should not include details if the array is empty", func() {
+				s := []interface{}{}
+				Expect(Object(s, 1)).Should(match("[]interface {} | len:0, cap:0", "[]"))
 			})
 
 			Context("when the slice contains long entries", func() {

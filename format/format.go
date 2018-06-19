@@ -193,6 +193,10 @@ func formatType(object interface{}) string {
 		return fmt.Sprintf("%T | %p", object, object)
 	case reflect.Slice:
 		v := reflect.ValueOf(object)
+		s, ok := object.([]interface{})
+		if ok && len(s) > 0 && s[0] != nil {
+			return fmt.Sprintf("%T | Concrete type detected []%T | len:%d, cap:%d", object, s[0], v.Len(), v.Cap())
+		}
 		return fmt.Sprintf("%T | len:%d, cap:%d", object, v.Len(), v.Cap())
 	case reflect.Map:
 		v := reflect.ValueOf(object)
