@@ -74,6 +74,18 @@ var _ = Describe("BeNumerically", func() {
 						Expect(5.00000001).Should(BeNumerically("~", 5.00000002))
 						Expect(5.00000001).ShouldNot(BeNumerically("~", 5.0000001))
 					})
+
+					It("should show failure message", func(){
+						actual := BeNumerically("~", 4.98).FailureMessage(123)
+						expected := "Expected\n    <int>: 123\nto be ~\n    <float64>: 4.98"
+						Expect(actual).To(Equal(expected))
+					})
+
+					It("should show negated failure message", func(){
+						actual := BeNumerically("~", 4.98).NegatedFailureMessage(123)
+						expected := "Expected\n    <int>: 123\nnot to be ~\n    <float64>: 4.98"
+						Expect(actual).To(Equal(expected))
+					})
 				})
 
 				Context("and there is a precision parameter", func() {
@@ -82,6 +94,18 @@ var _ = Describe("BeNumerically", func() {
 						Expect(5.1).Should(BeNumerically("~", 5.01, 0.1))
 						Expect(5.1).ShouldNot(BeNumerically("~", 5.22, 0.1))
 						Expect(5.1).ShouldNot(BeNumerically("~", 4.98, 0.1))
+					})
+
+					It("should show precision in failure message", func(){
+						actual := BeNumerically("~", 4.98, 0.1).FailureMessage(123)
+						expected := "Expected\n    <int>: 123\nto be within 0.1 of ~\n    <float64>: 4.98"
+						Expect(actual).To(Equal(expected))
+					})
+
+					It("should show precision in negated failure message", func(){
+						actual := BeNumerically("~", 4.98, 0.1).NegatedFailureMessage(123)
+						expected := "Expected\n    <int>: 123\nnot to be within 0.1 of ~\n    <float64>: 4.98"
+						Expect(actual).To(Equal(expected))
 					})
 				})
 			})
