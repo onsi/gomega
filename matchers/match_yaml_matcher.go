@@ -32,7 +32,7 @@ func (matcher *MatchYAMLMatcher) Match(actual interface{}) (success bool, err er
 	}
 
 	var equal bool
-	equal, matcher.firstFailurePath = deepEqualYAML(aval, eval)
+	equal, matcher.firstFailurePath = deepEqual(aval, eval)
 	return equal, nil
 }
 
@@ -77,7 +77,7 @@ func (matcher *MatchYAMLMatcher) toStrings(actual interface{}) (actualFormatted,
 	return actualString, expectedString, nil
 }
 
-func deepEqualYAML(a interface{}, b interface{}) (bool, []interface{}) {
+func deepEqual(a interface{}, b interface{}) (bool, []interface{}) {
 	var errorPath []interface{}
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {
 		return false, errorPath
@@ -90,7 +90,7 @@ func deepEqualYAML(a interface{}, b interface{}) (bool, []interface{}) {
 		}
 
 		for i, v := range a.([]interface{}) {
-			elementEqual, keyPath := deepEqualYAML(v, b.([]interface{})[i])
+			elementEqual, keyPath := deepEqual(v, b.([]interface{})[i])
 			if !elementEqual {
 				return false, append(keyPath, i)
 			}
@@ -107,7 +107,24 @@ func deepEqualYAML(a interface{}, b interface{}) (bool, []interface{}) {
 			if !ok {
 				return false, errorPath
 			}
-			elementEqual, keyPath := deepEqualYAML(v1, v2)
+			elementEqual, keyPath := deepEqual(v1, v2)
+			if !elementEqual {
+				return false, append(keyPath, k)
+			}
+		}
+		return true, errorPath
+
+	case map[string]interface{}:
+		if len(a.(map[string]interface{})) != len(b.(map[string]interface{})) {
+			return false, errorPath
+		}
+
+		for k, v1 := range a.(map[string]interface{}) {
+			v2, ok := b.(map[string]interface{})[k]
+			if !ok {
+				return false, errorPath
+			}
+			elementEqual, keyPath := deepEqual(v1, v2)
 			if !elementEqual {
 				return false, append(keyPath, k)
 			}
