@@ -11,6 +11,8 @@ import (
 
 type MatchYAMLMatcher struct {
 	YAMLToMatch interface{}
+	firstFailurePath []interface{}
+
 }
 
 func (matcher *MatchYAMLMatcher) Match(actual interface{}) (success bool, err error) {
@@ -29,17 +31,19 @@ func (matcher *MatchYAMLMatcher) Match(actual interface{}) (success bool, err er
 		return false, fmt.Errorf("Expected '%s' should be valid YAML, but it is not.\nUnderlying error:%s", expectedString, err)
 	}
 
-	return reflect.DeepEqual(aval, eval), nil
+	var equal bool
+	equal, matcher.firstFailurePath = deepEqual(aval, eval)
+	return equal, nil
 }
 
 func (matcher *MatchYAMLMatcher) FailureMessage(actual interface{}) (message string) {
 	actualString, expectedString, _ := matcher.toNormalisedStrings(actual)
-	return format.Message(actualString, "to match YAML of", expectedString)
+	return formattedMessage(format.Message(actualString, "to match YAML of", expectedString), matcher.firstFailurePath)
 }
 
 func (matcher *MatchYAMLMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	actualString, expectedString, _ := matcher.toNormalisedStrings(actual)
-	return format.Message(actualString, "not to match YAML of", expectedString)
+	return formattedMessage(format.Message(actualString, "not to match YAML of", expectedString), matcher.firstFailurePath)
 }
 
 func (matcher *MatchYAMLMatcher) toNormalisedStrings(actual interface{}) (actualFormatted, expectedFormatted string, err error) {
@@ -71,4 +75,63 @@ func (matcher *MatchYAMLMatcher) toStrings(actual interface{}) (actualFormatted,
 	}
 
 	return actualString, expectedString, nil
+}
+
+func deepEqual(a interface{}, b interface{}) (bool, []interface{}) {
+	var errorPath []interface{}
+	if reflect.TypeOf(a) != reflect.TypeOf(b) {
+		return false, errorPath
+	}
+
+	switch a.(type) {
+	case []interface{}:
+		if len(a.([]interface{})) != len(b.([]interface{})) {
+			return false, errorPath
+		}
+
+		for i, v := range a.([]interface{}) {
+			elementEqual, keyPath := deepEqual(v, b.([]interface{})[i])
+			if !elementEqual {
+				return false, append(keyPath, i)
+			}
+		}
+		return true, errorPath
+
+	case map[interface{}]interface{}:
+		if len(a.(map[interface{}]interface{})) != len(b.(map[interface{}]interface{})) {
+			return false, errorPath
+		}
+
+		for k, v1 := range a.(map[interface{}]interface{}) {
+			v2, ok := b.(map[interface{}]interface{})[k]
+			if !ok {
+				return false, errorPath
+			}
+			elementEqual, keyPath := deepEqual(v1, v2)
+			if !elementEqual {
+				return false, append(keyPath, k)
+			}
+		}
+		return true, errorPath
+
+	case map[string]interface{}:
+		if len(a.(map[string]interface{})) != len(b.(map[string]interface{})) {
+			return false, errorPath
+		}
+
+		for k, v1 := range a.(map[string]interface{}) {
+			v2, ok := b.(map[string]interface{})[k]
+			if !ok {
+				return false, errorPath
+			}
+			elementEqual, keyPath := deepEqual(v1, v2)
+			if !elementEqual {
+				return false, append(keyPath, k)
+			}
+		}
+		return true, errorPath
+
+	default:
+		return a == b, errorPath
+	}
 }

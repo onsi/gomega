@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/onsi/gomega/format"
@@ -90,46 +89,4 @@ func (matcher *MatchJSONMatcher) prettyPrint(actual interface{}) (actualFormatte
 	}
 
 	return abuf.String(), ebuf.String(), nil
-}
-
-func deepEqual(a interface{}, b interface{}) (bool, []interface{}) {
-	var errorPath []interface{}
-	if reflect.TypeOf(a) != reflect.TypeOf(b) {
-		return false, errorPath
-	}
-
-	switch a.(type) {
-	case []interface{}:
-		if len(a.([]interface{})) != len(b.([]interface{})) {
-			return false, errorPath
-		}
-
-		for i, v := range a.([]interface{}) {
-			elementEqual, keyPath := deepEqual(v, b.([]interface{})[i])
-			if !elementEqual {
-				return false, append(keyPath, i)
-			}
-		}
-		return true, errorPath
-
-	case map[string]interface{}:
-		if len(a.(map[string]interface{})) != len(b.(map[string]interface{})) {
-			return false, errorPath
-		}
-
-		for k, v1 := range a.(map[string]interface{}) {
-			v2, ok := b.(map[string]interface{})[k]
-			if !ok {
-				return false, errorPath
-			}
-			elementEqual, keyPath := deepEqual(v1, v2)
-			if !elementEqual {
-				return false, append(keyPath, k)
-			}
-		}
-		return true, errorPath
-
-	default:
-		return a == b, errorPath
-	}
 }
