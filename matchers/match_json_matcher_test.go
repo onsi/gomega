@@ -1,6 +1,8 @@
 package matchers_test
 
 import (
+	"encoding/json"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
@@ -28,6 +30,10 @@ var _ = Describe("MatchJSONMatcher", func() {
 			Expect([]byte("{}")).Should(MatchJSON([]byte("{}")))
 			Expect("{}").Should(MatchJSON([]byte("{}")))
 			Expect([]byte("{}")).Should(MatchJSON("{}"))
+		})
+
+		It("should work with json.RawMessage", func() {
+			Expect([]byte(`{"a": 1}`)).Should(MatchJSON(json.RawMessage(`{"a": 1}`)))
 		})
 	})
 
