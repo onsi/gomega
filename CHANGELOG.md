@@ -1,3 +1,9 @@
+## HEAD
+
+Improvements:
+
+- XUnit style golang tests have much more useful stack trace in Golang 1.9 thanks to t.Helper.
+
 ## 1.4.1
 
 ### Fixes:
@@ -19,10 +25,6 @@
 - Use setters and getters to avoid race condition (#262) [13057c3, a9c79f1]
 - Avoid sending a signal if the process is not alive (#259) [b8043e5, 4fc1762]
 - Improve message from AssignableToTypeOf when expected value is nil (#281) [9c1fb20]
-
-Improvements:
-
-- XUnit style golang tests have much more useful stack trace in Golang 1.9 thanks to t.Helper.
 
 ## 1.3.0
 
