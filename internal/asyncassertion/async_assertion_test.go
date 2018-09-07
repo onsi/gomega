@@ -4,9 +4,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/onsi/gomega/internal/testingtsupport"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/internal/asyncassertion"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("Async Assertion", func() {
@@ -15,9 +18,12 @@ var _ = Describe("Async Assertion", func() {
 		callerSkip     int
 	)
 
-	var fakeFailHandler = func(message string, skip ...int) {
-		failureMessage = message
-		callerSkip = skip[0]
+	var fakeFailWrapper = &types.GomegaFailWrapper{
+		Fail: func(message string, skip ...int) {
+			failureMessage = message
+			callerSkip = skip[0]
+		},
+		TWithHelper: testingtsupport.EmptyTWithHelper{},
 	}
 
 	BeforeEach(func() {
@@ -32,7 +38,7 @@ var _ = Describe("Async Assertion", func() {
 				a := New(AsyncAssertionTypeEventually, func() int {
 					counter++
 					return counter
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 				a.Should(BeNumerically("==", 5))
 				Expect(failureMessage).Should(BeZero())
@@ -46,7 +52,7 @@ var _ = Describe("Async Assertion", func() {
 						return "not-a-number" //this should cause the matcher to error
 					}
 					return counter
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 				a.Should(BeNumerically("==", 5), "My description %d", 2)
 
@@ -60,7 +66,7 @@ var _ = Describe("Async Assertion", func() {
 				a := New(AsyncAssertionTypeEventually, func() int {
 					counter++
 					return counter
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 				a.Should(BeNumerically(">", 100), "My description %d", 2)
 
@@ -79,7 +85,7 @@ var _ = Describe("Async Assertion", func() {
 				a := New(AsyncAssertionTypeEventually, func() int {
 					counter += 1
 					return counter
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 				a.ShouldNot(BeNumerically("<", 3))
 
@@ -90,7 +96,7 @@ var _ = Describe("Async Assertion", func() {
 			It("should timeout when the matcher errors", func() {
 				a := New(AsyncAssertionTypeEventually, func() interface{} {
 					return 0 //this should cause the matcher to error
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 				a.ShouldNot(HaveLen(0), "My description %d", 2)
 
@@ -103,7 +109,7 @@ var _ = Describe("Async Assertion", func() {
 			It("should be able to timeout", func() {
 				a := New(AsyncAssertionTypeEventually, func() int {
 					return 0
-				}, fakeFailHandler, time.Duration(0.1*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.1*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 				a.ShouldNot(Equal(0), "My description %d", 2)
 
@@ -128,7 +134,7 @@ var _ = Describe("Async Assertion", func() {
 				a := New(AsyncAssertionTypeEventually, func() (int, error) {
 					i++
 					return i, errors.New("bam")
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 				a.Should(Equal(2))
 
 				Expect(failureMessage).Should(ContainSubstring("Timed out after"))
@@ -164,7 +170,7 @@ var _ = Describe("Async Assertion", func() {
 					a := New(AsyncAssertionTypeConsistently, func() string {
 						calls++
 						return "foo"
-					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 					a.Should(Equal("foo"))
 					Expect(calls).Should(BeNumerically(">", 8))
@@ -182,7 +188,7 @@ var _ = Describe("Async Assertion", func() {
 							return "bar"
 						}
 						return "foo"
-					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 					a.Should(Equal("foo"))
 					Expect(failureMessage).Should(ContainSubstring("to equal"))
@@ -199,7 +205,7 @@ var _ = Describe("Async Assertion", func() {
 							return 3
 						}
 						return []int{1, 2, 3}
-					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 					a.Should(HaveLen(3))
 					Expect(failureMessage).Should(ContainSubstring("HaveLen matcher expects"))
@@ -212,7 +218,7 @@ var _ = Describe("Async Assertion", func() {
 			Context("when the matcher consistently passes for the duration", func() {
 				It("should pass", func() {
 					c := make(chan bool)
-					a := New(AsyncAssertionTypeConsistently, c, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					a := New(AsyncAssertionTypeConsistently, c, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 					a.ShouldNot(Receive())
 					Expect(failureMessage).Should(BeZero())
@@ -227,7 +233,7 @@ var _ = Describe("Async Assertion", func() {
 						c <- true
 					}()
 
-					a := New(AsyncAssertionTypeConsistently, c, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					a := New(AsyncAssertionTypeConsistently, c, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 					a.ShouldNot(Receive())
 					Expect(failureMessage).Should(ContainSubstring("not to receive anything"))
@@ -240,7 +246,7 @@ var _ = Describe("Async Assertion", func() {
 					a := New(AsyncAssertionTypeConsistently, func() interface{} {
 						calls++
 						return calls
-					}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+					}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 
 					a.ShouldNot(BeNumerically(">", 5))
 					Expect(failureMessage).Should(ContainSubstring("not to be >"))
@@ -263,7 +269,7 @@ var _ = Describe("Async Assertion", func() {
 				a := New(AsyncAssertionTypeEventually, func() (int, error) {
 					i++
 					return i, errors.New("bam")
-				}, fakeFailHandler, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+				}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
 				a.Should(BeNumerically(">=", 2))
 
 				Expect(failureMessage).Should(ContainSubstring("Error:"))
@@ -292,19 +298,19 @@ var _ = Describe("Async Assertion", func() {
 	Context("when passed a function with the wrong # or arguments & returns", func() {
 		It("should panic", func() {
 			Expect(func() {
-				New(AsyncAssertionTypeEventually, func() {}, fakeFailHandler, 0, 0, 1)
+				New(AsyncAssertionTypeEventually, func() {}, fakeFailWrapper, 0, 0, 1)
 			}).Should(Panic())
 
 			Expect(func() {
-				New(AsyncAssertionTypeEventually, func(a string) int { return 0 }, fakeFailHandler, 0, 0, 1)
+				New(AsyncAssertionTypeEventually, func(a string) int { return 0 }, fakeFailWrapper, 0, 0, 1)
 			}).Should(Panic())
 
 			Expect(func() {
-				New(AsyncAssertionTypeEventually, func() int { return 0 }, fakeFailHandler, 0, 0, 1)
+				New(AsyncAssertionTypeEventually, func() int { return 0 }, fakeFailWrapper, 0, 0, 1)
 			}).ShouldNot(Panic())
 
 			Expect(func() {
-				New(AsyncAssertionTypeEventually, func() (int, error) { return 0, nil }, fakeFailHandler, 0, 0, 1)
+				New(AsyncAssertionTypeEventually, func() (int, error) { return 0, nil }, fakeFailWrapper, 0, 0, 1)
 			}).ShouldNot(Panic())
 		})
 	})

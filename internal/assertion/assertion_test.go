@@ -3,10 +3,13 @@ package assertion_test
 import (
 	"errors"
 
+	"github.com/onsi/gomega/internal/testingtsupport"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/internal/assertion"
 	"github.com/onsi/gomega/internal/fakematcher"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("Assertion", func() {
@@ -19,18 +22,21 @@ var _ = Describe("Assertion", func() {
 
 	input := "The thing I'm testing"
 
-	var fakeFailHandler = func(message string, callerSkip ...int) {
-		failureMessage = message
-		if len(callerSkip) == 1 {
-			failureCallerSkip = callerSkip[0]
-		}
+	var fakeFailWrapper = &types.GomegaFailWrapper{
+		Fail: func(message string, callerSkip ...int) {
+			failureMessage = message
+			if len(callerSkip) == 1 {
+				failureCallerSkip = callerSkip[0]
+			}
+		},
+		TWithHelper: testingtsupport.EmptyTWithHelper{},
 	}
 
 	BeforeEach(func() {
 		matcher = &fakematcher.FakeMatcher{}
 		failureMessage = ""
 		failureCallerSkip = 0
-		a = New(input, fakeFailHandler, 1)
+		a = New(input, fakeFailWrapper, 1)
 	})
 
 	Context("when called", func() {
@@ -186,7 +192,7 @@ var _ = Describe("Assertion", func() {
 				matcher.ErrToReturn = nil
 
 				var typedNil []string
-				a = New(input, fakeFailHandler, 1, 0, nil, typedNil)
+				a = New(input, fakeFailWrapper, 1, 0, nil, typedNil)
 
 				result := a.Should(matcher)
 				Expect(result).Should(BeTrue())
@@ -201,32 +207,32 @@ var _ = Describe("Assertion", func() {
 				matcher.MatchesToReturn = false
 				matcher.ErrToReturn = nil
 
-				a = New(input, fakeFailHandler, 1, errors.New("foo"))
+				a = New(input, fakeFailWrapper, 1, errors.New("foo"))
 				result := a.Should(matcher)
 				Expect(result).Should(BeFalse())
 				Expect(matcher.ReceivedActual).Should(BeZero(), "The matcher doesn't even get called")
 				Expect(failureMessage).Should(ContainSubstring("foo"))
 				failureMessage = ""
 
-				a = New(input, fakeFailHandler, 1, nil, 1)
+				a = New(input, fakeFailWrapper, 1, nil, 1)
 				result = a.ShouldNot(matcher)
 				Expect(result).Should(BeFalse())
 				Expect(failureMessage).Should(ContainSubstring("1"))
 				failureMessage = ""
 
-				a = New(input, fakeFailHandler, 1, nil, 0, []string{"foo"})
+				a = New(input, fakeFailWrapper, 1, nil, 0, []string{"foo"})
 				result = a.To(matcher)
 				Expect(result).Should(BeFalse())
 				Expect(failureMessage).Should(ContainSubstring("foo"))
 				failureMessage = ""
 
-				a = New(input, fakeFailHandler, 1, nil, 0, []string{"foo"})
+				a = New(input, fakeFailWrapper, 1, nil, 0, []string{"foo"})
 				result = a.ToNot(matcher)
 				Expect(result).Should(BeFalse())
 				Expect(failureMessage).Should(ContainSubstring("foo"))
 				failureMessage = ""
 
-				a = New(input, fakeFailHandler, 1, nil, 0, []string{"foo"})
+				a = New(input, fakeFailWrapper, 1, nil, 0, []string{"foo"})
 				result = a.NotTo(matcher)
 				Expect(result).Should(BeFalse())
 				Expect(failureMessage).Should(ContainSubstring("foo"))
