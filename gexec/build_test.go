@@ -62,22 +62,23 @@ var _ = Describe(".BuildWithEnvironment", func() {
 })
 
 var _ = Describe(".BuildIn", func() {
+	const (
+		target = "github.com/onsi/gomega/gexec/_fixture/firefly/"
+	)
+
 	var (
 		original string
 		gopath   string
-		target   string
 	)
 
 	BeforeEach(func() {
+		var err error
 		original = os.Getenv("GOPATH")
-		gopath = filepath.Join(os.TempDir(), "gopath1")
-		target = "github.com/onsi/gomega/gexec/_fixture/firefly/"
-		Expect(os.MkdirAll(filepath.Join(gopath, "src", target), 0755)).To(Succeed())
-		content, err := ioutil.ReadFile(filepath.Join("_fixture", "firefly", "main.go"))
+		gopath, err = ioutil.TempDir("", "")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(ioutil.WriteFile(filepath.Join(gopath, "src", target, "main.go"), content, 0644)).To(Succeed())
-		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "gopath2"))).To(Succeed())
-		Expect(os.Environ()).To(ContainElement(fmt.Sprintf("GOPATH=%s", filepath.Join(os.TempDir(), "gopath2"))))
+		copyFile(filepath.Join("_fixture", "firefly", "main.go"), filepath.Join(gopath, "src", target), "main.go")
+		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "emptyFakeGopath"))).To(Succeed())
+		Expect(os.Environ()).To(ContainElement(fmt.Sprintf("GOPATH=%s", filepath.Join(os.TempDir(), "emptyFakeGopath"))))
 	})
 
 	AfterEach(func() {
@@ -99,6 +100,13 @@ var _ = Describe(".BuildIn", func() {
 	It("resets GOPATH to its original value", func() {
 		_, err := gexec.BuildIn(gopath, target)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(os.Getenv("GOPATH")).To(Equal(filepath.Join(os.TempDir(), "gopath2")))
+		Expect(os.Getenv("GOPATH")).To(Equal(filepath.Join(os.TempDir(), "emptyFakeGopath")))
 	})
 })
+
+func copyFile(source, directory, basename string) {
+	Expect(os.MkdirAll(directory, 0755)).To(Succeed())
+	content, err := ioutil.ReadFile(source)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(ioutil.WriteFile(filepath.Join(directory, basename), content, 0644)).To(Succeed())
+}
