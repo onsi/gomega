@@ -372,6 +372,15 @@ var _ = Describe("TestServer", func() {
 				})
 				Expect(failures).Should(HaveLen(1))
 			})
+
+			It("should verify the content type", func() {
+				req, err := http.NewRequest("GET", s.URL()+"/foo", nil)
+				Expect(err).ShouldNot(HaveOccurred())
+				req.Header.Set("Content-Type", "application/octet-stream; charset=utf-8")
+
+				resp, err = http.DefaultClient.Do(req)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
 		})
 
 		Describe("Verify BasicAuth", func() {

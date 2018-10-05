@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/gomega"
@@ -51,7 +52,7 @@ func VerifyRequest(method string, path interface{}, rawQuery ...string) http.Han
 //specified value
 func VerifyContentType(contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		Expect(req.Header.Get("Content-Type")).Should(Equal(contentType))
+		Expect(strings.Split(req.Header.Get("Content-Type"), ";")[0]).Should(Equal(contentType))
 	}
 }
 
