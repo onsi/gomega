@@ -52,7 +52,15 @@ func VerifyRequest(method string, path interface{}, rawQuery ...string) http.Han
 //specified value
 func VerifyContentType(contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		Expect(strings.Split(req.Header.Get("Content-Type"), ";")[0]).Should(Equal(contentType))
+		Expect(req.Header.Get("Content-Type")).Should(Equal(contentType))
+	}
+}
+
+//VerifyMimeType returns a handler that verifies that a request has a specified mime type set
+//in Content-Type header
+func VerifyMimeType(mimeType string) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		Expect(strings.Split(req.Header.Get("Content-Type"), ";")[0]).Should(Equal(mimeType))
 	}
 }
 
@@ -110,7 +118,7 @@ func VerifyBody(expectedBody []byte) http.HandlerFunc {
 //VerifyJSON also verifies that the request's content type is application/json
 func VerifyJSON(expectedJSON string) http.HandlerFunc {
 	return CombineHandlers(
-		VerifyContentType("application/json"),
+		VerifyMimeType("application/json"),
 		func(w http.ResponseWriter, req *http.Request) {
 			body, err := ioutil.ReadAll(req.Body)
 			req.Body.Close()
