@@ -372,6 +372,17 @@ var _ = Describe("TestServer", func() {
 				})
 				Expect(failures).Should(HaveLen(1))
 			})
+
+			It("should verify the content type", func() {
+				req, err := http.NewRequest("GET", s.URL()+"/foo", nil)
+				Expect(err).ShouldNot(HaveOccurred())
+				req.Header.Set("Content-Type", "application/octet-stream; charset=utf-8")
+
+				failures := InterceptGomegaFailures(func() {
+					http.DefaultClient.Do(req)
+				})
+				Expect(failures).Should(HaveLen(1))
+			})
 		})
 
 		Describe("Verify BasicAuth", func() {
@@ -509,6 +520,26 @@ var _ = Describe("TestServer", func() {
 			})
 		})
 
+		Describe("VerifyMimeType", func() {
+			BeforeEach(func() {
+				s.AppendHandlers(CombineHandlers(
+					VerifyMimeType("application/json"),
+				))
+			})
+
+			It("should verify the mime type in content-type header", func() {
+				resp, err = http.Post(s.URL()+"/foo", "application/json; charset=utf-8", bytes.NewReader([]byte(`{}`)))
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("should verify the mime type in content-type header", func() {
+				failures := InterceptGomegaFailures(func() {
+					http.Post(s.URL()+"/foo", "text/plain", bytes.NewReader([]byte(`{}`)))
+				})
+				Expect(failures).Should(HaveLen(1))
+			})
+		})
+
 		Describe("VerifyJSON", func() {
 			BeforeEach(func() {
 				s.AppendHandlers(CombineHandlers(
@@ -534,6 +565,12 @@ var _ = Describe("TestServer", func() {
 					http.Post(s.URL()+"/foo", "application/not-json", bytes.NewReader([]byte(`{"b":2, "a":3}`)))
 				})
 				Expect(failures).Should(HaveLen(1))
+			})
+
+
+			It("should verify the json body and the content type", func() {
+				resp, err = http.Post(s.URL()+"/foo", "application/json; charset=utf-8", bytes.NewReader([]byte(`{"b":2, "a":3}`)))
+				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
 
