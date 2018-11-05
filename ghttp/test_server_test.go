@@ -567,7 +567,6 @@ var _ = Describe("TestServer", func() {
 				Expect(failures).Should(HaveLen(1))
 			})
 
-
 			It("should verify the json body and the content type", func() {
 				resp, err = http.Post(s.URL()+"/foo", "application/json; charset=utf-8", bytes.NewReader([]byte(`{"b":2, "a":3}`)))
 				Expect(err).ShouldNot(HaveOccurred())
