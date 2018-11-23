@@ -33,4 +33,18 @@ var _ = Describe("HaveSuffixMatcher", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 	})
+
+	It("shows failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("foo").To(HaveSuffix("bar"))
+		})
+		Expect(failuresMessages[0]).To(Equal("Expected\n    <string>: foo\nto have suffix\n    <string>: bar"))
+	})
+
+	It("shows negated failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("foo").ToNot(HaveSuffix("oo"))
+		})
+		Expect(failuresMessages[0]).To(Equal("Expected\n    <string>: foo\nnot to have suffix\n    <string>: oo"))
+	})
 })

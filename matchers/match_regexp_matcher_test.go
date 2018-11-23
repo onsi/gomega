@@ -41,4 +41,18 @@ var _ = Describe("MatchRegexp", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 	})
+
+	It("shows failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("foo").To(MatchRegexp("bar"))
+		})
+		Expect(failuresMessages).To(Equal([]string{"Expected\n    <string>: foo\nto match regular expression\n    <string>: bar"}))
+	})
+
+	It("shows negated failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("foo").ToNot(MatchRegexp("foo"))
+		})
+		Expect(failuresMessages).To(Equal([]string{"Expected\n    <string>: foo\nnot to match regular expression\n    <string>: foo"}))
+	})
 })

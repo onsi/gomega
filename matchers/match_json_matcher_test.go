@@ -100,4 +100,11 @@ var _ = Describe("MatchJSONMatcher", func() {
 			Expect(err.Error()).Should(ContainSubstring("MatchJSONMatcher matcher requires a string, stringer, or []byte.  Got actual:\n    <nil>: nil"))
 		})
 	})
+
+	It("shows negated failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("1").ToNot(MatchJSON("1"))
+		})
+		Expect(failuresMessages).To(Equal([]string{"Expected\n    <string>: 1\nnot to match JSON of\n    <string>: 1"}))
+	})
 })
