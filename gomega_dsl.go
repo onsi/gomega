@@ -39,20 +39,14 @@ var defaultEventuallyPollingInterval = 10 * time.Millisecond
 var defaultConsistentlyDuration = 100 * time.Millisecond
 var defaultConsistentlyPollingInterval = 10 * time.Millisecond
 
-//RegisterFailHandler connects Ginkgo to Gomega.  When a matcher fails
-//the fail handler passed into RegisterFailHandler is called.
+// RegisterFailHandler connects Ginkgo to Gomega. When a matcher fails
+// the fail handler passed into RegisterFailHandler is called.
 func RegisterFailHandler(handler types.GomegaFailHandler) {
-	if handler == nil {
-		globalFailWrapper = nil
-		return
-	}
-
-	globalFailWrapper = &types.GomegaFailWrapper{
-		Fail:        handler,
-		TWithHelper: testingtsupport.EmptyTWithHelper{},
-	}
+	RegisterFailHandlerWithT(testingtsupport.EmptyTWithHelper{}, handler)
 }
 
+// RegisterFailHandlerWithT ensures that the given types.TWithHelper and fail handler
+// are used globally.
 func RegisterFailHandlerWithT(t types.TWithHelper, handler types.GomegaFailHandler) {
 	if handler == nil {
 		globalFailWrapper = nil
