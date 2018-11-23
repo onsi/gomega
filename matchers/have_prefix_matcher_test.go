@@ -33,4 +33,18 @@ var _ = Describe("HavePrefixMatcher", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 	})
+
+	It("shows failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("foo").To(HavePrefix("bar"))
+		})
+		Expect(failuresMessages[0]).To(Equal("Expected\n    <string>: foo\nto have prefix\n    <string>: bar"))
+	})
+
+	It("shows negated failure message", func() {
+		failuresMessages := InterceptGomegaFailures(func() {
+			Expect("foo").ToNot(HavePrefix("fo"))
+		})
+		Expect(failuresMessages[0]).To(Equal("Expected\n    <string>: foo\nnot to have prefix\n    <string>: fo"))
+	})
 })
