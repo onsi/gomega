@@ -97,7 +97,7 @@ func (m *KeysMatcher) matchKeys(actual interface{}) (errs []error) {
 		}
 	}
 
-	for key, _ := range m.Keys {
+	for key := range m.Keys {
 		if !keys[key] && !m.IgnoreMissing {
 			errs = append(errs, fmt.Errorf("missing expected key %s", key))
 		}
