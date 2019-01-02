@@ -1763,6 +1763,33 @@ You can also use the flag `AllowDuplicates` to permit multiple elements in your 
 
 The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras|AllowDuplicates`.
 
+### Testing type `map`
+
+All of the `*Fields` functions and types have a corresponding type `*Keys` which can be used for doing analogous tests against maps:
+
+    actual := map[string]string{
+        "A": "correct",
+	"B": "incorrect",
+    }
+
+    // fails, because `actual` includes the key B
+    Expect(actual).To(MatchAllKeys(Keys{
+        "A": Equal("correct"),
+    }))
+
+    // passes
+    Expect(actual).To(MatchAllKeys(Keys{
+        "A": Equal("correct"),
+	"B": Equal("incorrect"),
+    }))
+
+    // passes
+    Expect(actual).To(MatchKeys(IgnoreMissing, Keys{
+        "A": Equal("correct"),
+	"B": Equal("incorrect"),
+	"C": Equal("whatever"), // ignored, because `actual` doesn't have this key
+    }))
+
 ### Testing pointer values
 
 `gstruct` provides the `PointTo` function to apply a matcher to the value pointed-to. It will fail if the pointer value is `nil`:
@@ -1812,4 +1839,4 @@ Example:
         })),
         "Rootfs":             m.Ignore(),
         "Logs":               m.Ignore(),
-	}))
+    }))
