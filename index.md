@@ -1769,7 +1769,7 @@ All of the `*Fields` functions and types have a corresponding definitions `*Keys
 
     actual := map[string]string{
         "A": "correct",
-	"B": "incorrect",
+        "B": "incorrect",
     }
 
     // fails, because `actual` includes the key B
@@ -1780,14 +1780,14 @@ All of the `*Fields` functions and types have a corresponding definitions `*Keys
     // passes
     Expect(actual).To(MatchAllKeys(Keys{
         "A": Equal("correct"),
-	"B": Equal("incorrect"),
+        "B": Equal("incorrect"),
     }))
 
     // passes
     Expect(actual).To(MatchKeys(IgnoreMissing, Keys{
         "A": Equal("correct"),
-	"B": Equal("incorrect"),
-	"C": Equal("whatever"), // ignored, because `actual` doesn't have this key
+        "B": Equal("incorrect"),
+        "C": Equal("whatever"), // ignored, because `actual` doesn't have this key
     }))
 
 ### Testing pointer values
