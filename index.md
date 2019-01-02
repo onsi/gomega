@@ -1765,7 +1765,7 @@ The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras|Allo
 
 ### Testing type `map`
 
-All of the `*Fields` functions and types have a corresponding type `*Keys` which can be used for doing analogous tests against maps:
+All of the `*Fields` functions and types have a corresponding definitions `*Keys` which can perform analogous tests against map types:
 
     actual := map[string]string{
         "A": "correct",
