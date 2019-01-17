@@ -5,6 +5,13 @@ title: Gomega
 
 [Gomega](http://github.com/onsi/gomega) is a matcher/assertion library.  It is best paired with the [Ginkgo](http://github.com/onsi/ginkgo) BDD test framework, but can be adapted for use in other contexts too.
 
+
+---
+
+## Support Policy
+
+Gomega provides support for versions of Go that are noted by the [Go release policy](https://golang.org/doc/devel/release.html#policy) i.e. N and N-1 major versions.
+
 ---
 
 ## Getting Gomega
