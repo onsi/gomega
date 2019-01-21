@@ -1,6 +1,9 @@
 /*
 Gomega's format package pretty-prints objects.  It explores input objects recursively and generates formatted, indented output with type information.
 */
+
+// untested sections: 4
+
 package format
 
 import (

@@ -103,6 +103,9 @@ A more comprehensive example is available at https://onsi.github.io/gomega/#_tes
 		})
 	})
 */
+
+// untested sections: 5
+
 package ghttp
 
 import (
