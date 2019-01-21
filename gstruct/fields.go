@@ -1,3 +1,5 @@
+// untested sections: 10
+
 package gstruct
 
 import (
