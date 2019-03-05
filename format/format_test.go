@@ -167,6 +167,13 @@ var _ = Describe("Format", func() {
 			Expect(MessageWithDiff(stringA, "to equal", stringB)).Should(Equal(expectedTruncatedMultiByteFailureMessage))
 		})
 
+		It("prints special characters", func() {
+			stringA := "\n"
+			stringB := "something_else"
+
+			Expect(MessageWithDiff(stringA, "to equal", stringB)).Should(Equal(expectedSpecialCharacterFailureMessage))
+		})
+
 		Context("With truncated diff disabled", func() {
 			BeforeEach(func() {
 				TruncatedDiff = false
@@ -624,4 +631,12 @@ Expected
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 to equal
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+`)
+
+var expectedSpecialCharacterFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: \n
+to equal
+    <string>: something_else
+
 `)
