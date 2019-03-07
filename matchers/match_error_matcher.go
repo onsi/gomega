@@ -2,7 +2,6 @@ package matchers
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/onsi/gomega/format"
 )
@@ -22,8 +21,9 @@ func (matcher *MatchErrorMatcher) Match(actual interface{}) (success bool, err e
 
 	actualErr := actual.(error)
 
-	if isError(matcher.Expected) {
-		return reflect.DeepEqual(actualErr, matcher.Expected), nil
+	// deepEqual doesn't match errors anymore
+	if expectedErr, ok := matcher.Expected.(error); ok {
+		return actualErr.Error() == expectedErr.Error(), nil
 	}
 
 	if isString(matcher.Expected) {

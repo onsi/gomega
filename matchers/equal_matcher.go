@@ -16,6 +16,14 @@ func (matcher *EqualMatcher) Match(actual interface{}) (success bool, err error)
 	if actual == nil && matcher.Expected == nil {
 		return false, fmt.Errorf("Refusing to compare <nil> to <nil>.\nBe explicit and use BeNil() instead.  This is to avoid mistakes where both sides of an assertion are erroneously uninitialized.")
 	}
+
+	// deepEqual no longer compares errors correctly
+	if actualErr, ok := actual.(error); ok {
+		if expectedErr, ok := matcher.Expected.(error); ok {
+			return actualErr.Error() == expectedErr.Error(), nil
+		}
+	}
+
 	// Shortcut for byte slices.
 	// Comparing long byte slices with reflect.DeepEqual is very slow,
 	// so use bytes.Equal if actual and expected are both byte slices.

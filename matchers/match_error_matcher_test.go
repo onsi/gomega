@@ -105,14 +105,16 @@ var _ = Describe("MatchErrorMatcher", func() {
 		failuresMessages := InterceptGomegaFailures(func() {
 			Expect(errors.New("foo")).To(MatchError("bar"))
 		})
-		Expect(failuresMessages[0]).To(ContainSubstring("{s: \"foo\"}\nto match error\n    <string>: bar"))
+		Expect(failuresMessages[0]).To(ContainSubstring("s: \"foo\""))
+		Expect(failuresMessages[0]).To(ContainSubstring("to match error\n    <string>: bar"))
 	})
 
 	It("shows negated failure message", func() {
 		failuresMessages := InterceptGomegaFailures(func() {
 			Expect(errors.New("foo")).ToNot(MatchError("foo"))
 		})
-		Expect(failuresMessages[0]).To(ContainSubstring("{s: \"foo\"}\nnot to match error\n    <string>: foo"))
+		Expect(failuresMessages[0]).To(ContainSubstring("s: \"foo\""))
+		Expect(failuresMessages[0]).To(ContainSubstring("not to match error\n    <string>: foo"))
 	})
 })
 

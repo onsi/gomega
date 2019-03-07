@@ -2,10 +2,11 @@ package matchers_test
 
 import (
 	"errors"
+	"regexp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
-	"regexp"
 )
 
 func Erroring() error {
@@ -62,7 +63,8 @@ var _ = Describe("Succeed", func() {
 	It("builds failure message", func() {
 		actual := Succeed().FailureMessage(errors.New("oops"))
 		actual = regexp.MustCompile(" 0x.*>").ReplaceAllString(actual, " 0x00000000>")
-		Expect(actual).To(Equal("Expected success, but got an error:\n    <*errors.errorString | 0x00000000>: {s: \"oops\"}\n    oops"))
+		Expect(actual).To(ContainSubstring("Expected success, but got an error:\n    <*errors.errorString | 0x00000000>: {\n        s: \"oops\""))
+		Expect(actual).To(ContainSubstring("\n    oops"))
 	})
 
 	It("builds negated failure message", func() {
