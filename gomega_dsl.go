@@ -345,7 +345,7 @@ type OmegaMatcher types.GomegaMatcher
 //
 // Use `NewWithT` to instantiate a `WithT`
 type WithT struct {
-	t types.GomegaTestingT
+	T types.GomegaTestingT
 }
 
 // GomegaWithT is deprecated in favor of gomega.WithT, which does not stutter.
@@ -362,7 +362,7 @@ type GomegaWithT = WithT
 //     }
 func NewWithT(t types.GomegaTestingT) *WithT {
 	return &WithT{
-		t: t,
+		T: t,
 	}
 }
 
@@ -373,7 +373,7 @@ func NewGomegaWithT(t types.GomegaTestingT) *GomegaWithT {
 
 // Expect is used to make assertions. See documentation for Expect.
 func (g *WithT) Expect(actual interface{}, extra ...interface{}) Assertion {
-	return assertion.New(actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), 0, extra...)
+	return assertion.New(actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.T), 0, extra...)
 }
 
 // Eventually is used to make asynchronous assertions. See documentation for Eventually.
@@ -386,7 +386,7 @@ func (g *WithT) Eventually(actual interface{}, intervals ...interface{}) AsyncAs
 	if len(intervals) > 1 {
 		pollingInterval = toDuration(intervals[1])
 	}
-	return asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), timeoutInterval, pollingInterval, 0)
+	return asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.T), timeoutInterval, pollingInterval, 0)
 }
 
 // Consistently is used to make asynchronous assertions. See documentation for Consistently.
@@ -399,7 +399,7 @@ func (g *WithT) Consistently(actual interface{}, intervals ...interface{}) Async
 	if len(intervals) > 1 {
 		pollingInterval = toDuration(intervals[1])
 	}
-	return asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), timeoutInterval, pollingInterval, 0)
+	return asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.T), timeoutInterval, pollingInterval, 0)
 }
 
 func toDuration(input interface{}) time.Duration {
