@@ -373,11 +373,21 @@ func NewGomegaWithT(t types.GomegaTestingT) *GomegaWithT {
 
 // Expect is used to make assertions. See documentation for Expect.
 func (g *WithT) Expect(actual interface{}, extra ...interface{}) Assertion {
-	return assertion.New(actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), 0, extra...)
+	return g.ExpectWithOffset(0, actual, extra...)
+}
+
+// ExpectWithOffset is used to make assertions. See documentation for ExpectWithOffset.
+func (g *WithT) ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) Assertion {
+	return assertion.New(actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), offset, extra...)
 }
 
 // Eventually is used to make asynchronous assertions. See documentation for Eventually.
 func (g *WithT) Eventually(actual interface{}, intervals ...interface{}) AsyncAssertion {
+	return g.EventuallyWithOffset(0, actual, intervals...)
+}
+
+// EventuallyWithOffset is used to make asynchronous assertions. See documentation for EventuallyWithOffset.
+func (g *WithT) EventuallyWithOffset(offset int, actual interface{}, intervals ...interface{}) AsyncAssertion {
 	timeoutInterval := defaultEventuallyTimeout
 	pollingInterval := defaultEventuallyPollingInterval
 	if len(intervals) > 0 {
@@ -386,11 +396,16 @@ func (g *WithT) Eventually(actual interface{}, intervals ...interface{}) AsyncAs
 	if len(intervals) > 1 {
 		pollingInterval = toDuration(intervals[1])
 	}
-	return asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), timeoutInterval, pollingInterval, 0)
+	return asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), timeoutInterval, pollingInterval, offset)
 }
 
 // Consistently is used to make asynchronous assertions. See documentation for Consistently.
 func (g *WithT) Consistently(actual interface{}, intervals ...interface{}) AsyncAssertion {
+	return g.ConsistentlyWithOffset(0, actual, intervals...)
+}
+
+// ConsistentlyWithOffset is used to make asynchronous assertions. See documentation for ConsistentlyWithOffset.
+func (g *WithT) ConsistentlyWithOffset(offset int, actual interface{}, intervals ...interface{}) AsyncAssertion {
 	timeoutInterval := defaultConsistentlyDuration
 	pollingInterval := defaultConsistentlyPollingInterval
 	if len(intervals) > 0 {
@@ -399,7 +414,7 @@ func (g *WithT) Consistently(actual interface{}, intervals ...interface{}) Async
 	if len(intervals) > 1 {
 		pollingInterval = toDuration(intervals[1])
 	}
-	return asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), timeoutInterval, pollingInterval, 0)
+	return asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, actual, testingtsupport.BuildTestingTGomegaFailWrapper(g.t), timeoutInterval, pollingInterval, offset)
 }
 
 func toDuration(input interface{}) time.Duration {
