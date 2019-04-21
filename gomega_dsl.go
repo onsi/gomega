@@ -320,7 +320,7 @@ type GomegaAsyncAssertion = AsyncAssertion
 // All methods take a variadic optionalDescription argument.  This is passed on to fmt.Sprintf()
 // and is used to annotate failure messages.
 //
-// All methods return a bool that is true if hte assertion passed and false if it failed.
+// All methods return a bool that is true if the assertion passed and false if it failed.
 //
 // Example:
 //
