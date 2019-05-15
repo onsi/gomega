@@ -652,6 +652,13 @@ By default `ContainElement()` uses the `Equal()` matcher under the hood to asser
     Ω([]string{"Foo", "FooBar"}
      ).Should(ContainElement(ContainSubstring("Bar")))
 
+
+#### BeElementOf(elements ...interface{})
+
+    Ω(ACTUAL).Should(BeElementOf(ELEMENT1, ELEMENT2, ELEMENT3, ...))
+
+succeeds if `ACTUAL` equals one of the elements passed into the matcher. When a single element `ELEMENT` of type `array` or `slice` is passed into the matcher, `BeElementOf` succeeds if `ELEMENT` contains an element that equals `ACTUAL` (reverse of `ContainElement`). `BeElementOf` always uses the `Equal()` matcher under the hood to assert equality.
+
 #### ConsistOf(element ...interface{})
 
     Ω(ACTUAL).Should(ConsistOf(ELEMENT1, ELEMENT2, ELEMENT3, ...))
