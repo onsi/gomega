@@ -1,4 +1,4 @@
-// untested sections: 10
+// untested sections: 6
 
 package gstruct
 
