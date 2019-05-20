@@ -53,4 +53,14 @@ var _ = Describe("BeElementOf", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 	})
+
+	It("builds failure message", func() {
+		actual := BeElementOf(1, 2).FailureMessage(123)
+		Expect(actual).To(Equal("Expected\n    <int>: 123\nto be an element of\n    <[]interface {} | len:2, cap:2>: [1, 2]"))
+	})
+
+	It("builds negated failure message", func() {
+		actual := BeElementOf(1, 2).NegatedFailureMessage(123)
+		Expect(actual).To(Equal("Expected\n    <int>: 123\nnot to be an element of\n    <[]interface {} | len:2, cap:2>: [1, 2]"))
+	})
 })

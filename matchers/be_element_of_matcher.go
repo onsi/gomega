@@ -1,4 +1,4 @@
-// untested sections: 3
+// untested sections: 1
 
 package matchers
 
