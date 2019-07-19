@@ -43,9 +43,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 		})
 
 		It("should work with byte arrays", func() {
-			Expect([]byte(sample_01)).Should(MatchXML([]byte(sample_01)))
-			Expect([]byte(sample_01)).Should(MatchXML(sample_01))
-			Expect(sample_01).Should(MatchXML([]byte(sample_01)))
+			Expect(sample_01).Should(MatchXML(sample_01))
 		})
 	})
 
