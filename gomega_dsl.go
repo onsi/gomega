@@ -280,7 +280,7 @@ func SetDefaultEventuallyPollingInterval(t time.Duration) {
 	defaultEventuallyPollingInterval = t
 }
 
-// SetDefaultConsistentlyDuration sets  the default duration for Consistently. Consistently will verify that your condition is satsified for this long.
+// SetDefaultConsistentlyDuration sets  the default duration for Consistently. Consistently will verify that your condition is satisfied for this long.
 func SetDefaultConsistentlyDuration(t time.Duration) {
 	defaultConsistentlyDuration = t
 }
