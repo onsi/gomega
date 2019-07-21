@@ -36,7 +36,7 @@ var PrintContextObjects = false
 // TruncatedDiff choose if we should display a truncated pretty diff or not
 var TruncatedDiff = true
 
-// Ctx interface defined here to keep backwards compatability with go < 1.7
+// Ctx interface defined here to keep backwards compatibility with go < 1.7
 // It matches the context.Context interface
 type Ctx interface {
 	Deadline() (deadline time.Time, ok bool)
@@ -61,7 +61,7 @@ Generates a formatted matcher success/failure message of the form:
 	<message>
 		<pretty printed expected>
 
-If expected is omited, then the message looks like:
+If expected is omitted, then the message looks like:
 
 	Expected
 		<pretty printed actual>
