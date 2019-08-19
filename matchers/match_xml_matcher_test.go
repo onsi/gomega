@@ -41,10 +41,6 @@ var _ = Describe("MatchXMLMatcher", func() {
 			Expect(sample_09).ShouldNot(MatchXML(sample_10)) // same structures with different attribute values
 			Expect(sample_11).Should(MatchXML(sample_11))    // with non UTF-8 encoding
 		})
-
-		It("should work with byte arrays", func() {
-			Expect(sample_01).Should(MatchXML(sample_01))
-		})
 	})
 
 	Context("when the expected is not valid XML", func() {
