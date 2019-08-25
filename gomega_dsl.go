@@ -155,7 +155,7 @@ func Expect(actual interface{}, extra ...interface{}) Assertion {
 //    ExpectWithOffset(1, "foo").To(Equal("foo"))
 //
 // Unlike `Expect` and `Ω`, `ExpectWithOffset` takes an additional integer argument
-// this is used to modify the call-stack offset when computing line numbers.
+// that is used to modify the call-stack offset when computing line numbers.
 //
 // This is most useful in helper functions that make assertions.  If you want Gomega's
 // error message to refer to the calling line in the test (as opposed to the line in the helper function)
