@@ -190,6 +190,22 @@ var _ = Describe("Format", func() {
 				Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedFullFailureDiff))
 			})
 		})
+
+		Context("With alternate diff lengths", func() {
+			It("long strings that differ only in length", func() {
+				smallString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				largeString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+				Expect(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessage))
+				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessage))
+				initialValue := CharactersAroundMismatchToInclude // 5 by default
+				CharactersAroundMismatchToInclude = 10
+				Expect(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessageExtraDiff))
+				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessageExtraDiff))
+				CharactersAroundMismatchToInclude = initialValue
+			})
+
+		})
 	})
 
 	Describe("IndentString", func() {
@@ -613,11 +629,23 @@ Expected
 to equal               |
     <string>: "...aaaaa"
 `)
+var expectedTruncatedStartSizeFailureMessageExtraDiff = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaaaaaaaa"
+to equal                    |
+    <string>: "...aaaaaaaaaa"
+`)
 var expectedTruncatedStartSizeSwappedFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaa"
 to equal              |
     <string>: "...aaaaa"
+`)
+var expectedTruncatedStartSizeSwappedFailureMessageExtraDiff = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaaaaaa"
+to equal                   |
+    <string>: "...aaaaaaaaaa"
 `)
 var expectedTruncatedMultiByteFailureMessage = strings.TrimSpace(`
 Expected
