@@ -192,6 +192,23 @@ var _ = Describe("Format", func() {
 		})
 
 		Context("With alternate diff lengths", func() {
+			initialValue := TruncateThreshold // 5 by default
+			BeforeEach(func() {
+				TruncateThreshold = 10000
+			})
+
+			AfterEach(func() {
+				TruncateThreshold = initialValue
+			})
+			It("should show the full diff", func() {
+				stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+				Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedFullFailureDiff))
+			})
+		})
+
+		Context("With alternate diff lengths", func() {
 			It("long strings that differ only in length", func() {
 				smallString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 				largeString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -204,7 +221,6 @@ var _ = Describe("Format", func() {
 				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessageExtraDiff))
 				CharactersAroundMismatchToInclude = initialValue
 			})
-
 		})
 	})
 
