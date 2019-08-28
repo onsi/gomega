@@ -190,6 +190,99 @@ var _ = Describe("Format", func() {
 				Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedFullFailureDiff))
 			})
 		})
+
+		Context("With alternate diff lengths", func() {
+			initialValue := TruncateThreshold // 50 by default
+			BeforeEach(func() {
+				TruncateThreshold = 10000
+			})
+
+			AfterEach(func() {
+				TruncateThreshold = initialValue
+			})
+
+			It("should show the full diff when truncate threshold is increased beyond length of strings", func() {
+				stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+				Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedFullFailureDiff))
+			})
+		})
+
+		Context("with alternative number of characters to include around mismatch", func() {
+			initialValue := CharactersAroundMismatchToInclude // 5 by default
+			BeforeEach(func() {
+				CharactersAroundMismatchToInclude = 10
+			})
+
+			AfterEach(func() {
+				CharactersAroundMismatchToInclude = initialValue
+			})
+
+			It("it shows more characters around a line length mismatch", func() {
+				smallString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				largeString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+				Expect(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessageExtraDiff))
+				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessageExtraDiff))
+			})
+		})
+
+		Describe("At extremes of configurable values", func() {
+			Context("with zero-length threshold", func() {
+				initialValue := TruncateThreshold // 50 by default
+				BeforeEach(func() {
+					TruncateThreshold = 0
+				})
+
+				AfterEach(func() {
+					TruncateThreshold = initialValue
+				})
+
+				It("should show the full diff when truncate threshold is increased beyond length of strings", func() {
+					stringWithB := "aba"
+					stringWithZ := "aza"
+					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffSmallThreshold))
+				})
+			})
+
+			Context("with zero characters around mismatch", func() {
+				initialValue := CharactersAroundMismatchToInclude // 5 by default
+				BeforeEach(func() {
+					CharactersAroundMismatchToInclude = 0
+				})
+
+				AfterEach(func() {
+					CharactersAroundMismatchToInclude = initialValue
+				})
+
+				It("", func() {
+					stringWithB := "aba"
+					stringWithZ := "aza"
+					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffZeroMismatch))
+				})
+			})
+
+			Context("with zero-length threshold and zero characters around mismatch", func() {
+				initialCharactersAroundMismatch := CharactersAroundMismatchToInclude
+				initialTruncateThreshold := TruncateThreshold
+				BeforeEach(func() {
+					CharactersAroundMismatchToInclude = 0
+					TruncateThreshold = 0
+				})
+
+				AfterEach(func() {
+					CharactersAroundMismatchToInclude = initialCharactersAroundMismatch
+					TruncateThreshold = initialTruncateThreshold
+				})
+
+				It("", func() {
+					stringWithB := "aba"
+					stringWithZ := "aza"
+					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffSmallThresholdZeroMismatch))
+				})
+			})
+		})
 	})
 
 	Describe("IndentString", func() {
@@ -613,11 +706,23 @@ Expected
 to equal               |
     <string>: "...aaaaa"
 `)
+var expectedTruncatedStartSizeFailureMessageExtraDiff = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaaaaaaaa"
+to equal                    |
+    <string>: "...aaaaaaaaaa"
+`)
 var expectedTruncatedStartSizeSwappedFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaa"
 to equal              |
     <string>: "...aaaaa"
+`)
+var expectedTruncatedStartSizeSwappedFailureMessageExtraDiff = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaaaaaa"
+to equal                   |
+    <string>: "...aaaaaaaaaa"
 `)
 var expectedTruncatedMultiByteFailureMessage = strings.TrimSpace(`
 Expected
@@ -625,18 +730,34 @@ Expected
 to equal                 |
     <string>: "...tuvwxyz"
 `)
-
 var expectedFullFailureDiff = strings.TrimSpace(`
 Expected
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 to equal
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 `)
-
 var expectedSpecialCharacterFailureMessage = strings.TrimSpace(`
 Expected
     <string>: \n
 to equal
     <string>: something_else
 
+`)
+var expectedDiffSmallThreshold = strings.TrimSpace(`
+Expected
+    <string>: "aba"
+to equal        |
+    <string>: "aza"
+`)
+var expectedDiffZeroMismatch = strings.TrimSpace(`
+Expected
+    <string>: aba
+to equal
+    <string>: aza
+`)
+var expectedDiffSmallThresholdZeroMismatch = strings.TrimSpace(`
+Expected
+    <string>: "...b..."
+to equal          |
+    <string>: "...z..."
 `)
