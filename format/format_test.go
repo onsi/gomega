@@ -192,7 +192,7 @@ var _ = Describe("Format", func() {
 		})
 
 		Context("With alternate diff lengths", func() {
-			initialValue := TruncateThreshold // 5 by default
+			initialValue := TruncateThreshold // 50 by default
 			BeforeEach(func() {
 				TruncateThreshold = 10000
 			})
@@ -200,6 +200,7 @@ var _ = Describe("Format", func() {
 			AfterEach(func() {
 				TruncateThreshold = initialValue
 			})
+
 			It("should show the full diff when truncate threshold is increased beyond length of strings", func() {
 				stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 				stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -217,12 +218,69 @@ var _ = Describe("Format", func() {
 			AfterEach(func() {
 				CharactersAroundMismatchToInclude = initialValue
 			})
+
 			It("it shows more characters around a line length mismatch", func() {
 				smallString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 				largeString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 				Expect(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessageExtraDiff))
 				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessageExtraDiff))
+			})
+		})
+
+		Describe("At extremes of configurable values", func() {
+			Context("with zero-length threshold", func() {
+				initialValue := TruncateThreshold // 50 by default
+				BeforeEach(func() {
+					TruncateThreshold = 0
+				})
+
+				AfterEach(func() {
+					TruncateThreshold = initialValue
+				})
+
+				It("should show the full diff when truncate threshold is increased beyond length of strings", func() {
+					stringWithB := "aba"
+					stringWithZ := "aza"
+					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffSmallThreshold))
+				})
+			})
+
+			Context("with zero characters around mismatch", func() {
+				initialValue := CharactersAroundMismatchToInclude // 5 by default
+				BeforeEach(func() {
+					CharactersAroundMismatchToInclude = 0
+				})
+
+				AfterEach(func() {
+					CharactersAroundMismatchToInclude = initialValue
+				})
+
+				It("", func() {
+					stringWithB := "aba"
+					stringWithZ := "aza"
+					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffZeroMismatch))
+				})
+			})
+
+			Context("with zero-length threshold and zero characters around mismatch", func() {
+				initialCharactersAroundMismatch := CharactersAroundMismatchToInclude
+				initialTruncateThreshold := TruncateThreshold
+				BeforeEach(func() {
+					CharactersAroundMismatchToInclude = 0
+					TruncateThreshold = 0
+				})
+
+				AfterEach(func() {
+					CharactersAroundMismatchToInclude = initialCharactersAroundMismatch
+					TruncateThreshold = initialTruncateThreshold
+				})
+
+				It("", func() {
+					stringWithB := "aba"
+					stringWithZ := "aza"
+					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffSmallThresholdZeroMismatch))
+				})
 			})
 		})
 	})
@@ -672,18 +730,34 @@ Expected
 to equal                 |
     <string>: "...tuvwxyz"
 `)
-
 var expectedFullFailureDiff = strings.TrimSpace(`
 Expected
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 to equal
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 `)
-
 var expectedSpecialCharacterFailureMessage = strings.TrimSpace(`
 Expected
     <string>: \n
 to equal
     <string>: something_else
 
+`)
+var expectedDiffSmallThreshold = strings.TrimSpace(`
+Expected
+    <string>: "aba"
+to equal        |
+    <string>: "aza"
+`)
+var expectedDiffZeroMismatch = strings.TrimSpace(`
+Expected
+    <string>: aba
+to equal
+    <string>: aza
+`)
+var expectedDiffSmallThresholdZeroMismatch = strings.TrimSpace(`
+Expected
+    <string>: "...b..."
+to equal          |
+    <string>: "...z..."
 `)
