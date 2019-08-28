@@ -38,11 +38,11 @@ var TruncatedDiff = true
 
 // TruncateThreshold (default 50) specifies the maximum length string to print in string comparison assertion error
 // messages.
-var TruncateThreshold = 50
+var TruncateThreshold uint = 50
 
 // CharactersAroundMismatchToInclude (default 5) specifies how many contextual characters should be printed before and
 // after the first diff location in a truncated string assertion error message.
-var CharactersAroundMismatchToInclude = 5
+var CharactersAroundMismatchToInclude uint = 5
 
 // Ctx interface defined here to keep backwards compatibility with go < 1.7
 // It matches the context.Context interface
@@ -96,7 +96,7 @@ to equal               |
 */
 
 func MessageWithDiff(actual, message, expected string) string {
-	if TruncatedDiff && len(actual) >= TruncateThreshold && len(expected) >= TruncateThreshold {
+	if TruncatedDiff && len(actual) >= int(TruncateThreshold) && len(expected) >= int(TruncateThreshold) {
 		diffPoint := findFirstMismatch(actual, expected)
 		formattedActual := truncateAndFormat(actual, diffPoint)
 		formattedExpected := truncateAndFormat(expected, diffPoint)
@@ -124,7 +124,7 @@ func truncateAndFormat(str string, index int) string {
 	leftPadding := `...`
 	rightPadding := `...`
 
-	start := index - CharactersAroundMismatchToInclude
+	start := index - int(CharactersAroundMismatchToInclude)
 	if start < 0 {
 		start = 0
 		leftPadding = ""
@@ -132,7 +132,7 @@ func truncateAndFormat(str string, index int) string {
 
 	// slice index must include the mis-matched character
 	lengthOfMismatchedCharacter := 1
-	end := index + CharactersAroundMismatchToInclude + lengthOfMismatchedCharacter
+	end := index + int(CharactersAroundMismatchToInclude) + lengthOfMismatchedCharacter
 	if end > len(str) {
 		end = len(str)
 		rightPadding = ""
