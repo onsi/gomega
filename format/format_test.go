@@ -200,7 +200,7 @@ var _ = Describe("Format", func() {
 			AfterEach(func() {
 				TruncateThreshold = initialValue
 			})
-			It("should show the full diff", func() {
+			It("should show the full diff when truncate threshold is increased beyond length of strings", func() {
 				stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 				stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
@@ -208,18 +208,21 @@ var _ = Describe("Format", func() {
 			})
 		})
 
-		Context("With alternate diff lengths", func() {
-			It("long strings that differ only in length", func() {
+		Context("with alternative number of characters to include around mismatch", func() {
+			initialValue := CharactersAroundMismatchToInclude // 5 by default
+			BeforeEach(func() {
+				CharactersAroundMismatchToInclude = 10
+			})
+
+			AfterEach(func() {
+				CharactersAroundMismatchToInclude = initialValue
+			})
+			It("it shows more characters around a line length mismatch", func() {
 				smallString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 				largeString := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
-				Expect(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessage))
-				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessage))
-				initialValue := CharactersAroundMismatchToInclude // 5 by default
-				CharactersAroundMismatchToInclude = 10
 				Expect(MessageWithDiff(largeString, "to equal", smallString)).Should(Equal(expectedTruncatedStartSizeFailureMessageExtraDiff))
 				Expect(MessageWithDiff(smallString, "to equal", largeString)).Should(Equal(expectedTruncatedStartSizeSwappedFailureMessageExtraDiff))
-				CharactersAroundMismatchToInclude = initialValue
 			})
 		})
 	})
