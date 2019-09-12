@@ -441,7 +441,14 @@ where `FUNCTION()` is a function call that returns an error-type as its *first o
 
     Ω(ACTUAL).Should(MatchError(EXPECTED))
 
-succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`.  `EXPECTED` can be a string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.  `EXPECTED` can also be an error, in which case `ACTUAL` and `ERROR` are compared via `reflect.DeepEqual`. Alternatively, `EXPECTED` can be a matcher, in which case it is tested against `ACTUAL.Error()`. Any other type for `EXPECTED` is an error.
+succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` must be one of the following:
+
+- A string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.
+- A matcher, in which case `ACTUAL.Error()` is tested against the matcher.
+- An error, in which case `ACTUAL` and `EXPECTED` are compared via `reflect.DeepEqual()`. If they are not deeply equal, they are tested by `errors.Is(ACTUAL, EXPECTED)`. (The latter allows to test whether `ACTUAL` wraps an `EXPECTED` error.)
+- A non-nil pointer to a type that implements error, in which case `errors.As(ACTUAL, EXPECTED)` is tested. (This allows to test whether `ACTUAL` wraps an error of an `EXPECTED` type.)
+
+Any other type for `EXPECTED` is an error.
 
 ### Working with Channels
 
