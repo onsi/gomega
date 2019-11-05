@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
+	"golang.org/x/xerrors"
 )
 
 type CustomError struct {
@@ -18,16 +19,34 @@ func (c CustomError) Error() string {
 
 var _ = Describe("MatchErrorMatcher", func() {
 	Context("When asserting against an error", func() {
-		It("should succeed when matching with an error", func() {
-			err := errors.New("an error")
-			fmtErr := fmt.Errorf("an error")
-			customErr := CustomError{}
+		Context("when passed an error", func() {
+			It("should succeed when errors are deeply equal", func() {
+				err := errors.New("an error")
+				fmtErr := fmt.Errorf("an error")
+				customErr := CustomError{}
 
-			Expect(err).Should(MatchError(errors.New("an error")))
-			Expect(err).ShouldNot(MatchError(errors.New("another error")))
+				Expect(err).Should(MatchError(errors.New("an error")))
+				Expect(err).ShouldNot(MatchError(errors.New("another error")))
 
-			Expect(fmtErr).Should(MatchError(errors.New("an error")))
-			Expect(customErr).Should(MatchError(CustomError{}))
+				Expect(fmtErr).Should(MatchError(errors.New("an error")))
+				Expect(customErr).Should(MatchError(CustomError{}))
+			})
+
+			It("should succeed when any error in the chain matches the passed error", func() {
+				innerErr := errors.New("inner error")
+				outerErr := xerrors.Errorf("outer error wrapping: %w", innerErr)
+
+				Expect(outerErr).Should(MatchError(innerErr))
+			})
+		})
+
+		Context("when passed non-nil pointer to a type that implements error", func() {
+			It("should succeed when any error in the chain matches the passed pointer", func() {
+				err := xerrors.Errorf("outer error wrapping: %w", CustomError{})
+
+				var expectedErrType CustomError
+				Expect(err).Should(MatchError(&expectedErrType))
+			})
 		})
 
 		It("should succeed when matching with a string", func() {
