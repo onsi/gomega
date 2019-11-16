@@ -130,15 +130,18 @@ Or you can write:
 
 ### Annotating Assertions
 
-You can annotate any assertion by passing a format string (and optional inputs to format) after the `GomegaMatcher`:
+You can annotate any assertion by passing either a format string (and optional inputs to format) or a function of type `func() string` after the `GomegaMatcher`:
 
     Ω(ACTUAL).Should(Equal(EXPECTED), "My annotation %d", foo)
     Ω(ACTUAL).ShouldNot(Equal(EXPECTED), "My annotation %d", foo)
     Expect(ACTUAL).To(Equal(EXPECTED), "My annotation %d", foo)
     Expect(ACTUAL).NotTo(Equal(EXPECTED), "My annotation %d", foo)
     Expect(ACTUAL).ToNot(Equal(EXPECTED), "My annotation %d", foo)
+    Expect(ACTUAL).To(Equal(EXPECTED), func() string { return "My annotation" })
 
-The format string and inputs will be passed to `fmt.Sprintf(...)`.  If the assertion fails, Gomega will print your annotation alongside its standard failure message.
+If you pass a format string, the format string and inputs will be passed to `fmt.Sprintf(...)`.
+If you instead pass a function, the function will be lazily evaluated if the assertion fails.
+In both cases, if the assertion fails, Gomega will print your annotation alongside its standard failure message.
 
 This is useful in cases where the standard failure message lacks context.  For example, if the following assertion fails:
 
@@ -239,7 +242,7 @@ This also pairs well with `gexec`'s `Session` command wrappers and `gbyte`'s `Bu
     Eventually(session.Out).Should(Say("Splines reticulated"))
 
 > Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- `Eventually` will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
-> As with synchronous assertions, you can annotate asynchronous assertions by passing a format string and optional inputs after the `GomegaMatcher`.
+> As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
 
 ### Consistently
 
