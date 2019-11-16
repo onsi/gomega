@@ -57,12 +57,13 @@ func (assertion *AsyncAssertion) ShouldNot(matcher types.GomegaMatcher, optional
 }
 
 func (assertion *AsyncAssertion) buildDescription(optionalDescription ...interface{}) string {
-	switch len(optionalDescription) {
-	case 0:
+	if len(optionalDescription) == 0 {
 		return ""
-	default:
-		return fmt.Sprintf(optionalDescription[0].(string), optionalDescription[1:]...) + "\n"
 	}
+	if describe, ok := optionalDescription[0].(func() string); ok && len(optionalDescription) == 1 {
+		return describe() + "\n"
+	}
+	return fmt.Sprintf(optionalDescription[0].(string), optionalDescription[1:]...) + "\n"
 }
 
 func (assertion *AsyncAssertion) actualInputIsAFunction() bool {
@@ -103,8 +104,6 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 	timer := time.Now()
 	timeout := time.After(assertion.timeoutInterval)
 
-	description := assertion.buildDescription(optionalDescription...)
-
 	var matches bool
 	var err error
 	mayChange := true
@@ -129,6 +128,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 			}
 		}
 		assertion.failWrapper.TWithHelper.Helper()
+		description := assertion.buildDescription(optionalDescription...)
 		assertion.failWrapper.Fail(fmt.Sprintf("%s after %.3fs.\n%s%s%s", preamble, time.Since(timer).Seconds(), description, message, errMsg), 3+assertion.offset)
 	}
 

@@ -77,6 +77,44 @@ var _ = Describe("Async Assertion", func() {
 				Expect(failureMessage).Should(ContainSubstring("My description 2"))
 				Expect(callerSkip).Should(Equal(4))
 			})
+
+			Context("when the optional description is a function", func() {
+				It("should append the description to the failure message", func() {
+					counter := 0
+					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func() interface{} {
+						counter++
+						if counter == 5 {
+							return "not-a-number" //this should cause the matcher to error
+						}
+						return counter
+					}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+
+					a.Should(BeNumerically("==", 5), func() string { return "My description" })
+
+					Expect(failureMessage).Should(ContainSubstring("Timed out after"))
+					Expect(failureMessage).Should(ContainSubstring("My description"))
+					Expect(callerSkip).Should(Equal(4))
+				})
+
+				Context("and there is no failure", func() {
+					It("should not evaluate that function", func() {
+						counter := 0
+						a := asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func() int {
+							counter++
+							return counter
+						}, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
+
+						evaluated := false
+						a.Should(BeNumerically("==", 5), func() string {
+							evaluated = true
+							return "A description"
+						})
+
+						Expect(failureMessage).Should(BeZero())
+						Expect(evaluated).Should(BeFalse())
+					})
+				})
+			})
 		})
 
 		Context("the negative case", func() {
