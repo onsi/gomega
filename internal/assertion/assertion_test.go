@@ -95,6 +95,17 @@ var _ = Describe("Assertion", func() {
 				Expect(a.ShouldNot(matcher)).Should(BeFalse())
 			})
 		})
+
+		Context("and the optional description is a function", func() {
+			It("should not evaluate that function", func() {
+				evaluated := false
+				a.Should(matcher, func() string {
+					evaluated = true
+					return "A description"
+				})
+				Expect(evaluated).Should(BeFalse())
+			})
+		})
 	})
 
 	Context("when the matcher fails", func() {
@@ -145,6 +156,14 @@ var _ = Describe("Assertion", func() {
 			It("should append the formatted description to the failure message", func() {
 				a.Should(matcher, "A description of [%d]", 3)
 				Expect(failureMessage).Should(Equal("A description of [3]\npositive: The thing I'm testing"))
+				Expect(failureCallerSkip).Should(Equal(3))
+			})
+		})
+
+		Context("and the optional description is a function", func() {
+			It("should append the description to the failure message", func() {
+				a.Should(matcher, func() string { return "A description" })
+				Expect(failureMessage).Should(Equal("A description\npositive: The thing I'm testing"))
 				Expect(failureCallerSkip).Should(Equal(3))
 			})
 		})
