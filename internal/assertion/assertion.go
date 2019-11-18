@@ -49,11 +49,13 @@ func (assertion *Assertion) NotTo(matcher types.GomegaMatcher, optionalDescripti
 }
 
 func (assertion *Assertion) buildDescription(optionalDescription ...interface{}) string {
-	if len(optionalDescription) == 0 {
+	switch len(optionalDescription) {
+	case 0:
 		return ""
-	}
-	if describe, ok := optionalDescription[0].(func() string); ok && len(optionalDescription) == 1 {
-		return describe() + "\n"
+	case 1:
+		if describe, ok := optionalDescription[0].(func() string); ok {
+			return describe() + "\n"
+		}
 	}
 	return fmt.Sprintf(optionalDescription[0].(string), optionalDescription[1:]...) + "\n"
 }
