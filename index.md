@@ -1717,7 +1717,7 @@ Due to the global nature of these methods, keep in mind that signaling processes
         "A": BeNumerically("<", 10),
         "B": BeTrue(),
         "C": Equal("foo"),
-    })
+    }))
 
 `MatchAllFields` requires that every field is matched, and each matcher is mapped to a field. To match a subset or superset of a struct, you should use the `MatchFields` function with the `IgnoreExtras` and `IgnoreMissing` options. `IgnoreExtras` will ignore fields that don't map to a matcher, e.g.
 
@@ -1725,7 +1725,7 @@ Due to the global nature of these methods, keep in mind that signaling processes
         "A": BeNumerically("<", 10),
         "B": BeTrue(),
         // Ignore lack of "C" in the matcher.
-    })
+    }))
 
 `IgnoreMissing` will ignore matchers that don't map to a field, e.g.
 
@@ -1734,7 +1734,7 @@ Due to the global nature of these methods, keep in mind that signaling processes
         "B": BeTrue(),
         "C": Equal("foo"),
         "D": Equal("bar"), // Ignored, since actual.D does not exist.
-    })
+    }))
 
 The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
 
