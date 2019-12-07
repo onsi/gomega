@@ -4,6 +4,9 @@ import . "github.com/onsi/gomega/matchers/support/goraph/node"
 import . "github.com/onsi/gomega/matchers/support/goraph/edge"
 import "github.com/onsi/gomega/matchers/support/goraph/util"
 
+// LargestMatching implements the Hopcroft–Karp algorithm taking as input a bipartite graph
+// and outputting a maximum cardinality matching, i.e. a set of as many edges as possible
+// with the property that no two edges share an endpoint.
 func (bg *BipartiteGraph) LargestMatching() (matching EdgeSet) {
 	paths := bg.maximalDisjointSLAPCollection(matching)
 
