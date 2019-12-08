@@ -11,7 +11,9 @@ import (
 )
 
 type ConsistOfMatcher struct {
-	Elements []interface{}
+	Elements        []interface{}
+	missingElements []interface{}
+	extraElements   []interface{}
 }
 
 func (matcher *ConsistOfMatcher) Match(actual interface{}) (success bool, err error) {
@@ -39,10 +41,6 @@ func (matcher *ConsistOfMatcher) Match(actual interface{}) (success bool, err er
 
 	values := matcher.valuesOf(actual)
 
-	if len(values) != len(matchers) {
-		return false, nil
-	}
-
 	neighbours := func(v, m interface{}) (bool, error) {
 		match, err := m.(omegaMatcher).Match(v)
 		return match && err == nil, nil
@@ -53,7 +51,23 @@ func (matcher *ConsistOfMatcher) Match(actual interface{}) (success bool, err er
 		return false, err
 	}
 
-	return len(bipartiteGraph.LargestMatching()) == len(values), nil
+	edges := bipartiteGraph.LargestMatching()
+	if len(edges) == len(values) && len(edges) == len(matchers) {
+		return true, nil
+	}
+
+	var missingMatchers []interface{}
+	matcher.extraElements, missingMatchers = bipartiteGraph.FreeLeftRight(edges)
+
+	for _, missing := range missingMatchers {
+		equalMatcher, ok := missing.(*EqualMatcher)
+		if ok {
+			missing = equalMatcher.Expected
+		}
+		matcher.missingElements = append(matcher.missingElements, missing)
+	}
+
+	return false, nil
 }
 
 func (matcher *ConsistOfMatcher) valuesOf(actual interface{}) []interface{} {
@@ -74,7 +88,16 @@ func (matcher *ConsistOfMatcher) valuesOf(actual interface{}) []interface{} {
 }
 
 func (matcher *ConsistOfMatcher) FailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, "to consist of", matcher.Elements)
+	message = format.Message(actual, "to consist of", matcher.Elements)
+	if len(matcher.missingElements) > 0 {
+		message = fmt.Sprintf("%s\nthe missing elements were\n%s", message,
+			format.Object(matcher.missingElements, 1))
+	}
+	if len(matcher.extraElements) > 0 {
+		message = fmt.Sprintf("%s\nthe extra elements were\n%s", message,
+			format.Object(matcher.extraElements, 1))
+	}
+	return
 }
 
 func (matcher *ConsistOfMatcher) NegatedFailureMessage(actual interface{}) (message string) {
