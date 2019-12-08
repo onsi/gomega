@@ -662,6 +662,30 @@ By default `ContainElement()` uses the `Equal()` matcher under the hood to asser
     Ω([]string{"Foo", "FooBar"}
      ).Should(ContainElement(ContainSubstring("Bar")))
 
+#### ContainElements(element ...interface{})
+
+    Ω(ACTUAL).Should(ContainElements(ELEMENT1, ELEMENT2, ELEMENT3, ...))
+
+or
+
+    Ω(ACTUAL).Should(
+        ContainElements([]SOME_TYPE{ELEMENT1, ELEMENT2, ELEMENT3, ...}))
+
+succeeds if `ACTUAL` contains the elements passed into the matcher. The ordering of the elements does not matter.
+
+By default `ContainElements()` uses `Equal()` to match the elements, however custom matchers can be passed in instead.  Here are some examples:
+
+    Ω([]string{"Foo", "FooBar"}).Should(ContainElements("FooBar"))
+    Ω([]string{"Foo", "FooBar"}).Should(ContainElements(ContainSubstring("Bar"), "Foo"))
+
+Actual must be an `array`, `slice` or `map`.  For maps, `ContainElements` matches against the `map`'s values.
+
+You typically pass variadic arguments to `ContainElements` (as in the examples above).  However, if you need to pass in a slice you can provided that it
+is the only element passed in to `ContainElements`:
+
+    Ω([]string{"Foo", "FooBar"}).Should(ContainElements([]string{"FooBar", "Foo"}))
+
+Note that Go's type system does not allow you to write this as `ContainElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
 
 #### BeElementOf(elements ...interface{})
 
