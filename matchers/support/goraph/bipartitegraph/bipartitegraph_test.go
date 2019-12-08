@@ -1,6 +1,8 @@
 package bipartitegraph_test
 
 import (
+	"reflect"
+
 	. "github.com/onsi/gomega/matchers/support/goraph/bipartitegraph"
 
 	. "github.com/onsi/ginkgo"
@@ -45,7 +47,48 @@ var _ = Describe("Bipartitegraph", func() {
 		)
 
 		It("Computes the correct largest matching", func() {
+			// largest matching: "aw", "bx", "cy"
 			Ω(graph.LargestMatching()).Should(HaveLen(3))
+		})
+
+		Describe("FreeLeftRight", func() {
+			When("all edges are given", func() {
+				It("returns correct free left and right values", func() {
+					freeLeft, freeRight := graph.FreeLeftRight(graph.Edges)
+					Expect(freeLeft).To(BeEmpty())
+					Expect(freeRight).To(BeEmpty())
+				})
+			})
+			When("largest matching edges are given", func() {
+				It("returns correct free left and right values", func() {
+					edges := graph.LargestMatching()
+					freeLeft, freeRight := graph.FreeLeftRight(edges)
+					Expect(freeLeft).To(ConsistOf("d", "e"))
+					Expect(freeRight).To(ConsistOf("z"))
+				})
+			})
+		})
+	})
+
+	When("node values are unhashable types", func() {
+		var (
+			neighbours = func(x, y interface{}) (bool, error) {
+				return reflect.DeepEqual(x, y), nil
+			}
+			graph, _ = NewBipartiteGraph(
+				[]interface{}{[]int{1, 2}, []int{3, 4}},
+				[]interface{}{[]int{1, 2}},
+				neighbours,
+			)
+		)
+		Describe("FreeLeftRight", func() {
+			It("returns correct free left and right values", func() {
+				edges := graph.LargestMatching()
+				freeLeft, freeRight := graph.FreeLeftRight(edges)
+				Expect(freeLeft).To(HaveLen(1))
+				Expect(freeLeft[0]).To(Equal([]int{3, 4}))
+				Expect(freeRight).To(BeEmpty())
+			})
 		})
 	})
 

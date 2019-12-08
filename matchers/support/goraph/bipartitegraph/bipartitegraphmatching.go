@@ -1,8 +1,10 @@
 package bipartitegraph
 
-import . "github.com/onsi/gomega/matchers/support/goraph/node"
-import . "github.com/onsi/gomega/matchers/support/goraph/edge"
-import "github.com/onsi/gomega/matchers/support/goraph/util"
+import (
+	. "github.com/onsi/gomega/matchers/support/goraph/edge"
+	. "github.com/onsi/gomega/matchers/support/goraph/node"
+	"github.com/onsi/gomega/matchers/support/goraph/util"
+)
 
 // LargestMatching implements the Hopcroft–Karp algorithm taking as input a bipartite graph
 // and outputting a maximum cardinality matching, i.e. a set of as many edges as possible
@@ -26,7 +28,7 @@ func (bg *BipartiteGraph) maximalDisjointSLAPCollection(matching EdgeSet) (resul
 		return
 	}
 
-	used := make(map[Node]bool)
+	used := make(map[int]bool)
 
 	for _, u := range guideLayers[len(guideLayers)-1] {
 		slap, found := bg.findDisjointSLAP(u, matching, guideLayers, used)
@@ -46,7 +48,7 @@ func (bg *BipartiteGraph) findDisjointSLAP(
 	start Node,
 	matching EdgeSet,
 	guideLayers []NodeOrderedSet,
-	used map[Node]bool,
+	used map[int]bool,
 ) ([]Edge, bool) {
 	return bg.findDisjointSLAPHelper(start, EdgeSet{}, len(guideLayers)-1, matching, guideLayers, used)
 }
@@ -57,16 +59,16 @@ func (bg *BipartiteGraph) findDisjointSLAPHelper(
 	currentLevel int,
 	matching EdgeSet,
 	guideLayers []NodeOrderedSet,
-	used map[Node]bool,
+	used map[int]bool,
 ) (EdgeSet, bool) {
-	used[currentNode] = true
+	used[currentNode.ID] = true
 
 	if currentLevel == 0 {
 		return currentSLAP, true
 	}
 
 	for _, nextNode := range guideLayers[currentLevel-1] {
-		if used[nextNode] {
+		if used[nextNode.ID] {
 			continue
 		}
 
@@ -87,17 +89,17 @@ func (bg *BipartiteGraph) findDisjointSLAPHelper(
 		currentSLAP = currentSLAP[:len(currentSLAP)-1]
 	}
 
-	used[currentNode] = false
+	used[currentNode.ID] = false
 	return nil, false
 }
 
 func (bg *BipartiteGraph) createSLAPGuideLayers(matching EdgeSet) (guideLayers []NodeOrderedSet) {
-	used := make(map[Node]bool)
+	used := make(map[int]bool)
 	currentLayer := NodeOrderedSet{}
 
 	for _, node := range bg.Left {
 		if matching.Free(node) {
-			used[node] = true
+			used[node.ID] = true
 			currentLayer = append(currentLayer, node)
 		}
 	}
@@ -116,7 +118,7 @@ func (bg *BipartiteGraph) createSLAPGuideLayers(matching EdgeSet) (guideLayers [
 		if util.Odd(len(guideLayers)) {
 			for _, leftNode := range lastLayer {
 				for _, rightNode := range bg.Right {
-					if used[rightNode] {
+					if used[rightNode.ID] {
 						continue
 					}
 
@@ -126,7 +128,7 @@ func (bg *BipartiteGraph) createSLAPGuideLayers(matching EdgeSet) (guideLayers [
 					}
 
 					currentLayer = append(currentLayer, rightNode)
-					used[rightNode] = true
+					used[rightNode.ID] = true
 
 					if matching.Free(rightNode) {
 						done = true
@@ -136,7 +138,7 @@ func (bg *BipartiteGraph) createSLAPGuideLayers(matching EdgeSet) (guideLayers [
 		} else {
 			for _, rightNode := range lastLayer {
 				for _, leftNode := range bg.Left {
-					if used[leftNode] {
+					if used[leftNode.ID] {
 						continue
 					}
 
@@ -146,7 +148,7 @@ func (bg *BipartiteGraph) createSLAPGuideLayers(matching EdgeSet) (guideLayers [
 					}
 
 					currentLayer = append(currentLayer, leftNode)
-					used[leftNode] = true
+					used[leftNode.ID] = true
 				}
 			}
 

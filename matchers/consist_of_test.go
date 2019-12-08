@@ -72,4 +72,39 @@ var _ = Describe("ConsistOf", func() {
 			Expect([]string{"foo", "bar", "baz"}).Should(ConsistOf([]string{"foo", "bar", "baz"}))
 		})
 	})
+
+	Describe("FailureMessage", func() {
+		When("actual contains an extra element", func() {
+			It("prints the extra element", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]int{1, 2}).Should(ConsistOf(2))
+				})
+
+				expected := "Expected\n.*\\[1, 2\\]\nto consist of\n.*\\[2\\]\nthe extra elements were\n.*\\[1\\]"
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
+
+		When("actual misses an element", func() {
+			It("prints the missing element", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]int{2}).Should(ConsistOf(1, 2))
+				})
+
+				expected := "Expected\n.*\\[2\\]\nto consist of\n.*\\[1, 2\\]\nthe missing elements were\n.*\\[1\\]"
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
+
+		When("actual contains an extra element and misses an element", func() {
+			It("prints both the extra and missing element", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]int{1, 2}).Should(ConsistOf(2, 3))
+				})
+
+				expected := "Expected\n.*\\[1, 2\\]\nto consist of\n.*\\[2, 3\\]\nthe missing elements were\n.*\\[3\\]\nthe extra elements were\n.*\\[1\\]"
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
+	})
 })
