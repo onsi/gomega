@@ -1,3 +1,9 @@
+## 1.8.0
+
+### Features
+- Allow optional description to be lazily evaluated function (#364) [bf64010]
+- Support wrapped errors (#359) [0a981cb]
+
 ## 1.7.1
 
 ### Fixes
