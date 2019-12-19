@@ -24,10 +24,6 @@ func (matcher *MatchErrorMatcher) Match(actual interface{}) (success bool, err e
 	actualErr := actual.(error)
 	expected := matcher.Expected
 
-	if isPtrToErrorType(expected) {
-		return xerrors.As(actualErr, expected), nil
-	}
-
 	if isError(expected) {
 		return reflect.DeepEqual(actualErr, expected) || xerrors.Is(actualErr, expected.(error)), nil
 	}
@@ -46,7 +42,7 @@ func (matcher *MatchErrorMatcher) Match(actual interface{}) (success bool, err e
 	}
 
 	return false, fmt.Errorf(
-		"MatchError must be passed an error, a pointer to a type that implements error, a string, or a Matcher that can match on strings. Got:\n%s",
+		"MatchError must be passed an error, a string, or a Matcher that can match on strings. Got:\n%s",
 		format.Object(expected, 1))
 }
 
@@ -56,18 +52,4 @@ func (matcher *MatchErrorMatcher) FailureMessage(actual interface{}) (message st
 
 func (matcher *MatchErrorMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return format.Message(actual, "not to match error", matcher.Expected)
-}
-
-func isPtrToErrorType(a interface{}) bool {
-	if isNil(a) {
-		return false
-	}
-
-	typeOfA := reflect.TypeOf(a)
-	if typeOfA.Kind() != reflect.Ptr {
-		return false
-	}
-
-	errorType := reflect.TypeOf((*error)(nil)).Elem()
-	return typeOfA.Elem().Implements(errorType)
 }

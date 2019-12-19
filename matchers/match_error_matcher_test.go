@@ -40,12 +40,10 @@ var _ = Describe("MatchErrorMatcher", func() {
 			})
 		})
 
-		Context("when passed non-nil pointer to a type that implements error", func() {
-			It("should succeed when any error in the chain matches the passed pointer", func() {
-				err := xerrors.Errorf("outer error wrapping: %w", CustomError{})
-
-				var expectedErrType CustomError
-				Expect(err).Should(MatchError(&expectedErrType))
+		Context("when actual an expected are both pointers to an error", func() {
+			It("should succeed when errors are deeply equal", func() {
+				err := CustomError{}
+				Expect(&err).To(MatchError(&err))
 			})
 		})
 
