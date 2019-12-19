@@ -1,3 +1,8 @@
+## 1.8.1
+
+### Fixes
+- Fix unexpected MatchError() behaviour (#375) [8ae7b2f]
+
 ## 1.8.0
 
 ### Features
