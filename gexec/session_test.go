@@ -270,7 +270,7 @@ var _ = Describe("Session", func() {
 		})
 	})
 
-	Context("when the command exits", func() {
+	When("the command exits", func() {
 		It("should close the buffers", func() {
 			Eventually(session).Should(Exit())
 
@@ -292,7 +292,7 @@ var _ = Describe("Session", func() {
 		})
 	})
 
-	Context("when wrapping out and err", func() {
+	When("wrapping out and err", func() {
 		var (
 			outWriterBuffer, errWriterBuffer *Buffer
 		)
@@ -317,7 +317,7 @@ var _ = Describe("Session", func() {
 			Expect(errWriterBuffer.Contents()).Should(Equal(session.Err.Contents()))
 		})
 
-		Context("when discarding the output of the command", func() {
+		When("discarding the output of the command", func() {
 			BeforeEach(func() {
 				outWriter = ioutil.Discard
 				errWriter = ioutil.Discard

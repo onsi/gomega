@@ -90,7 +90,7 @@ var _ = Describe("TestServer", func() {
 			Expect(s.GetAllowUnhandledRequests()).To(BeFalse())
 		})
 
-		Context("when true", func() {
+		When("true", func() {
 			BeforeEach(func() {
 				s.SetAllowUnhandledRequests(true)
 				s.SetUnhandledRequestStatusCode(http.StatusForbidden)
@@ -113,7 +113,7 @@ var _ = Describe("TestServer", func() {
 			})
 		})
 
-		Context("when false", func() {
+		When("false", func() {
 			It("should fail when attempting a request", func() {
 				failures := InterceptGomegaFailures(func() {
 					http.Get(s.URL() + "/foo")
@@ -316,7 +316,7 @@ var _ = Describe("TestServer", func() {
 				Expect(failures).Should(HaveLen(1))
 			})
 
-			Context("when passed a rawQuery", func() {
+			When("passed a rawQuery", func() {
 				It("should also be possible to verify the rawQuery", func() {
 					s.SetHandler(0, VerifyRequest("GET", "/foo", "baz=bar"))
 					resp, err = http.Get(s.URL() + "/foo?baz=bar")
@@ -336,7 +336,7 @@ var _ = Describe("TestServer", func() {
 				})
 			})
 
-			Context("when passed a matcher for path", func() {
+			When("passed a matcher for path", func() {
 				It("should apply the matcher", func() {
 					s.SetHandler(0, VerifyRequest("GET", MatchRegexp(`/foo/[a-f]*/3`)))
 					resp, err = http.Get(s.URL() + "/foo/abcdefa/3")
@@ -604,7 +604,7 @@ var _ = Describe("TestServer", func() {
 				formValues.Add("group", "users")
 			})
 
-			Context("when encoded in the URL", func() {
+			When("encoded in the URL", func() {
 				BeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("GET", "/foo"),
@@ -643,7 +643,7 @@ var _ = Describe("TestServer", func() {
 				})
 			})
 
-			Context("when present in the body", func() {
+			When("present in the body", func() {
 				BeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/foo"),
@@ -684,7 +684,7 @@ var _ = Describe("TestServer", func() {
 		})
 
 		Describe("VerifyFormKV", func() {
-			Context("when encoded in the URL", func() {
+			When("encoded in the URL", func() {
 				BeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("GET", "/foo"),
@@ -705,7 +705,7 @@ var _ = Describe("TestServer", func() {
 				})
 			})
 
-			Context("when present in the body", func() {
+			When("present in the body", func() {
 				BeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/foo"),
@@ -868,7 +868,7 @@ var _ = Describe("TestServer", func() {
 				Expect(body).Should(Equal([]byte("treat")))
 			})
 
-			Context("when passed a nil body", func() {
+			When("passed a nil body", func() {
 				BeforeEach(func() {
 					s.SetHandler(0, CombineHandlers(
 						VerifyRequest("POST", "/foo"),
@@ -891,7 +891,7 @@ var _ = Describe("TestServer", func() {
 		})
 
 		Describe("RespondWithJSON", func() {
-			Context("when no optional headers are set", func() {
+			When("no optional headers are set", func() {
 				BeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/foo"),
@@ -918,7 +918,7 @@ var _ = Describe("TestServer", func() {
 				})
 			})
 
-			Context("when optional headers are set", func() {
+			When("optional headers are set", func() {
 				var headers http.Header
 				BeforeEach(func() {
 					headers = http.Header{"Stuff": []string{"things"}}
@@ -945,7 +945,7 @@ var _ = Describe("TestServer", func() {
 					Expect(resp.Header["Content-Type"]).Should(Equal([]string{"application/json"}))
 				})
 
-				Context("when setting the Content-Type explicitly", func() {
+				When("setting the Content-Type explicitly", func() {
 					BeforeEach(func() {
 						headers["Content-Type"] = []string{"not-json"}
 					})
@@ -969,7 +969,7 @@ var _ = Describe("TestServer", func() {
 			var code int
 			var object testObject
 
-			Context("when no optional headers are set", func() {
+			When("no optional headers are set", func() {
 				BeforeEach(func() {
 					code = http.StatusOK
 					object = testObject{}
@@ -1003,7 +1003,7 @@ var _ = Describe("TestServer", func() {
 				})
 			})
 
-			Context("when optional headers are set", func() {
+			When("optional headers are set", func() {
 				var headers http.Header
 				BeforeEach(func() {
 					headers = http.Header{"Stuff": []string{"things"}}
@@ -1032,7 +1032,7 @@ var _ = Describe("TestServer", func() {
 					Expect(resp.Header["Content-Type"]).Should(Equal([]string{"application/json"}))
 				})
 
-				Context("when setting the Content-Type explicitly", func() {
+				When("setting the Content-Type explicitly", func() {
 					BeforeEach(func() {
 						headers["Content-Type"] = []string{"not-json"}
 					})
@@ -1056,7 +1056,7 @@ var _ = Describe("TestServer", func() {
 				message.Id = proto.Int32(99)
 			})
 
-			Context("when no optional headers are set", func() {
+			When("no optional headers are set", func() {
 				BeforeEach(func() {
 					s.AppendHandlers(CombineHandlers(
 						VerifyRequest("POST", "/proto"),
@@ -1085,7 +1085,7 @@ var _ = Describe("TestServer", func() {
 				})
 			})
 
-			Context("when optional headers are set", func() {
+			When("optional headers are set", func() {
 				var headers http.Header
 				BeforeEach(func() {
 					headers = http.Header{"Stuff": []string{"things"}}
@@ -1112,7 +1112,7 @@ var _ = Describe("TestServer", func() {
 					Expect(resp.Header["Content-Type"]).Should(Equal([]string{"application/x-protobuf"}))
 				})
 
-				Context("when setting the Content-Type explicitly", func() {
+				When("setting the Content-Type explicitly", func() {
 					BeforeEach(func() {
 						headers["Content-Type"] = []string{"not-x-protobuf"}
 					})

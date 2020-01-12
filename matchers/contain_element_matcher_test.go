@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("ContainElement", func() {
-	Context("when passed a supported type", func() {
+	When("passed a supported type", func() {
 		Context("and expecting a non-matcher", func() {
 			It("should do the right thing", func() {
 				Expect([2]int{1, 2}).Should(ContainElement(2))
@@ -48,7 +48,7 @@ var _ = Describe("ContainElement", func() {
 		})
 	})
 
-	Context("when passed a correctly typed nil", func() {
+	When("passed a correctly typed nil", func() {
 		It("should operate succesfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(nilSlice).ShouldNot(ContainElement(1))
@@ -58,7 +58,7 @@ var _ = Describe("ContainElement", func() {
 		})
 	})
 
-	Context("when passed an unsupported type", func() {
+	When("passed an unsupported type", func() {
 		It("should error", func() {
 			success, err := (&ContainElementMatcher{Element: 0}).Match(0)
 			Expect(success).Should(BeFalse())

@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("BeClosedMatcher", func() {
-	Context("when passed a channel", func() {
+	When("passed a channel", func() {
 		It("should do the right thing", func() {
 			openChannel := make(chan bool)
 			Expect(openChannel).ShouldNot(BeClosed())
@@ -27,7 +27,7 @@ var _ = Describe("BeClosedMatcher", func() {
 		})
 	})
 
-	Context("when passed a send-only channel", func() {
+	When("passed a send-only channel", func() {
 		It("should error", func() {
 			openChannel := make(chan bool)
 			var openWriterChannel chan<- bool
@@ -50,7 +50,7 @@ var _ = Describe("BeClosedMatcher", func() {
 		})
 	})
 
-	Context("when passed something else", func() {
+	When("passed something else", func() {
 		It("should error", func() {
 			var nilChannel chan bool
 

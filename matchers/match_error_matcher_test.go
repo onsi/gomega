@@ -19,7 +19,7 @@ func (c CustomError) Error() string {
 
 var _ = Describe("MatchErrorMatcher", func() {
 	Context("When asserting against an error", func() {
-		Context("when passed an error", func() {
+		When("passed an error", func() {
 			It("should succeed when errors are deeply equal", func() {
 				err := errors.New("an error")
 				fmtErr := fmt.Errorf("an error")
@@ -40,7 +40,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 			})
 		})
 
-		Context("when actual an expected are both pointers to an error", func() {
+		When("actual an expected are both pointers to an error", func() {
 			It("should succeed when errors are deeply equal", func() {
 				err := CustomError{}
 				Expect(&err).To(MatchError(&err))
@@ -59,7 +59,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 			Expect(customErr).Should(MatchError("an error"))
 		})
 
-		Context("when passed a matcher", func() {
+		When("passed a matcher", func() {
 			It("should pass if the matcher passes against the error string", func() {
 				err := errors.New("error 123 abc")
 
@@ -86,7 +86,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 		})
 	})
 
-	Context("when passed nil", func() {
+	When("passed nil", func() {
 		It("should fail", func() {
 			_, err := (&MatchErrorMatcher{
 				Expected: "an error",
@@ -95,7 +95,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 		})
 	})
 
-	Context("when passed a non-error", func() {
+	When("passed a non-error", func() {
 		It("should fail", func() {
 			_, err := (&MatchErrorMatcher{
 				Expected: "an error",
@@ -109,7 +109,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 		})
 	})
 
-	Context("when passed an error that is also a string", func() {
+	When("passed an error that is also a string", func() {
 		It("should use it as an error", func() {
 			var e mockErr = "mockErr"
 

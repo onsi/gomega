@@ -9,7 +9,7 @@ import (
 )
 
 var _ = Describe("BeIdenticalTo", func() {
-	Context("when asserting that nil equals nil", func() {
+	When("asserting that nil equals nil", func() {
 		It("should error", func() {
 			success, err := (&BeIdenticalToMatcher{Expected: nil}).Match(nil)
 

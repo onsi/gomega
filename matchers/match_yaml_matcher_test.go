@@ -46,7 +46,7 @@ var _ = Describe("MatchYAMLMatcher", func() {
 		})
 	})
 
-	Context("when the expected is not valid YAML", func() {
+	When("the expected is not valid YAML", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchYAMLMatcher{YAMLToMatch: ""}).Match("good:\nbad")
 			Expect(success).Should(BeFalse())
@@ -55,7 +55,7 @@ var _ = Describe("MatchYAMLMatcher", func() {
 		})
 	})
 
-	Context("when the actual is not valid YAML", func() {
+	When("the actual is not valid YAML", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchYAMLMatcher{YAMLToMatch: "good:\nbad"}).Match("")
 			Expect(success).Should(BeFalse())
@@ -71,7 +71,7 @@ var _ = Describe("MatchYAMLMatcher", func() {
 		})
 	})
 
-	Context("when the expected is neither a string nor a stringer nor a byte array", func() {
+	When("the expected is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchYAMLMatcher{YAMLToMatch: 2}).Match("")
 			Expect(success).Should(BeFalse())
@@ -85,7 +85,7 @@ var _ = Describe("MatchYAMLMatcher", func() {
 		})
 	})
 
-	Context("when the actual is neither a string nor a stringer nor a byte array", func() {
+	When("the actual is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchYAMLMatcher{YAMLToMatch: ""}).Match(2)
 			Expect(success).Should(BeFalse())

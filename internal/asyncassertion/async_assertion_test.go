@@ -78,7 +78,7 @@ var _ = Describe("Async Assertion", func() {
 				Expect(callerSkip).Should(Equal(4))
 			})
 
-			Context("when the optional description is a function", func() {
+			When("the optional description is a function", func() {
 				It("should append the description to the failure message", func() {
 					counter := 0
 					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func() interface{} {
@@ -202,7 +202,7 @@ var _ = Describe("Async Assertion", func() {
 
 	Describe("Consistently", func() {
 		Describe("The positive case", func() {
-			Context("when the matcher consistently passes for the duration", func() {
+			When("the matcher consistently passes for the duration", func() {
 				It("should pass", func() {
 					calls := 0
 					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, func() string {
@@ -217,7 +217,7 @@ var _ = Describe("Async Assertion", func() {
 				})
 			})
 
-			Context("when the matcher fails at some point", func() {
+			When("the matcher fails at some point", func() {
 				It("should fail", func() {
 					calls := 0
 					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, func() interface{} {
@@ -234,7 +234,7 @@ var _ = Describe("Async Assertion", func() {
 				})
 			})
 
-			Context("when the matcher errors at some point", func() {
+			When("the matcher errors at some point", func() {
 				It("should fail", func() {
 					calls := 0
 					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, func() interface{} {
@@ -253,7 +253,7 @@ var _ = Describe("Async Assertion", func() {
 		})
 
 		Describe("The negative case", func() {
-			Context("when the matcher consistently passes for the duration", func() {
+			When("the matcher consistently passes for the duration", func() {
 				It("should pass", func() {
 					c := make(chan bool)
 					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, c, fakeFailWrapper, time.Duration(0.2*float64(time.Second)), time.Duration(0.02*float64(time.Second)), 1)
@@ -263,7 +263,7 @@ var _ = Describe("Async Assertion", func() {
 				})
 			})
 
-			Context("when the matcher fails at some point", func() {
+			When("the matcher fails at some point", func() {
 				It("should fail", func() {
 					c := make(chan bool)
 					go func() {
@@ -278,7 +278,7 @@ var _ = Describe("Async Assertion", func() {
 				})
 			})
 
-			Context("when the matcher errors at some point", func() {
+			When("the matcher errors at some point", func() {
 				It("should fail", func() {
 					calls := 0
 					a := asyncassertion.New(asyncassertion.AsyncAssertionTypeConsistently, func() interface{} {
@@ -333,7 +333,7 @@ var _ = Describe("Async Assertion", func() {
 		})
 	})
 
-	Context("when passed a function with the wrong # or arguments & returns", func() {
+	When("passed a function with the wrong # or arguments & returns", func() {
 		It("should panic", func() {
 			Expect(func() {
 				asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func() {}, fakeFailWrapper, 0, 0, 1)
@@ -354,7 +354,7 @@ var _ = Describe("Async Assertion", func() {
 	})
 
 	Describe("bailing early", func() {
-		Context("when actual is a value", func() {
+		When("actual is a value", func() {
 			It("Eventually should bail out and fail early if the matcher says to", func() {
 				c := make(chan bool)
 				close(c)
@@ -369,7 +369,7 @@ var _ = Describe("Async Assertion", func() {
 			})
 		})
 
-		Context("when actual is a function", func() {
+		When("actual is a function", func() {
 			It("should never bail early", func() {
 				c := make(chan bool)
 				close(c)

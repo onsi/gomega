@@ -61,7 +61,7 @@ var _ = Describe("WithTransformMatcher", func() {
 	})
 
 	Context("failure messages", func() {
-		Context("when match fails", func() {
+		When("match fails", func() {
 			It("gives a descriptive message", func() {
 				m := WithTransform(plus1, Equal(3))
 				Expect(m.Match(1)).To(BeFalse())
@@ -69,7 +69,7 @@ var _ = Describe("WithTransformMatcher", func() {
 			})
 		})
 
-		Context("when match succeeds, but expected it to fail", func() {
+		When("match succeeds, but expected it to fail", func() {
 			It("gives a descriptive message", func() {
 				m := Not(WithTransform(plus1, Equal(3)))
 				Expect(m.Match(2)).To(BeFalse())

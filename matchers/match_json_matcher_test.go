@@ -37,7 +37,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when a key mismatch is found", func() {
+	When("a key mismatch is found", func() {
 		It("reports the first found mismatch", func() {
 			subject := MatchJSONMatcher{JSONToMatch: `5`}
 			actual := `7`
@@ -55,7 +55,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when the expected is not valid JSON", func() {
+	When("the expected is not valid JSON", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: `{}`}).Match(`oops`)
 			Expect(success).Should(BeFalse())
@@ -64,7 +64,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when the actual is not valid JSON", func() {
+	When("the actual is not valid JSON", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: `oops`}).Match(`{}`)
 			Expect(success).Should(BeFalse())
@@ -73,7 +73,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when the expected is neither a string nor a stringer nor a byte array", func() {
+	When("the expected is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: 2}).Match("{}")
 			Expect(success).Should(BeFalse())
@@ -87,7 +87,7 @@ var _ = Describe("MatchJSONMatcher", func() {
 		})
 	})
 
-	Context("when the actual is neither a string nor a stringer nor a byte array", func() {
+	When("the actual is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchJSONMatcher{JSONToMatch: "{}"}).Match(2)
 			Expect(success).Should(BeFalse())

@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("HaveLen", func() {
-	Context("when passed a supported type", func() {
+	When("passed a supported type", func() {
 		It("should do the right thing", func() {
 			Expect("").Should(HaveLen(0))
 			Expect("AA").Should(HaveLen(2))
@@ -29,7 +29,7 @@ var _ = Describe("HaveLen", func() {
 		})
 	})
 
-	Context("when passed a correctly typed nil", func() {
+	When("passed a correctly typed nil", func() {
 		It("should operate succesfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(nilSlice).Should(HaveLen(0))
@@ -39,7 +39,7 @@ var _ = Describe("HaveLen", func() {
 		})
 	})
 
-	Context("when passed an unsupported type", func() {
+	When("passed an unsupported type", func() {
 		It("should error", func() {
 			success, err := (&HaveLenMatcher{Count: 0}).Match(0)
 			Expect(success).Should(BeFalse())

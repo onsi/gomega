@@ -45,7 +45,7 @@ var _ = Describe("ConsistOf", func() {
 		})
 	})
 
-	Context("when passed matchers", func() {
+	When("passed matchers", func() {
 		It("should pass if the matchers pass", func() {
 			Expect([]string{"foo", "bar", "baz"}).Should(ConsistOf("foo", MatchRegexp("^ba"), "baz"))
 			Expect([]string{"foo", "bar", "baz"}).ShouldNot(ConsistOf("foo", MatchRegexp("^ba")))
@@ -59,7 +59,7 @@ var _ = Describe("ConsistOf", func() {
 			Expect([][]int{{1, 2}, {2}}).Should(ConsistOf(ContainElement(2), ContainElement(1)))
 		})
 
-		Context("when a matcher errors", func() {
+		When("a matcher errors", func() {
 			It("should soldier on", func() {
 				Expect([]string{"foo", "bar", "baz"}).ShouldNot(ConsistOf(BeFalse(), "foo", "bar"))
 				Expect([]interface{}{"foo", "bar", false}).Should(ConsistOf(BeFalse(), ContainSubstring("foo"), "bar"))
@@ -67,7 +67,7 @@ var _ = Describe("ConsistOf", func() {
 		})
 	})
 
-	Context("when passed exactly one argument, and that argument is a slice", func() {
+	When("passed exactly one argument, and that argument is a slice", func() {
 		It("should match against the elements of that argument", func() {
 			Expect([]string{"foo", "bar", "baz"}).Should(ConsistOf([]string{"foo", "bar", "baz"}))
 		})

@@ -50,7 +50,7 @@ var _ = Describe("BeTemporally", func() {
 			Expect(t0).ShouldNot(BeTemporally("<=", t2))
 		})
 
-		Context("when passed ~", func() {
+		When("passed ~", func() {
 			Context("and there is no precision parameter", func() {
 				BeforeEach(func() {
 					t1 = t0.Add(time.Millisecond / 2)
@@ -77,7 +77,7 @@ var _ = Describe("BeTemporally", func() {
 		})
 	})
 
-	Context("when passed a non-time", func() {
+	When("passed a non-time", func() {
 		It("should error", func() {
 			success, err := (&BeTemporallyMatcher{Comparator: "==", CompareTo: t0}).Match("foo")
 			Expect(success).Should(BeFalse())
@@ -89,7 +89,7 @@ var _ = Describe("BeTemporally", func() {
 		})
 	})
 
-	Context("when passed an unsupported comparator", func() {
+	When("passed an unsupported comparator", func() {
 		It("should error", func() {
 			success, err := (&BeTemporallyMatcher{Comparator: "!=", CompareTo: t0}).Match(t2)
 			Expect(success).Should(BeFalse())

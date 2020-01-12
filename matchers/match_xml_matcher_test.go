@@ -22,7 +22,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 		sample_11 = readFileContents("test_data/xml/sample_11.xml")
 	)
 
-	Context("when passed stringifiables", func() {
+	When("passed stringifiables", func() {
 		It("matches documents regardless of the attribute order", func() {
 			a := `<a foo="bar" ka="boom"></a>`
 			b := `<a ka="boom" foo="bar"></a>`
@@ -43,7 +43,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 		})
 	})
 
-	Context("when the expected is not valid XML", func() {
+	When("the expected is not valid XML", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchXMLMatcher{XMLToMatch: sample_01}).Match(`oops`)
 			Expect(success).Should(BeFalse())
@@ -52,7 +52,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 		})
 	})
 
-	Context("when the actual is not valid XML", func() {
+	When("the actual is not valid XML", func() {
 		It("should error and explain why", func() {
 			success, err := (&MatchXMLMatcher{XMLToMatch: `oops`}).Match(sample_01)
 			Expect(success).Should(BeFalse())
@@ -61,7 +61,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 		})
 	})
 
-	Context("when the expected is neither a string nor a stringer nor a byte array", func() {
+	When("the expected is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchXMLMatcher{XMLToMatch: 2}).Match(sample_01)
 			Expect(success).Should(BeFalse())
@@ -75,7 +75,7 @@ var _ = Describe("MatchXMLMatcher", func() {
 		})
 	})
 
-	Context("when the actual is neither a string nor a stringer nor a byte array", func() {
+	When("the actual is neither a string nor a stringer nor a byte array", func() {
 		It("should error", func() {
 			success, err := (&MatchXMLMatcher{XMLToMatch: sample_01}).Match(2)
 			Expect(success).Should(BeFalse())

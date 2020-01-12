@@ -56,7 +56,7 @@ var _ = Describe("ReceiveMatcher", func() {
 
 	Context("with a pointer argument", func() {
 		Context("of the correct type", func() {
-			Context("when the channel has an interface type", func() {
+			When("the channel has an interface type", func() {
 				It("should write the value received on the channel to the pointer", func() {
 					channel := make(chan error, 1)
 
@@ -244,7 +244,7 @@ var _ = Describe("ReceiveMatcher", func() {
 		})
 	})
 
-	Context("when acutal is a non-channel", func() {
+	When("acutal is a non-channel", func() {
 		It("should error", func() {
 			var nilChannel chan bool
 

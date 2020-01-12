@@ -24,7 +24,7 @@ var _ = Describe("HaveKeyWithValue", func() {
 		objKeys = map[*myCustomType]*myCustomType{customA: customA, customB: customA}
 	})
 
-	Context("when passed a map", func() {
+	When("passed a map", func() {
 		It("should do the right thing", func() {
 			Expect(stringKeys).Should(HaveKeyWithValue("foo", 2))
 			Expect(stringKeys).ShouldNot(HaveKeyWithValue("foo", 1))
@@ -41,14 +41,14 @@ var _ = Describe("HaveKeyWithValue", func() {
 		})
 	})
 
-	Context("when passed a correctly typed nil", func() {
+	When("passed a correctly typed nil", func() {
 		It("should operate succesfully on the passed in value", func() {
 			var nilMap map[int]string
 			Expect(nilMap).ShouldNot(HaveKeyWithValue("foo", "bar"))
 		})
 	})
 
-	Context("when the passed in key or value is actually a matcher", func() {
+	When("the passed in key or value is actually a matcher", func() {
 		It("should pass each element through the matcher", func() {
 			Expect(stringKeys).Should(HaveKeyWithValue(ContainSubstring("oo"), 2))
 			Expect(intKeys).Should(HaveKeyWithValue(2, ContainSubstring("oo")))
@@ -68,7 +68,7 @@ var _ = Describe("HaveKeyWithValue", func() {
 		})
 	})
 
-	Context("when passed something that is not a map", func() {
+	When("passed something that is not a map", func() {
 		It("should error", func() {
 			success, err := (&HaveKeyWithValueMatcher{Key: "foo", Value: "bar"}).Match([]string{"foo"})
 			Expect(success).Should(BeFalse())

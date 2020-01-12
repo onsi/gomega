@@ -36,13 +36,13 @@ var _ = Describe("NotMatcher", func() {
 	})
 
 	Context("failure messages are opposite of original matchers' failure messages", func() {
-		Context("when match fails", func() {
+		When("match fails", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Not(HaveLen(2)), input, "not to have length 2")
 			})
 		})
 
-		Context("when match succeeds, but expected it to fail", func() {
+		When("match succeeds, but expected it to fail", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Not(Not(HaveLen(3))), input, "to have length 3")
 			})

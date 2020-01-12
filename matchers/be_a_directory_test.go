@@ -10,7 +10,7 @@ import (
 )
 
 var _ = Describe("BeADirectoryMatcher", func() {
-	Context("when passed a string", func() {
+	When("passed a string", func() {
 		It("should do the right thing", func() {
 			Expect("/dne/test").ShouldNot(BeADirectory())
 
@@ -26,7 +26,7 @@ var _ = Describe("BeADirectoryMatcher", func() {
 		})
 	})
 
-	Context("when passed something else", func() {
+	When("passed something else", func() {
 		It("should error", func() {
 			success, err := (&BeADirectoryMatcher{}).Match(nil)
 			Expect(success).Should(BeFalse())

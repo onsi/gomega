@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("HaveCap", func() {
-	Context("when passed a supported type", func() {
+	When("passed a supported type", func() {
 		It("should do the right thing", func() {
 			Expect([0]int{}).Should(HaveCap(0))
 			Expect([2]int{1}).Should(HaveCap(2))
@@ -26,7 +26,7 @@ var _ = Describe("HaveCap", func() {
 		})
 	})
 
-	Context("when passed a correctly typed nil", func() {
+	When("passed a correctly typed nil", func() {
 		It("should operate succesfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(nilSlice).Should(HaveCap(0))
@@ -36,7 +36,7 @@ var _ = Describe("HaveCap", func() {
 		})
 	})
 
-	Context("when passed an unsupported type", func() {
+	When("passed an unsupported type", func() {
 		It("should error", func() {
 			success, err := (&HaveCapMatcher{Count: 0}).Match(0)
 			Expect(success).Should(BeFalse())

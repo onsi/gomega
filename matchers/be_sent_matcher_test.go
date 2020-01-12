@@ -10,8 +10,8 @@ import (
 )
 
 var _ = Describe("BeSent", func() {
-	Context("when passed a channel and a matching type", func() {
-		Context("when the channel is ready to receive", func() {
+	When("passed a channel and a matching type", func() {
+		When("the channel is ready to receive", func() {
 			It("should succeed and send the value down the channel", func() {
 				c := make(chan string)
 				d := make(chan string)
@@ -33,7 +33,7 @@ var _ = Describe("BeSent", func() {
 			})
 		})
 
-		Context("when the channel is not ready to receive", func() {
+		When("the channel is not ready to receive", func() {
 			It("should fail and not send down the channel", func() {
 				c := make(chan string)
 				Expect(c).ShouldNot(BeSent("foo"))
@@ -41,7 +41,7 @@ var _ = Describe("BeSent", func() {
 			})
 		})
 
-		Context("when the channel is eventually ready to receive", func() {
+		When("the channel is eventually ready to receive", func() {
 			It("should succeed", func() {
 				c := make(chan string)
 				d := make(chan string)
@@ -56,7 +56,7 @@ var _ = Describe("BeSent", func() {
 			})
 		})
 
-		Context("when the channel is closed", func() {
+		When("the channel is closed", func() {
 			It("should error", func() {
 				c := make(chan string)
 				close(c)
@@ -79,7 +79,7 @@ var _ = Describe("BeSent", func() {
 		})
 	})
 
-	Context("when passed a channel and a non-matching type", func() {
+	When("passed a channel and a non-matching type", func() {
 		It("should error", func() {
 			success, err := (&BeSentMatcher{Arg: "foo"}).Match(make(chan int, 1))
 			Expect(success).Should(BeFalse())
@@ -87,7 +87,7 @@ var _ = Describe("BeSent", func() {
 		})
 	})
 
-	Context("when passed a receive-only channel", func() {
+	When("passed a receive-only channel", func() {
 		It("should error", func() {
 			var c <-chan string
 			c = make(chan string, 1)
@@ -97,7 +97,7 @@ var _ = Describe("BeSent", func() {
 		})
 	})
 
-	Context("when passed a nonchannel", func() {
+	When("passed a nonchannel", func() {
 		It("should error", func() {
 			success, err := (&BeSentMatcher{Arg: "foo"}).Match("bar")
 			Expect(success).Should(BeFalse())

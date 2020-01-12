@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("BeElementOf", func() {
-	Context("when passed a supported type", func() {
+	When("passed a supported type", func() {
 		It("should do the right thing", func() {
 			Expect(2).Should(BeElementOf([2]int{1, 2}))
 			Expect(3).ShouldNot(BeElementOf([2]int{1, 2}))
@@ -32,7 +32,7 @@ var _ = Describe("BeElementOf", func() {
 		})
 	})
 
-	Context("when passed a correctly typed nil", func() {
+	When("passed a correctly typed nil", func() {
 		It("should operate succesfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(1).ShouldNot(BeElementOf(nilSlice))
@@ -42,7 +42,7 @@ var _ = Describe("BeElementOf", func() {
 		})
 	})
 
-	Context("when passed an unsupported type", func() {
+	When("passed an unsupported type", func() {
 		It("should error", func() {
 			success, err := (&BeElementOfMatcher{Elements: []interface{}{0}}).Match(nil)
 			Expect(success).Should(BeFalse())

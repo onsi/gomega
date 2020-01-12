@@ -25,7 +25,7 @@ var _ = Describe("SayMatcher", func() {
 		buffer.Write([]byte("abc"))
 	})
 
-	Context("when actual is not a gexec Buffer, or a BufferProvider", func() {
+	When("actual is not a gexec Buffer, or a BufferProvider", func() {
 		It("should error", func() {
 			failures := InterceptGomegaFailures(func() {
 				Expect("foo").Should(Say("foo"))
@@ -34,7 +34,7 @@ var _ = Describe("SayMatcher", func() {
 		})
 	})
 
-	Context("when a match is found", func() {
+	When("a match is found", func() {
 		It("should succeed", func() {
 			Expect(buffer).Should(Say("abc"))
 		})
@@ -60,12 +60,12 @@ var _ = Describe("SayMatcher", func() {
 		})
 	})
 
-	Context("when no match is found", func() {
+	When("no match is found", func() {
 		It("should not error", func() {
 			Expect(buffer).ShouldNot(Say("def"))
 		})
 
-		Context("when the buffer is closed", func() {
+		When("the buffer is closed", func() {
 			BeforeEach(func() {
 				buffer.Close()
 			})
@@ -97,7 +97,7 @@ var _ = Describe("SayMatcher", func() {
 		})
 	})
 
-	Context("when a positive match fails", func() {
+	When("a positive match fails", func() {
 		It("should report where it got stuck", func() {
 			Expect(buffer).Should(Say("abc"))
 			buffer.Write([]byte("def"))
@@ -109,7 +109,7 @@ var _ = Describe("SayMatcher", func() {
 		})
 	})
 
-	Context("when a negative match fails", func() {
+	When("a negative match fails", func() {
 		It("should report where it got stuck", func() {
 			failures := InterceptGomegaFailures(func() {
 				Expect(buffer).ShouldNot(Say("abc"))
@@ -120,7 +120,7 @@ var _ = Describe("SayMatcher", func() {
 		})
 	})
 
-	Context("when a match is not found", func() {
+	When("a match is not found", func() {
 		It("should not fastforward the buffer", func() {
 			Expect(buffer).ShouldNot(Say("def"))
 			Expect(buffer).Should(Say("abc"))
@@ -139,7 +139,7 @@ var _ = Describe("SayMatcher", func() {
 		})
 	})
 
-	Context("when actual is a BufferProvider", func() {
+	When("actual is a BufferProvider", func() {
 		It("should use actual's buffer", func() {
 			s := &speaker{
 				buffer: NewBuffer(),

@@ -62,7 +62,7 @@ var _ = Describe("Io Wrappers", func() {
 			timeoutCloser = TimeoutCloser(innerCloser, 20*time.Millisecond)
 		})
 
-		Context("when the underlying Closer closes with no error", func() {
+		When("the underlying Closer closes with no error", func() {
 			BeforeEach(func() {
 				innerCloser = FakeCloser{}
 			})
@@ -72,7 +72,7 @@ var _ = Describe("Io Wrappers", func() {
 			})
 		})
 
-		Context("when the underlying Closer closes with an error", func() {
+		When("the underlying Closer closes with an error", func() {
 			BeforeEach(func() {
 				innerCloser = FakeCloser{err: fmt.Errorf("boom")}
 			})
@@ -82,7 +82,7 @@ var _ = Describe("Io Wrappers", func() {
 			})
 		})
 
-		Context("when the underlying Closer hangs", func() {
+		When("the underlying Closer hangs", func() {
 			BeforeEach(func() {
 				innerCloser = FakeCloser{
 					err:      fmt.Errorf("boom"),
@@ -104,7 +104,7 @@ var _ = Describe("Io Wrappers", func() {
 			timeoutReader = TimeoutReader(innerReader, 20*time.Millisecond)
 		})
 
-		Context("when the underlying Reader returns no error", func() {
+		When("the underlying Reader returns no error", func() {
 			BeforeEach(func() {
 				innerReader = FakeReader{}
 			})
@@ -118,7 +118,7 @@ var _ = Describe("Io Wrappers", func() {
 			})
 		})
 
-		Context("when the underlying Reader returns an error", func() {
+		When("the underlying Reader returns an error", func() {
 			BeforeEach(func() {
 				innerReader = FakeReader{err: fmt.Errorf("boom")}
 			})
@@ -130,7 +130,7 @@ var _ = Describe("Io Wrappers", func() {
 			})
 		})
 
-		Context("when the underlying Reader hangs", func() {
+		When("the underlying Reader hangs", func() {
 			BeforeEach(func() {
 				innerReader = FakeReader{err: fmt.Errorf("boom"), duration: time.Hour}
 			})
@@ -151,7 +151,7 @@ var _ = Describe("Io Wrappers", func() {
 			timeoutWriter = TimeoutWriter(innerWriter, 20*time.Millisecond)
 		})
 
-		Context("when the underlying Writer returns no error", func() {
+		When("the underlying Writer returns no error", func() {
 			BeforeEach(func() {
 				innerWriter = FakeWriter{}
 			})
@@ -163,7 +163,7 @@ var _ = Describe("Io Wrappers", func() {
 			})
 		})
 
-		Context("when the underlying Writer returns an error", func() {
+		When("the underlying Writer returns an error", func() {
 			BeforeEach(func() {
 				innerWriter = FakeWriter{err: fmt.Errorf("boom")}
 			})
@@ -174,7 +174,7 @@ var _ = Describe("Io Wrappers", func() {
 			})
 		})
 
-		Context("when the underlying Writer hangs", func() {
+		When("the underlying Writer hangs", func() {
 			BeforeEach(func() {
 				innerWriter = FakeWriter{err: fmt.Errorf("boom"), duration: time.Hour}
 			})

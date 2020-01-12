@@ -47,7 +47,7 @@ var _ = Describe("AndMatcher", func() {
 	})
 
 	Context("failure messages", func() {
-		Context("when match fails", func() {
+		When("match fails", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(And(false1, true1), input, "to have length 1")
 				verifyFailureMessage(And(true1, false2), input, "to equal\n    <string>: hip")
@@ -55,7 +55,7 @@ var _ = Describe("AndMatcher", func() {
 			})
 		})
 
-		Context("when match succeeds, but expected it to fail", func() {
+		When("match succeeds, but expected it to fail", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Not(And(true1, true2)), input,
 					`To not satisfy all of these matchers: [%!s(*matchers.HaveLenMatcher=&{2}) %!s(*matchers.EqualMatcher=&{hi})]`)

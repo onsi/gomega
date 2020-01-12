@@ -38,14 +38,14 @@ var _ = Describe("OrMatcher", func() {
 	})
 
 	Context("failure messages", func() {
-		Context("when match fails", func() {
+		When("match fails", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Or(false1, false2), input,
 					"To satisfy at least one of these matchers: [%!s(*matchers.HaveLenMatcher=&{1}) %!s(*matchers.EqualMatcher=&{hip})]")
 			})
 		})
 
-		Context("when match succeeds, but expected it to fail", func() {
+		When("match succeeds, but expected it to fail", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Not(Or(true1, true2)), input, `not to have length 2`)
 			})

@@ -14,7 +14,7 @@ import (
 var packagePath = "./_fixture/firefly"
 
 var _ = Describe(".Build", func() {
-	Context("when there have been previous calls to Build", func() {
+	When("there have been previous calls to Build", func() {
 		BeforeEach(func() {
 			_, err := gexec.Build(packagePath)
 			Expect(err).ShouldNot(HaveOccurred())
