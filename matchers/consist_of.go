@@ -16,11 +16,6 @@ type ConsistOfMatcher struct {
 	extraElements   []interface{}
 }
 
-var neighbours = func(v, m interface{}) (bool, error) {
-	match, err := m.(omegaMatcher).Match(v)
-	return match && err == nil, nil
-}
-
 func (matcher *ConsistOfMatcher) Match(actual interface{}) (success bool, err error) {
 	if !isArrayOrSlice(actual) && !isMap(actual) {
 		return false, fmt.Errorf("ConsistOf matcher expects an array/slice/map.  Got:\n%s", format.Object(actual, 1))
@@ -44,6 +39,11 @@ func (matcher *ConsistOfMatcher) Match(actual interface{}) (success bool, err er
 	matcher.missingElements = equalMatchersToElements(missingMatchers)
 
 	return false, nil
+}
+
+func neighbours(value, matcher interface{}) (bool, error) {
+	match, err := matcher.(omegaMatcher).Match(value)
+	return match && err == nil, nil
 }
 
 func equalMatchersToElements(matchers []interface{}) (elements []interface{}) {
