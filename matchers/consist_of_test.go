@@ -70,6 +70,7 @@ var _ = Describe("ConsistOf", func() {
 	Context("when passed exactly one argument, and that argument is a slice", func() {
 		It("should match against the elements of that argument", func() {
 			Expect([]string{"foo", "bar", "baz"}).Should(ConsistOf([]string{"foo", "bar", "baz"}))
+			Expect([]string{"foo", "bar", "baz"}).ShouldNot(ConsistOf([]string{"foo", "bar"}))
 		})
 	})
 

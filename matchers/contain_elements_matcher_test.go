@@ -69,6 +69,7 @@ var _ = Describe("ContainElements", func() {
 	Context("when passed exactly one argument, and that argument is a slice", func() {
 		It("should match against the elements of that argument", func() {
 			Expect([]string{"foo", "bar", "baz"}).Should(ContainElements([]string{"foo", "baz"}))
+			Expect([]string{"foo", "bar", "baz"}).ShouldNot(ContainElements([]string{"foo", "nope"}))
 		})
 	})
 
