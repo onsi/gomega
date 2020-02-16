@@ -799,6 +799,25 @@ There are six supported comparators:
 
 Any other comparator is an error.
 
+### Working with HTTP responses
+
+#### HaveHTTPStatus(expected interface{})
+
+    Ω(ACTUAL).Should(HaveHTTPStatus(EXPECTED))
+
+succeeds if the `Status` or `StatusCode` field of an HTTP response matches.
+
+`ACTUAL` must be either a `*http.Response` or `*httptest.ResponseRecorder`.
+`EXPECTED` must be either an `int` or a `string`.
+
+Here are some examples:
+
+- `Ω(resp).Should(HaveHTTPStatus(http.StatusOK))`:
+    asserts that `resp.StatusCode == 200`.
+
+- `Ω(resp).Should(HaveHTTPStatus("404 Not Found"))`:
+    asserts that `resp.Status == "404 Not Found"`.
+
 ### Asserting on Panics
 
 #### Panic()
