@@ -408,6 +408,15 @@ func BeADirectory() types.GomegaMatcher {
 	return &matchers.BeADirectoryMatcher{}
 }
 
+//HaveHTTPStatus succeeds if the Status or StatusCode field of an HTTP response matches.
+//Actual must be either a *http.Response or *httptest.ResponseRecorder.
+//Expected must be either an int or a string.
+//  Expect(resp).Should(HaveHTTPStatus(http.StatusOK))   // asserts that resp.StatusCode == 200
+//  Expect(resp).Should(HaveHTTPStatus("404 Not Found")) // asserts that resp.Status == "404 Not Found"
+func HaveHTTPStatus(expected interface{}) types.GomegaMatcher {
+	return &matchers.HaveHTTPStatusMatcher{Expected: expected}
+}
+
 //And succeeds only if all of the given matchers succeed.
 //The matchers are tried in order, and will fail-fast if one doesn't succeed.
 //  Expect("hi").To(And(HaveLen(2), Equal("hi"))
