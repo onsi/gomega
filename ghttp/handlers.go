@@ -137,7 +137,7 @@ func VerifyJSONRepresenting(object interface{}) http.HandlerFunc {
 	data, err := json.Marshal(object)
 	Expect(err).ShouldNot(HaveOccurred())
 	return CombineHandlers(
-		VerifyContentType("application/json"),
+		VerifyMimeType("application/json"),
 		VerifyJSON(string(data)),
 	)
 }

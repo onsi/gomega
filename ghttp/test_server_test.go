@@ -588,7 +588,7 @@ var _ = Describe("TestServer", func() {
 
 			It("should verify the json body and the content type", func() {
 				failures := InterceptGomegaFailures(func() {
-					http.Post(s.URL()+"/foo", "application/json", bytes.NewReader([]byte(`[1,3]`)))
+					http.Post(s.URL()+"/foo", "application/json; charset=utf-8", bytes.NewReader([]byte(`[1,3]`)))
 				})
 				Expect(failures).Should(HaveLen(1))
 			})
