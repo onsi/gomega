@@ -35,7 +35,7 @@ var _ = Describe("Panic", func() {
 	})
 
 	When("assertion fails", func() {
-		It("prints the object passed to Panic when negative", func() {
+		It("prints the object passed to panic() when negative", func() {
 			failuresMessages := InterceptGomegaFailures(func() {
 				Expect(func() { panic("ack!") }).NotTo(Panic())
 			})
@@ -47,6 +47,49 @@ var _ = Describe("Panic", func() {
 				Expect(func() {}).To(Panic())
 			})
 			Expect(failuresMessages).To(ConsistOf(MatchRegexp("Expected\n\\s+<func\\(\\)>: .+\nto panic")))
+		})
+	})
+})
+
+var _ = Describe("PanicWith", func() {
+	When("passed a function of the correct type", func() {
+		It("should call the function and pass if the function panics with the expected value", func() {
+			Expect(func() { panic("ack!") }).To(PanicWith("ack!"))
+			Expect(func() {}).NotTo(PanicWith("ack!"))
+		})
+	})
+
+	When("assertion fails", func() {
+		It("prints simple message when positive", func() {
+			failuresMessages := InterceptGomegaFailures(func() {
+				Expect(func() {}).To(PanicWith("ack!"))
+			})
+			Expect(failuresMessages).To(ConsistOf(MatchRegexp("Expected\n\\s+<func\\(\\)>: .+\nto panic with\\s+<string>: ack!")))
+		})
+
+		It("prints simple message when negative", func() {
+			failuresMessages := InterceptGomegaFailures(func() {
+				Expect(func() { panic("ack!") }).NotTo(PanicWith("ack!"))
+			})
+			Expect(failuresMessages).To(ConsistOf(MatchRegexp("Expected\n\\s+<func\\(\\)>: .+\nnot to panic with\\s+<string>: ack!")))
+		})
+
+		When("the expected value is actually a matcher", func() {
+			It("prints simple message when positive", func() {
+				failuresMessages := InterceptGomegaFailures(func() {
+					Expect(func() {}).To(PanicWith(Equal("ack!")))
+				})
+				Expect(failuresMessages).To(ConsistOf(MatchRegexp("Expected\n\\s+<func\\(\\)>: .+\nto panic with a value matching\n.+EqualMatcher.+ack!")))
+			})
+
+			It("prints the object passed to panic() when negative", func() {
+				failuresMessages := InterceptGomegaFailures(func() {
+					Expect(func() { panic("ack!") }).NotTo(PanicWith(MatchRegexp("ack")))
+				})
+				Expect(failuresMessages).To(ConsistOf(
+					MatchRegexp("Expected\n\\s+<func\\(\\)>: .+\nnot to panic with a value matching\n.+MatchRegexpMatcher.+ack.+\nbut panicked with\n    <string>: ack!"),
+				))
+			})
 		})
 	})
 })
