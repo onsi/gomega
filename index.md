@@ -826,6 +826,16 @@ Here are some examples:
 
 succeeds if `ACTUAL` is a function that, when invoked, panics.  `ACTUAL` must be a function that takes no arguments and returns no result -- any other type for `ACTUAL` is an error.
 
+#### PanicWith()
+
+    Ω(ACTUAL).Should(PanicWith(VALUE))
+
+succeeds if `ACTUAL` is a function that, when invoked, panics with a value of `VALUE`.  `ACTUAL` must be a function that takes no arguments and returns no result -- any other type for `ACTUAL` is an error.
+
+By default `PanicWith()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s panic value and `VALUE`.  You can change this, however, by passing `PanicWith` a `GomegaMatcher`. For example, to check that the panic value matches a regular expression:
+
+    Ω(func() { panic("FooBarBaz") }).Should(PanicWith(MatchRegexp(`.+Baz$`)))
+
 ### Composing Matchers
 
 You may form larger matcher expressions using the following operators: `And()`, `Or()`, `Not()` and `WithTransform()`.
