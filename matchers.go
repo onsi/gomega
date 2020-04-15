@@ -390,6 +390,16 @@ func Panic() types.GomegaMatcher {
 	return &matchers.PanicMatcher{}
 }
 
+//PanicWith succeeds if actual is a function that, when invoked, panics with a specific value.
+//Actual must be a function that takes no arguments and returns no results.
+//
+//By default PanicWith uses Equal() to perform the match, however a
+//matcher can be passed in instead:
+//    Expect(fn).Should(PanicWith(MatchRegexp(`.+Foo$`)))
+func PanicWith(expected interface{}) types.GomegaMatcher {
+	return &matchers.PanicMatcher{Expected: expected}
+}
+
 //BeAnExistingFile succeeds if a file exists.
 //Actual must be a string representing the abs path to the file being checked.
 func BeAnExistingFile() types.GomegaMatcher {
