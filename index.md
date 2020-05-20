@@ -996,8 +996,8 @@ Let's break this down:
     - If the `GomegaMatcher` receives invalid inputs `Match` returns a non-nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
     - If the `actual` and `expected` values match, `Match` should return `true`.
     - Similarly, if the `actual` and `expected` values do not match, `Match` should return `false`.
-    - If the `GomegaMatcher` was testing the `Should` case, and `Match` returned false, `FailureMessage` will be called to print a message explaining the failure.
-    - Likewise, if the `GomegaMatcher` was testing the `ShouldNot` case, and `Match` returned false, `NegatedFailureMessage` will be called.
+    - If the `GomegaMatcher` was testing the `Should` case, and `Match` returned `false`, `FailureMessage` will be called to print a message explaining the failure.
+    - Likewise, if the `GomegaMatcher` was testing the `ShouldNot` case, and `Match` returned `true`, `NegatedFailureMessage` will be called.
     - It is guaranteed that `FailureMessage` and `NegatedFailureMessage` will only be called *after* `Match`, so you can save off any state you need to compute the messages in `Match`.
 - Finally, it is common for matchers to make extensive use of the `reflect` library to interpret the generic inputs they receive.  In this case, the `representJSONMatcher` goes through some `reflect` gymnastics to create a pointer to a new object with the same type as the `expected` object, read and decode JSON from `actual` into that pointer, and then deference the pointer and compare the result to the `expected` object.
 
