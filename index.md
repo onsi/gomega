@@ -1403,7 +1403,6 @@ Here's what a test might look like:
     Describe("fetching sprockets from a paginated endpoint", func() {
         var returnedSprockets []Sprocket
         var firstResponse, secondResponse PaginatedResponse
-        var statusCode int
 
         BeforeEach(func() {
             returnedSprockets = []Sprocket{
@@ -1412,12 +1411,12 @@ Here's what a test might look like:
                 sprockets.Sprocket{Name: "parametric demuxer", Color: "blue"},
             }
 
-            firstReponse = sprockets.PaginatedResponse{
+            firstResponse = sprockets.PaginatedResponse{
                 Sprockets: returnedSprockets[0:2], //first batch
                 PaginationToken: "get-second-batch", //some opaque non-empty token
             }
 
-            secondReponse = sprockets.PaginatedResponse{
+            secondResponse = sprockets.PaginatedResponse{
                 Sprockets: returnedSprockets[2:], //second batch
                 PaginationToken: "", //signifies the last batch
             }
@@ -1425,12 +1424,12 @@ Here's what a test might look like:
             server.AppendHandlers(
                 ghttp.CombineHandlers(
                     ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators"),
-                    ghttp.RespondWithJSONEncoded(http.StatusOK, firstReponse),
+                    ghttp.RespondWithJSONEncoded(http.StatusOK, firstResponse),
                 ),
-                ghttp.CombineHandlers(`
+                ghttp.CombineHandlers(
                     ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators&pagination-token=get-second-batch"),
                     ghttp.RespondWithJSONEncoded(http.StatusOK, secondResponse),
-                )
+                ),
             )
         })
 
