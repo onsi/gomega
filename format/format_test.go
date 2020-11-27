@@ -174,6 +174,14 @@ var _ = Describe("Format", func() {
 			Expect(MessageWithDiff(stringA, "to equal", stringB)).Should(Equal(expectedSpecialCharacterFailureMessage))
 		})
 
+		It("handles negative padding length", func() {
+			stringWithB := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			stringWithZ := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			longMessage := "to equal very long message"
+
+			Expect(MessageWithDiff(stringWithB, longMessage, stringWithZ)).Should(Equal(expectedDiffLongMessage))
+		})
+
 		Context("With truncated diff disabled", func() {
 			BeforeEach(func() {
 				TruncatedDiff = false
@@ -760,4 +768,11 @@ Expected
     <string>: "...b..."
 to equal          |
     <string>: "...z..."
+`)
+
+var expectedDiffLongMessage = strings.TrimSpace(`
+Expected
+    <string>: "...aaaaabaaaaa..."
+to equal very long message
+    <string>: "...aaaaazaaaaa..."
 `)
