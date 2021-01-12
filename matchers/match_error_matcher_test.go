@@ -7,7 +7,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
-	"golang.org/x/xerrors"
 )
 
 type CustomError struct {
@@ -34,7 +33,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 
 			It("should succeed when any error in the chain matches the passed error", func() {
 				innerErr := errors.New("inner error")
-				outerErr := xerrors.Errorf("outer error wrapping: %w", innerErr)
+				outerErr := fmt.Errorf("outer error wrapping: %w", innerErr)
 
 				Expect(outerErr).Should(MatchError(innerErr))
 			})
