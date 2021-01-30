@@ -57,17 +57,21 @@ func equalMatchersToElements(matchers []interface{}) (elements []interface{}) {
 	return
 }
 
-func matchers(expectedElems []interface{}) (matchers []interface{}) {
-	elems := expectedElems
-	if len(expectedElems) == 1 && isArrayOrSlice(expectedElems[0]) {
-		elems = []interface{}{}
-		value := reflect.ValueOf(expectedElems[0])
-		for i := 0; i < value.Len(); i++ {
-			elems = append(elems, value.Index(i).Interface())
-		}
+func flatten(elems []interface{}) []interface{} {
+	if len(elems) != 1 || !isArrayOrSlice(elems[0]) {
+		return elems
 	}
 
-	for _, e := range elems {
+	value := reflect.ValueOf(elems[0])
+	flattened := make([]interface{}, value.Len())
+	for i := 0; i < value.Len(); i++ {
+		flattened[i] = value.Index(i).Interface()
+	}
+	return flattened
+}
+
+func matchers(expectedElems []interface{}) (matchers []interface{}) {
+	for _, e := range flatten(expectedElems) {
 		matcher, isMatcher := e.(omegaMatcher)
 		if !isMatcher {
 			matcher = &EqualMatcher{Expected: e}
@@ -95,7 +99,7 @@ func valuesOf(actual interface{}) []interface{} {
 }
 
 func (matcher *ConsistOfMatcher) FailureMessage(actual interface{}) (message string) {
-	message = format.Message(actual, "to consist of", matcher.Elements)
+	message = format.Message(actual, "to consist of", flatten(matcher.Elements))
 	message = appendMissingElements(message, matcher.missingElements)
 	if len(matcher.extraElements) > 0 {
 		message = fmt.Sprintf("%s\nthe extra elements were\n%s", message,
@@ -113,5 +117,5 @@ func appendMissingElements(message string, missingElements []interface{}) string
 }
 
 func (matcher *ConsistOfMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, "not to consist of", matcher.Elements)
+	return format.Message(actual, "not to consist of", flatten(matcher.Elements))
 }

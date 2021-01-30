@@ -107,5 +107,27 @@ var _ = Describe("ConsistOf", func() {
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
 		})
+
+		When("expected was specified as an array", func() {
+			It("flattens the array in the expectation message", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]string{"A", "B", "C"}).To(ConsistOf([]string{"A", "B"}))
+				})
+
+				expected := `Expected\n.*\["A", "B", "C"\]\nto consist of\n.*: \["A", "B"\]\nthe extra elements were\n.*\["C"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+
+			It("flattens the array in the negated expectation message", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]string{"A", "B"}).NotTo(ConsistOf([]string{"A", "B"}))
+				})
+
+				expected := `Expected\n.*\["A", "B"\]\nnot to consist of\n.*: \["A", "B"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+
+		})
 	})
+
 })
