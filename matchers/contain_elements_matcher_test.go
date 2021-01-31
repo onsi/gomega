@@ -102,5 +102,51 @@ var _ = Describe("ContainElements", func() {
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
 		})
+
+		When("the expected values are the same type", func() {
+			It("uses that type for the expectation slice", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]string{"A", "B"}).To(ContainElements("A", "B", "C"))
+				})
+
+				expected := `to contain elements
+\s*<\[\]string \| len:3, cap:3>: \["A", "B", "C"\]
+the missing elements were
+\s*<\[\]string \| len:1, cap:1>: \["C"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+
+			It("uses that type for the negated expectation slice", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]uint64{1, 2}).NotTo(ContainElements(uint64(1), uint64(2)))
+				})
+
+				expected := `not to contain elements\n\s*<\[\]uint64 \| len:2, cap:2>: \[1, 2\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
+
+		When("the expected values are different types", func() {
+			It("uses interface{} for the expectation slice", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]interface{}{1, true}).To(ContainElements(1, "C"))
+				})
+
+				expected := `to contain elements
+\s*<\[\]interface {} \| len:2, cap:2>: \[1, "C"\]
+the missing elements were
+\s*<\[\]string \| len:1, cap:1>: \["C"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+
+			It("uses interface{} for the negated expectation slice", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]interface{}{1, "B"}).NotTo(ContainElements(1, "B"))
+				})
+
+				expected := `not to contain elements\n\s*<\[\]interface {} \| len:2, cap:2>: \[1, "B"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
 	})
 })

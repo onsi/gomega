@@ -81,6 +81,29 @@ func matchers(expectedElems []interface{}) (matchers []interface{}) {
 	return
 }
 
+func presentable(elems []interface{}) interface{} {
+	elems = flatten(elems)
+
+	if len(elems) == 0 {
+		return []interface{}{}
+	}
+
+	sv := reflect.ValueOf(elems)
+	tt := sv.Index(0).Elem().Type()
+	for i := 1; i < sv.Len(); i++ {
+		if sv.Index(i).Elem().Type() != tt {
+			return elems
+		}
+	}
+
+	ss := reflect.MakeSlice(reflect.SliceOf(tt), sv.Len(), sv.Len())
+	for i := 0; i < sv.Len(); i++ {
+		ss.Index(i).Set(sv.Index(i).Elem())
+	}
+
+	return ss.Interface()
+}
+
 func valuesOf(actual interface{}) []interface{} {
 	value := reflect.ValueOf(actual)
 	values := []interface{}{}
@@ -99,11 +122,11 @@ func valuesOf(actual interface{}) []interface{} {
 }
 
 func (matcher *ConsistOfMatcher) FailureMessage(actual interface{}) (message string) {
-	message = format.Message(actual, "to consist of", flatten(matcher.Elements))
+	message = format.Message(actual, "to consist of", presentable(matcher.Elements))
 	message = appendMissingElements(message, matcher.missingElements)
 	if len(matcher.extraElements) > 0 {
 		message = fmt.Sprintf("%s\nthe extra elements were\n%s", message,
-			format.Object(matcher.extraElements, 1))
+			format.Object(presentable(matcher.extraElements), 1))
 	}
 	return
 }
@@ -113,9 +136,9 @@ func appendMissingElements(message string, missingElements []interface{}) string
 		return message
 	}
 	return fmt.Sprintf("%s\nthe missing elements were\n%s", message,
-		format.Object(missingElements, 1))
+		format.Object(presentable(missingElements), 1))
 }
 
 func (matcher *ConsistOfMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, "not to consist of", flatten(matcher.Elements))
+	return format.Message(actual, "not to consist of", presentable(matcher.Elements))
 }
