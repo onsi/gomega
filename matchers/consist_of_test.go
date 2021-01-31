@@ -126,8 +126,6 @@ var _ = Describe("ConsistOf", func() {
 				expected := `Expected\n.*\["A", "B"\]\nnot to consist of\n.*: \["A", "B"\]`
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
-
 		})
 	})
-
 })

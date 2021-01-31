@@ -82,5 +82,25 @@ var _ = Describe("ContainElements", func() {
 			expected := "Expected\n.*\\[2\\]\nto contain elements\n.*\\[1, 2, 3\\]\nthe missing elements were\n.*\\[1, 3\\]"
 			Expect(failures).To(ContainElements(MatchRegexp(expected)))
 		})
+
+		When("expected was specified as an array", func() {
+			It("flattens the array in the expectation message", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]string{"A", "B", "C"}).To(ContainElements([]string{"A", "D"}))
+				})
+
+				expected := `Expected\n.*\["A", "B", "C"\]\nto contain elements\n.*: \["A", "D"\]\nthe missing elements were\n.*\["D"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+
+			It("flattens the array in the negated expectation message", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]string{"A", "B"}).NotTo(ContainElements([]string{"A", "B"}))
+				})
+
+				expected := `Expected\n.*\["A", "B"\]\nnot to contain elements\n.*: \["A", "B"\]`
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
 	})
 })
