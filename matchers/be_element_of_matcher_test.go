@@ -33,7 +33,7 @@ var _ = Describe("BeElementOf", func() {
 	})
 
 	When("passed a correctly typed nil", func() {
-		It("should operate succesfully on the passed in value", func() {
+		It("should operate successfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(1).ShouldNot(BeElementOf(nilSlice))
 
@@ -56,11 +56,11 @@ var _ = Describe("BeElementOf", func() {
 
 	It("builds failure message", func() {
 		actual := BeElementOf(1, 2).FailureMessage(123)
-		Expect(actual).To(Equal("Expected\n    <int>: 123\nto be an element of\n    <[]interface {} | len:2, cap:2>: [1, 2]"))
+		Expect(actual).To(Equal("Expected\n    <int>: 123\nto be an element of\n    <[]int | len:2, cap:2>: [1, 2]"))
 	})
 
 	It("builds negated failure message", func() {
 		actual := BeElementOf(1, 2).NegatedFailureMessage(123)
-		Expect(actual).To(Equal("Expected\n    <int>: 123\nnot to be an element of\n    <[]interface {} | len:2, cap:2>: [1, 2]"))
+		Expect(actual).To(Equal("Expected\n    <int>: 123\nnot to be an element of\n    <[]int | len:2, cap:2>: [1, 2]"))
 	})
 })
