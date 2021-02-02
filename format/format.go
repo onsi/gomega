@@ -7,6 +7,7 @@ Gomega's format package pretty-prints objects.  It explores input objects recurs
 package format
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -44,16 +45,7 @@ var TruncateThreshold uint = 50
 // after the first diff location in a truncated string assertion error message.
 var CharactersAroundMismatchToInclude uint = 5
 
-// Ctx interface defined here to keep backwards compatibility with go < 1.7
-// It matches the context.Context interface
-type Ctx interface {
-	Deadline() (deadline time.Time, ok bool)
-	Done() <-chan struct{}
-	Err() error
-	Value(key interface{}) interface{}
-}
-
-var contextType = reflect.TypeOf((*Ctx)(nil)).Elem()
+var contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
 var timeType = reflect.TypeOf(time.Time{})
 
 //The default indentation string emitted by the format package

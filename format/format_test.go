@@ -1,6 +1,7 @@
 package format_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -659,7 +660,7 @@ var _ = Describe("Format", func() {
 	Describe("Printing a context.Context field", func() {
 
 		type structWithContext struct {
-			Context Ctx
+			Context context.Context
 			Value   string
 		}
 
