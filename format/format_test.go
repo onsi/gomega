@@ -74,25 +74,6 @@ func (g Stringer) String() string {
 	return "string"
 }
 
-type ctx struct {
-}
-
-func (c *ctx) Deadline() (deadline time.Time, ok bool) {
-	return time.Time{}, false
-}
-
-func (c *ctx) Done() <-chan struct{} {
-	return nil
-}
-
-func (c *ctx) Err() error {
-	return nil
-}
-
-func (c *ctx) Value(key interface{}) interface{} {
-	return nil
-}
-
 var _ = Describe("Format", func() {
 	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
@@ -664,15 +645,14 @@ var _ = Describe("Format", func() {
 			Value   string
 		}
 
-		context := ctx{}
-		objWithContext := structWithContext{Value: "some-value", Context: &context}
+		objWithContext := structWithContext{Value: "some-value", Context: context.TODO()}
 
 		It("Suppresses the content by default", func() {
 			Expect(Object(objWithContext, 1)).Should(ContainSubstring("<suppressed context>"))
 		})
 
-		It("Doesn't supress the context if it's the object being printed", func() {
-			Expect(Object(context, 1)).ShouldNot(MatchRegexp("^.*<suppressed context>$"))
+		It("Doesn't suppress the context if it's the object being printed", func() {
+			Expect(Object(context.TODO(), 1)).ShouldNot(MatchRegexp("^.*<suppressed context>$"))
 		})
 
 		Context("PrintContextObjects is set", func() {
