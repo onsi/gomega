@@ -271,7 +271,7 @@ func formatValue(value reflect.Value, indentation uint) string {
 		}
 		return formatStruct(value, indentation)
 	case reflect.Interface:
-		return formatValue(value.Elem(), indentation)
+		return formatInterface(value, indentation)
 	default:
 		if value.CanInterface() {
 			return fmt.Sprintf("%#v", value.Interface())
@@ -364,6 +364,10 @@ func formatStruct(v reflect.Value, indentation uint) string {
 		return fmt.Sprintf("{\n%s%s,\n%s}", indenter+Indent, strings.Join(result, ",\n"+indenter+Indent), indenter)
 	}
 	return fmt.Sprintf("{%s}", strings.Join(result, ", "))
+}
+
+func formatInterface(v reflect.Value, indentation uint) string {
+	return fmt.Sprintf("<%s>%s", formatType(v.Elem()), formatValue(v.Elem(), indentation))
 }
 
 func isNilValue(a reflect.Value) bool {
