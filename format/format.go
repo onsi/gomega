@@ -173,7 +173,7 @@ Set PrintContextObjects to true to print the content of objects implementing con
 func Object(object interface{}, indentation uint) string {
 	indent := strings.Repeat(Indent, int(indentation))
 	value := reflect.ValueOf(object)
-	return fmt.Sprintf("%s<%s>: %s", indent, formatType(object), formatValue(value, indentation))
+	return fmt.Sprintf("%s<%s>: %s", indent, formatType(value), formatValue(value, indentation))
 }
 
 /*
@@ -193,25 +193,20 @@ func IndentString(s string, indentation uint) string {
 	return result
 }
 
-func formatType(object interface{}) string {
-	t := reflect.TypeOf(object)
-	if t == nil {
+func formatType(v reflect.Value) string {
+	switch v.Kind() {
+	case reflect.Invalid:
 		return "nil"
-	}
-	switch t.Kind() {
 	case reflect.Chan:
-		v := reflect.ValueOf(object)
-		return fmt.Sprintf("%T | len:%d, cap:%d", object, v.Len(), v.Cap())
+		return fmt.Sprintf("%s | len:%d, cap:%d", v.Type(), v.Len(), v.Cap())
 	case reflect.Ptr:
-		return fmt.Sprintf("%T | %p", object, object)
+		return fmt.Sprintf("%s | 0x%x", v.Type(), v.Pointer())
 	case reflect.Slice:
-		v := reflect.ValueOf(object)
-		return fmt.Sprintf("%T | len:%d, cap:%d", object, v.Len(), v.Cap())
+		return fmt.Sprintf("%s | len:%d, cap:%d", v.Type(), v.Len(), v.Cap())
 	case reflect.Map:
-		v := reflect.ValueOf(object)
-		return fmt.Sprintf("%T | len:%d", object, v.Len())
+		return fmt.Sprintf("%s | len:%d", v.Type(), v.Len())
 	default:
-		return fmt.Sprintf("%T", object)
+		return fmt.Sprintf("%s", v.Type())
 	}
 }
 
