@@ -160,7 +160,7 @@ the extra elements were
 				})
 
 				expected := `to consist of
-\s*<\[\]interface {} \| len:2, cap:2>: \[1, "C"\]
+\s*<\[\]interface {} \| len:2, cap:2>: \[<int>1, <string>"C"\]
 the missing elements were
 \s*<\[\]string \| len:1, cap:1>: \["C"\]
 the extra elements were
@@ -173,7 +173,7 @@ the extra elements were
 					Expect([]interface{}{1, "B"}).NotTo(ConsistOf(1, "B"))
 				})
 
-				expected := `not to consist of\n\s*<\[\]interface {} \| len:2, cap:2>: \[1, "B"\]`
+				expected := `not to consist of\n\s*<\[\]interface {} \| len:2, cap:2>: \[<int>1, <string>"B"\]`
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
 		})

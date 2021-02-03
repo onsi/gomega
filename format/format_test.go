@@ -95,7 +95,7 @@ var _ = Describe("Format", func() {
 		for i := range arr {
 			arr[i] = entriesSwitch
 		}
-		return "{" + strings.Join(arr, ", ") + "}"
+		return "{\\s*" + strings.Join(arr, ",\\s* ") + ",?\\s*}"
 	}
 
 	Describe("Message", func() {
@@ -526,6 +526,24 @@ var _ = Describe("Format", func() {
 			})
 		})
 
+		Describe("formatting nested interface{} types", func() {
+			It("should print out the types of the container and value", func() {
+				Expect(Object([]interface{}{"foo"}, 1)).
+					To(match("[]interface {} | len:1, cap:1", `[<string>"foo"]`))
+
+				Expect(Object(map[string]interface{}{"foo": true}, 1)).
+					To(match("map[string]interface {} | len:1", `{"foo": <bool>true}`))
+
+				Expect(Object(struct{ A interface{} }{A: 1}, 1)).
+					To(match("struct { A interface {} }", "{A: <int>1}"))
+
+				v := struct{ A interface{} }{A: struct{ B string }{B: "foo"}}
+				Expect(Object(v, 1)).To(match(`struct { A interface {} }`, `{
+        A: <struct { B string }>{B: "foo"},
+    }`))
+			})
+		})
+
 		Describe("formatting times", func() {
 			It("should format time as RFC3339", func() {
 				t := time.Date(2016, 10, 31, 9, 57, 23, 12345, time.UTC)
@@ -574,7 +592,7 @@ var _ = Describe("Format", func() {
         byteArrValue: \[17, 20, 32\],
         mapValue: %s,
         structValue: {Exported: "exported"},
-        interfaceValue: {"a key": 17},
+        interfaceValue: <map\[string\]int \| len:1>{"a key": 17},
     }`, s.chanValue, s.funcValue, hashMatchingRegexp(`"a key": 20`, `"b key": 30`))
 
 			Expect(Object(s, 1)).Should(matchRegexp(`format_test\.SecretiveStruct`, expected))
@@ -590,7 +608,7 @@ var _ = Describe("Format", func() {
 			outerHash["integer"] = 2
 			outerHash["map"] = innerHash
 
-			expected := hashMatchingRegexp(`"integer": 2`, `"map": {"inner": 3}`)
+			expected := hashMatchingRegexp(`"integer": <int>2`, `"map": <map\[string\]int \| len:1>{"inner": 3}`)
 			Expect(Object(outerHash, 1)).Should(matchRegexp(`map\[string\]interface {} \| len:2`, expected))
 		})
 	})
