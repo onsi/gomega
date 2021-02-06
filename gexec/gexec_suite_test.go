@@ -9,11 +9,14 @@ import (
 )
 
 var fireflyPath string
+var fireflyTestPath string
 
 func TestGexec(t *testing.T) {
 	BeforeSuite(func() {
 		var err error
 		fireflyPath, err = gexec.Build("./_fixture/firefly")
+		Expect(err).ShouldNot(HaveOccurred())
+		fireflyTestPath, err = gexec.CompileTest("./_fixture/firefly")
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
