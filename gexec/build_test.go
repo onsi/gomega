@@ -32,8 +32,7 @@ var _ = Describe(".Build", func() {
 			})
 
 			It("compiles the specified package", func() {
-				var err error
-				fireflyPath, err = gexec.Build(packagePath)
+				fireflyPath, err := gexec.Build(packagePath)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(fireflyPath).Should(BeAnExistingFile())
 			})
@@ -58,8 +57,7 @@ var _ = Describe(".Build", func() {
 			})
 
 			It("compiles the specified package", func() {
-				var err error
-				fireflyPath, err = gexec.Build(packagePath)
+				fireflyPath, err := gexec.Build(packagePath)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(fireflyPath).Should(BeAnExistingFile())
 			})
@@ -150,8 +148,7 @@ var _ = Describe(".CompileTest", func() {
 			})
 
 			It("compiles the specified test package", func() {
-				var err error
-				fireflyTestPath, err = gexec.CompileTest(packagePath)
+				fireflyTestPath, err := gexec.CompileTest(packagePath)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(fireflyTestPath).Should(BeAnExistingFile())
 			})
@@ -176,8 +173,7 @@ var _ = Describe(".CompileTest", func() {
 			})
 
 			It("compiles the specified test package", func() {
-				var err error
-				fireflyTestPath, err = gexec.CompileTest(packagePath)
+				fireflyTestPath, err := gexec.CompileTest(packagePath)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(fireflyTestPath).Should(BeAnExistingFile())
 			})

@@ -18,6 +18,7 @@ import (
 
 var _ = Describe("Session", func() {
 	Context("firefly binary", func() {
+		var fireflyPath string
 		var command *exec.Cmd
 		var session *Session
 
@@ -26,6 +27,11 @@ var _ = Describe("Session", func() {
 		BeforeEach(func() {
 			outWriter = nil
 			errWriter = nil
+
+			var err error
+			fireflyPath, err = Build("./_fixture/firefly")
+			Expect(err).ShouldNot(HaveOccurred())
+
 		})
 
 		JustBeforeEach(func() {
@@ -332,6 +338,7 @@ var _ = Describe("Session", func() {
 	})
 
 	Context("firefly tests", func() {
+		var fireflyTestPath string
 		var command *exec.Cmd
 		var session *Session
 
@@ -340,6 +347,10 @@ var _ = Describe("Session", func() {
 		BeforeEach(func() {
 			outWriter = nil
 			errWriter = nil
+
+			var err error
+			fireflyTestPath, err = CompileTest("./_fixture/firefly")
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 
 		JustBeforeEach(func() {
