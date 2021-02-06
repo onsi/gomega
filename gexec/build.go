@@ -81,9 +81,31 @@ func CompileTest(packagePath string, args ...string) (compiledPath string, err e
 }
 
 /*
+GetAndCompileTest is identical to CompileTest but `go get` the package before compiling tests.
+*/
+func GetAndCompileTest(packagePath string, args ...string) (compiledPath string, err error) {
+	if err := getForTest(build.Default.GOPATH, packagePath, nil); err != nil {
+		return "", err
+	}
+
+	return doCompileTest(build.Default.GOPATH, packagePath, nil, args...)
+}
+
+/*
 CompileTestWithEnvironment is identical to CompileTest but allows you to specify env vars to be set at build time.
 */
 func CompileTestWithEnvironment(packagePath string, env []string, args ...string) (compiledPath string, err error) {
+	return doCompileTest(build.Default.GOPATH, packagePath, env, args...)
+}
+
+/*
+GetAndCompileTestWithEnvironment is identical to GetAndCompileTest but allows you to specify env vars to be set at build time.
+*/
+func GetAndCompileTestWithEnvironment(packagePath string, env []string, args ...string) (compiledPath string, err error) {
+	if err := getForTest(build.Default.GOPATH, packagePath, env); err != nil {
+		return "", err
+	}
+
 	return doCompileTest(build.Default.GOPATH, packagePath, env, args...)
 }
 
@@ -92,6 +114,46 @@ CompileTestIn is identical to CompileTest but allows you to specify a custom $GO
 */
 func CompileTestIn(gopath string, packagePath string, args ...string) (compiledPath string, err error) {
 	return doCompileTest(gopath, packagePath, nil, args...)
+}
+
+/*
+GetAndCompileTestIn is identical to GetAndCompileTest but allows you to specify a custom $GOPATH (the first argument).
+*/
+func GetAndCompileTestIn(gopath string, packagePath string, args ...string) (compiledPath string, err error) {
+	if err := getForTest(gopath, packagePath, nil); err != nil {
+		return "", err
+	}
+
+	return doCompileTest(gopath, packagePath, nil, args...)
+}
+
+func isLocalPackage(packagePath string) bool {
+	return strings.HasPrefix(packagePath, ".")
+}
+
+func getForTest(gopath, packagePath string, env []string) error {
+	if isLocalPackage(packagePath) {
+		return nil
+	}
+
+	return doGet(gopath, packagePath, env, "-t")
+}
+
+func doGet(gopath, packagePath string, env []string, args ...string) error {
+	args = append(args, packagePath)
+	args = append([]string{"get"}, args...)
+
+	goGet := exec.Command("go", args...)
+	goGet.Dir = gopath
+	goGet.Env = replaceGoPath(os.Environ(), gopath)
+	goGet.Env = append(goGet.Env, env...)
+
+	output, err := goGet.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Failed to get %s:\n\nError:\n%s\n\nOutput:\n%s", packagePath, err, string(output))
+	}
+
+	return nil
 }
 
 func doCompileTest(gopath, packagePath string, env []string, args ...string) (compiledPath string, err error) {

@@ -130,6 +130,16 @@ var _ = Describe(".BuildIn", func() {
 })
 
 var _ = Describe(".CompileTest", func() {
+	Context("a remote package", func() {
+		const remotePackage = "github.com/onsi/ginkgo/types"
+
+		It("compiles the specified test package", func() {
+			compiledPath, err := gexec.GetAndCompileTest(remotePackage)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(compiledPath).Should(BeAnExistingFile())
+		})
+	})
+
 	When("there have been previous calls to CompileTest", func() {
 		BeforeEach(func() {
 			_, err := gexec.CompileTest(packagePath)
@@ -188,6 +198,16 @@ var _ = Describe(".CompileTestWithEnvironment", func() {
 		"GOARCH=amd64",
 	}
 
+	Context("a remote package", func() {
+		const remotePackage = "github.com/onsi/ginkgo/types"
+
+		It("compiles the specified test package with the specified env vars", func() {
+			compiledPath, err := gexec.GetAndCompileTestWithEnvironment(remotePackage, env)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(compiledPath).Should(BeAnExistingFile())
+		})
+	})
+
 	It("compiles the specified test package with the specified env vars", func() {
 		compiledPath, err := gexec.CompileTestWithEnvironment(packagePath, env)
 		Expect(err).ShouldNot(HaveOccurred())
@@ -230,6 +250,16 @@ var _ = Describe(".CompiledTestIn", func() {
 		if gopath != "" {
 			os.RemoveAll(gopath)
 		}
+	})
+
+	Context("a remote package", func() {
+		const remotePackage = "github.com/onsi/ginkgo/types"
+
+		It("compiles the specified test package", func() {
+			compiledPath, err := gexec.GetAndCompileTestIn(gopath, remotePackage)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(compiledPath).Should(BeAnExistingFile())
+		})
 	})
 
 	It("appends the gopath env var", func() {
