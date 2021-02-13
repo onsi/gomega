@@ -28,10 +28,11 @@ var _ = Describe("Session", func() {
 			outWriter = nil
 			errWriter = nil
 
-			var err error
-			fireflyPath, err = Build("./_fixture/firefly")
+			fireflyPackage, err := Get("./_fixture/firefly")
 			Expect(err).ShouldNot(HaveOccurred())
 
+			fireflyPath, err = fireflyPackage.Build()
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 
 		JustBeforeEach(func() {
@@ -348,8 +349,10 @@ var _ = Describe("Session", func() {
 			outWriter = nil
 			errWriter = nil
 
-			var err error
-			fireflyTestPath, err = CompileTest("./_fixture/firefly")
+			fireflyPackage, err := GetTests("./_fixture/firefly")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			fireflyTestPath, err = fireflyPackage.Build()
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 

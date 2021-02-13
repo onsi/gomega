@@ -21,7 +21,10 @@ var _ = Describe("ExitMatcher", func() {
 	var session *Session
 
 	BeforeEach(func() {
-		fireflyPath, err := Build("./_fixture/firefly")
+		fireflyPackage, err := Get("./_fixture/firefly")
+		Expect(err).ShouldNot(HaveOccurred())
+
+		fireflyPath, err := fireflyPackage.Build()
 		Expect(err).ShouldNot(HaveOccurred())
 
 		command = exec.Command(fireflyPath, "0")
