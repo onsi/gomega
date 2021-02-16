@@ -4,9 +4,9 @@ arch:
   - ppc64le
 
 go:
-  - 1.14.x
-  - 1.15.x
   - gotip
+  - 1.16.x
+  - 1.15.x
 
 env:
   - GO111MODULE=on
