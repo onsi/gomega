@@ -6,5 +6,5 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/onsi/ginkgo v1.12.1
 	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )
