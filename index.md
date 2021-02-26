@@ -2130,6 +2130,32 @@ You can also use the flag `AllowDuplicates` to permit multiple elements in your 
 
 The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras|AllowDuplicates`.
 
+Additionally, `gstruct` provides `MatchAllElementsWithIndex` and `MatchElementsWithIndex` function for applying a matcher with index to each element, identified by an `IdentifierWithIndex` function. A helper function is also included with `gstruct` called `IndexIdentity` that provides the functionality of the just using the index as your identifier as seen below.
+
+```go
+    actual := []string{
+        "A: foo bar baz",
+        "B: once upon a time",
+        "C: the end",
+    }
+    id := func(index int, _ interface{}) string {
+        return strconv.Itoa(index)
+    }
+    Expect(actual).To(MatchAllElements(id, Elements{
+        "0": Not(BeZero()),
+        "1": MatchRegexp("[A-Z]: [a-z ]+"),
+        "2": ContainSubstring("end"),
+    }))
+    // IndexIdentity is a helper function equivalent to id in this example
+    Expect(actual).To(MatchAllElements(IndexIdentity, Elements{
+        "0": Not(BeZero()),
+        "1": MatchRegexp("[A-Z]: [a-z ]+"),
+        "2": ContainSubstring("end"),
+    }))
+```
+
+ The `WithIndex` variants take the same options as the other functions.
+
 ### Testing type `map`
 
 All of the `*Fields` functions and types have a corresponding definitions `*Keys` which can perform analogous tests against map types:
