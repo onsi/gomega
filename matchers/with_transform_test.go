@@ -51,7 +51,13 @@ var _ = Describe("WithTransformMatcher", func() {
 		Expect(S{1, "hi"}).To(WithTransform(transformer, Equal("hi")))
 
 		// transform expects interface
-		errString := func(e error) string { return e.Error() }
+		errString := func(e error) string {
+			if e == nil {
+				return "<nil>"
+			}
+			return e.Error()
+		}
+		Expect(nil).To(WithTransform(errString, Equal("<nil>")), "handles nil actual values")
 		Expect(errors.New("abc")).To(WithTransform(errString, Equal("abc")))
 	})
 
