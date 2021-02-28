@@ -37,6 +37,44 @@ var _ = Describe("WithTransformMatcher", func() {
 		})
 	})
 
+	When("the actual value is incompatible", func() {
+		It("fails to pass int to func(string)", func() {
+			actual, transform := int(0), func(string) int { return 0 }
+			success, err := WithTransform(transform, Equal(0)).Match(actual)
+			Expect(success).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("function expects 'string'"))
+			Expect(err.Error()).To(ContainSubstring("have 'int'"))
+		})
+
+		It("fails to pass string to func(interface)", func() {
+			actual, transform := "bang", func(error) int { return 0 }
+			success, err := WithTransform(transform, Equal(0)).Match(actual)
+			Expect(success).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("function expects 'error'"))
+			Expect(err.Error()).To(ContainSubstring("have 'string'"))
+		})
+
+		It("fails to pass nil interface to func(int)", func() {
+			actual, transform := error(nil), func(int) int { return 0 }
+			success, err := WithTransform(transform, Equal(0)).Match(actual)
+			Expect(success).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("function expects 'int'"))
+			Expect(err.Error()).To(ContainSubstring("have '<nil>'"))
+		})
+
+		It("fails to pass nil interface to func(pointer)", func() {
+			actual, transform := error(nil), func(*string) int { return 0 }
+			success, err := WithTransform(transform, Equal(0)).Match(actual)
+			Expect(success).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("function expects '*string'"))
+			Expect(err.Error()).To(ContainSubstring("have '<nil>'"))
+		})
+	})
+
 	It("works with positive cases", func() {
 		Expect(1).To(WithTransform(plus1, Equal(2)))
 		Expect(1).To(WithTransform(plus1, WithTransform(plus1, Equal(3))))
@@ -53,11 +91,11 @@ var _ = Describe("WithTransformMatcher", func() {
 		// transform expects interface
 		errString := func(e error) string {
 			if e == nil {
-				return "<nil>"
+				return "safe"
 			}
 			return e.Error()
 		}
-		Expect(nil).To(WithTransform(errString, Equal("<nil>")), "handles nil actual values")
+		Expect(nil).To(WithTransform(errString, Equal("safe")), "handles nil actual values")
 		Expect(errors.New("abc")).To(WithTransform(errString, Equal("abc")))
 	})
 
