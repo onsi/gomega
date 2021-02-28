@@ -22,7 +22,7 @@ ginkgo: ## Run tests using Ginkgo
 
 fmt: ## Checks that the code is formatted correcty
 	@@if [ -n "$$(gofmt -s -e -l -d .)" ]; then                   \
-		echo "gofmt check failed: run 'gofmt -d -e -l -w .'"; \
+		echo "gofmt check failed: run 'gofmt -s -e -l -w .'"; \
 		exit 1;                                               \
 	fi
 
