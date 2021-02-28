@@ -42,18 +42,17 @@ func NewWithTransformMatcher(transform interface{}, matcher types.GomegaMatcher)
 func (m *WithTransformMatcher) Match(actual interface{}) (bool, error) {
 	// prepare a parameter to pass to the Transform function
 	var param reflect.Value
-	{
-		if actual != nil {
-			// return error if actual's type is incompatible with Transform function's argument type
-			actualType := reflect.TypeOf(actual)
-			if !actualType.AssignableTo(m.transformArgType) {
-				return false, fmt.Errorf("Transform function expects '%s' but we have '%s'", m.transformArgType, actualType)
-			}
-			param = reflect.ValueOf(actual)
-		} else {
-			// make a nil value of the expected type
-			param = reflect.New(m.transformArgType).Elem()
-		}
+	if actual != nil && reflect.TypeOf(actual).AssignableTo(m.transformArgType) {
+		// The dynamic type of actual is compatible with the transform argument.
+		param = reflect.ValueOf(actual)
+
+	} else if actual == nil && m.transformArgType.Kind() == reflect.Interface {
+		// The dynamic type of actual is unknown, so there's no way to make its
+		// reflect.Value. Create a nil of the transform argument, which is known.
+		param = reflect.Zero(m.transformArgType)
+
+	} else {
+		return false, fmt.Errorf("Transform function expects '%s' but we have '%T'", m.transformArgType, actual)
 	}
 
 	// call the Transform function with `actual`
