@@ -137,6 +137,38 @@ var _ = Describe("Slice", func() {
 			Expect(nils).Should(m, "should allow an uninitialized slice")
 		})
 	})
+
+	Context("with index identifier", func() {
+		allElements := []string{"a", "b"}
+		missingElements := []string{"a"}
+		extraElements := []string{"a", "b", "c"}
+		duplicateElements := []string{"a", "a", "b"}
+		empty := []string{}
+		var nils []string
+
+		It("should use index", func() {
+			m := MatchAllElementsWithIndex(IndexIdentity, Elements{
+				"0": Equal("a"),
+				"1": Equal("b"),
+			})
+			Expect(allElements).Should(m, "should match all elements")
+			Expect(missingElements).ShouldNot(m, "should fail with missing elements")
+			Expect(extraElements).ShouldNot(m, "should fail with extra elements")
+			Expect(duplicateElements).ShouldNot(m, "should fail with duplicate elements")
+			Expect(nils).ShouldNot(m, "should fail with an uninitialized slice")
+
+			m = MatchAllElementsWithIndex(IndexIdentity, Elements{
+				"0": Equal("a"),
+				"1": Equal("fail"),
+			})
+			Expect(allElements).ShouldNot(m, "should run nested matchers")
+
+			m = MatchAllElementsWithIndex(IndexIdentity, Elements{})
+			Expect(empty).Should(m, "should handle empty slices")
+			Expect(allElements).ShouldNot(m, "should handle only empty slices")
+			Expect(nils).Should(m, "should handle nil slices")
+		})
+	})
 })
 
 func id(element interface{}) string {
