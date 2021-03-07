@@ -181,6 +181,26 @@ var _ = Describe("Buffer", func() {
 		})
 	})
 
+	Describe("clearing the buffer", func() {
+		It("should clear out the contents of the buffer", func() {
+			buffer.Write([]byte("abc"))
+			Expect(buffer).To(Say("ab"))
+			Expect(buffer.Clear()).To(Succeed())
+			Expect(buffer).NotTo(Say("c"))
+			Expect(buffer.Contents()).To(BeEmpty())
+			buffer.Write([]byte("123"))
+			Expect(buffer).To(Say("123"))
+			Expect(buffer.Contents()).To(Equal([]byte("123")))
+		})
+
+		It("should error when the buffer is closed", func() {
+			buffer.Write([]byte("abc"))
+			buffer.Close()
+			err := buffer.Clear()
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
 	Describe("closing the buffer", func() {
 		It("should error when further write attempts are made", func() {
 			_, err := buffer.Write([]byte("abc"))
