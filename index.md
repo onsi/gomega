@@ -209,7 +209,9 @@ When a failure occurs, Gomega prints out a recursive description of the objects 
 
 These recursive object renditions are performed by the `format` subpackage.  `format` provides some globally adjustable settings to tune Gomega's output:
 
-- `format.MaxDepth = 10`: Gomega will recursively traverse nested data structures as it produces output.  By default the maximum depth of this recursion is set to `10` you can adjust this to see deeper or shallower representations of objects.
+- `format.MaxLength = 4000`: Gomega will recursively traverse nested data structures as it produces output. If the length of this string representation is more than MaxLength, it will be truncated to MaxLength. To disable this behavior, set the MaxLength to `0`.
+- `format.MaxDepth = 10`: Gomega will recursively traverse nested data structures as it produces output. By default the maximum depth of this recursion is set to `10` you can adjust this to see deeper or shallower representations of objects.
+- Implementing `format.GomegaStringer`: If `GomegaStringer` interface is implemented on an object, Gomega will call `GomegaString` for an object's string representation. This is regardless of the `format.UseStringerRepresentation` value. Best practice to implement this interface is to implement it in a helper test file (e.g. `helper_test.go`) to avoid leaking it to your package's exported API.
 - `format.UseStringerRepresentation = false`: Gomega does *not* call `String` or `GoString` on objects that satisfy the `Stringer` and `GoStringer` interfaces.  Oftentimes such representations, while more human readable, do not contain all the relevant information associated with an object thereby making it harder to understand why a test might be failing.  If you'd rather see the output of `String` or `GoString` set this property to `true`.
 
 
