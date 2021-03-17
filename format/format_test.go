@@ -74,6 +74,13 @@ func (g Stringer) String() string {
 	return "string"
 }
 
+type gomegaStringer struct {
+}
+
+func (g gomegaStringer) GomegaString() string {
+	return "gomegastring"
+}
+
 var _ = Describe("Format", func() {
 	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
@@ -652,6 +659,14 @@ var _ = Describe("Format", func() {
 		When("passed a stringer", func() {
 			It("should use what String() returns", func() {
 				Expect(Object(Stringer{}, 1)).Should(ContainSubstring("<format_test.Stringer>: string"))
+			})
+		})
+
+		When("passed a GomegaStringer", func() {
+			It("should use what GomegaString() returns", func() {
+				Expect(Object(gomegaStringer{}, 1)).Should(ContainSubstring("<format_test.gomegaStringer>: gomegastring"))
+				UseStringerRepresentation = false
+				Expect(Object(gomegaStringer{}, 1)).Should(ContainSubstring("<format_test.gomegaStringer>: gomegastring"))
 			})
 		})
 	})

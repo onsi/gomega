@@ -53,6 +53,13 @@ var Indent = "    "
 
 var longFormThreshold = 20
 
+// GomegaStringer allows for custom formating of objects for gomega.
+type GomegaStringer interface {
+	// GomegaString will be used to custom format an object.
+	// It does not follow UseStringerRepresentation value and will always be called regardless.
+	GomegaString() string
+}
+
 /*
 Generates a formatted matcher success/failure message of the form:
 
@@ -219,9 +226,14 @@ func formatValue(value reflect.Value, indentation uint) string {
 		return "nil"
 	}
 
-	if UseStringerRepresentation {
-		if value.CanInterface() {
-			obj := value.Interface()
+	// GomegaStringer will take precedence to other representations and disregards UseStringerRepresentation
+	if value.CanInterface() {
+		obj := value.Interface()
+		if x, ok := obj.(GomegaStringer); ok {
+			return x.GomegaString()
+		}
+
+		if UseStringerRepresentation {
 			switch x := obj.(type) {
 			case fmt.GoStringer:
 				return x.GoString()
