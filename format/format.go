@@ -19,7 +19,7 @@ import (
 var MaxDepth = uint(10)
 
 // MaxLength of the string representation of an object.
-// If MaxLength is set to 0, the Object will not be truncted.
+// If MaxLength is set to 0, the Object will not be truncated.
 var MaxLength = 4000
 
 /*
@@ -171,8 +171,7 @@ func findFirstMismatch(a, b string) int {
 	return 0
 }
 
-const truncateHelpText = `the very very long object here that goes on forever and ever but then gets trunc....
-
+const truncateHelpText = `
 Gomega truncated this representation as it exceeds 'format.MaxLength'.
 Consider having the object provide a custom 'GomegaStringer' representation
 or adjust the parameters in Gomega's 'format' package.
@@ -191,7 +190,7 @@ func truncateLongStrings(s string) string {
 			break
 		}
 
-		sb.WriteString("\n")
+		sb.WriteString("...\n")
 		sb.WriteString(truncateHelpText)
 
 		return sb.String()
