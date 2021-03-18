@@ -74,6 +74,20 @@ func (g Stringer) String() string {
 	return "string"
 }
 
+type gomegaStringer struct {
+}
+
+func (g gomegaStringer) GomegaString() string {
+	return "gomegastring"
+}
+
+type gomegaStringerLong struct {
+}
+
+func (g gomegaStringerLong) GomegaString() string {
+	return strings.Repeat("s", MaxLength*2)
+}
+
 var _ = Describe("Format", func() {
 	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
@@ -100,8 +114,24 @@ var _ = Describe("Format", func() {
 
 	Describe("Message", func() {
 		Context("with only an actual value", func() {
+			BeforeEach(func() {
+				MaxLength = 4000
+			})
+
 			It("should print out an indented formatted representation of the value and the message", func() {
 				Expect(Message(3, "to be three.")).Should(Equal("Expected\n    <int>: 3\nto be three."))
+			})
+
+			It("should print out an indented formatted representation of the value and the message, and trucate it when too long", func() {
+				tooLong := strings.Repeat("s", MaxLength+1)
+				tooLongResult := strings.Repeat("s", MaxLength) + "\n" + TruncatedHelpText()
+				Expect(Message(tooLong, "to be truncated")).Should(Equal("Expected\n    <string>: " + tooLongResult + "\nto be truncated"))
+			})
+
+			It("should print out an indented formatted representation of the value and the message, and not trucate it when MaxLength = 0", func() {
+				MaxLength = 0
+				tooLong := strings.Repeat("s", MaxLength+1)
+				Expect(Message(tooLong, "to be truncated")).Should(Equal("Expected\n    <string>: " + tooLong + "\nto be truncated"))
 			})
 		})
 
@@ -652,6 +682,20 @@ var _ = Describe("Format", func() {
 		When("passed a stringer", func() {
 			It("should use what String() returns", func() {
 				Expect(Object(Stringer{}, 1)).Should(ContainSubstring("<format_test.Stringer>: string"))
+			})
+		})
+
+		When("passed a GomegaStringer", func() {
+			It("should use what GomegaString() returns", func() {
+				Expect(Object(gomegaStringer{}, 1)).Should(ContainSubstring("<format_test.gomegaStringer>: gomegastring"))
+				UseStringerRepresentation = false
+				Expect(Object(gomegaStringer{}, 1)).Should(ContainSubstring("<format_test.gomegaStringer>: gomegastring"))
+			})
+
+			It("should use what GomegaString() returns, disregarding MaxLength", func() {
+				Expect(Object(gomegaStringerLong{}, 1)).Should(Equal("    <format_test.gomegaStringerLong>: " + strings.Repeat("s", MaxLength*2)))
+				UseStringerRepresentation = false
+				Expect(Object(gomegaStringerLong{}, 1)).Should(Equal("    <format_test.gomegaStringerLong>: " + strings.Repeat("s", MaxLength*2)))
 			})
 		})
 	})
