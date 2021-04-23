@@ -1512,7 +1512,7 @@ So far, we've only made assertions about the outgoing request.  Clients are also
 
 We use `ghttp.RespondWith` to specify the response return by the server.  In this case we're passing back a status code of `200` (`http.StatusOK`) and a pile of JSON.  We then assert, in the test, that the client succeeds and returns the correct set of sprockets.
 
-The fact that details of the JSON encoding are bleeding into this test is somewhat unfortunate, and there's a lot of repetition going on.  `ghttp` provides a `RepondWithJSONEncoded` handler that accepts an arbitrary object and JSON encodes it for you.  Here's a cleaner test:
+The fact that details of the JSON encoding are bleeding into this test is somewhat unfortunate, and there's a lot of repetition going on.  `ghttp` provides a `RespondWithJSONEncoded` handler that accepts an arbitrary object and JSON encodes it for you.  Here's a cleaner test:
 
 ```go
     Describe("The sprockets client", func() {
