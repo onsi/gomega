@@ -103,7 +103,7 @@ On OS X the `Ω` character should be easy to type, it is usually just option-z: 
 
 On the left hand side, you can pass anything you want in to `Ω` and `Expect` for `ACTUAL`.  On the right hand side you must pass an object that satisfies the `GomegaMatcher` interface.  Gomega's matchers (e.g. `Equal(EXPECTED)`) are simply functions that create and initialize an appropriate `GomegaMatcher` object.
 
-> Note that `Should` and `To` are just syntactic sugar and are functionally identical. Same is the case for `ToNot` and `NotTo`.  
+> Note that `Should` and `To` are just syntactic sugar and are functionally identical. Same is the case for `ToNot` and `NotTo`.
 
 > The `GomegaMatcher` interface is pretty simple and is discussed in the [custom matchers](#adding-your-own-matchers) section.  It is defined in the `types` subpackage.
 
@@ -1121,6 +1121,20 @@ Or the same thing expressed by introducing a new, lightweight matcher:
     }
 
     Ω(element).Should(HaveColor(BLUE)))
+```
+
+#### Satisfy(predicate interface{})
+
+```go
+    Ω(ACTUAL).Should(Satisfy(PREDICATE))
+```
+
+succeeds if applying the `PREDICATE` function to `ACTUAL` (i.e. the value of `PREDICATE(ACTUAL)`) will return `true`. For example:
+
+```go
+    IsEven := func(i int) bool { return i%2==0 }
+
+    Ω(number).Should(Satisfy(IsEven))
 ```
 
 ---
