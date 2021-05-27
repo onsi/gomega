@@ -25,11 +25,11 @@ var statEnumSupport = newEnumSupport(map[uint]string{uint(StatInvalid): "INVALID
 
 func (s Stat) String() string { return statEnumSupport.String(uint(s)) }
 func (s *Stat) UnmarshalJSON(b []byte) error {
-	out, err := statEnumSupport.UnmarshalJSON(b)
+	out, err := statEnumSupport.UnmarshJSON(b)
 	*s = Stat(out)
 	return err
 }
-func (s Stat) MarshalJSON() ([]byte, error) { return statEnumSupport.MarshalJSON(uint(s)) }
+func (s Stat) MarshalJSON() ([]byte, error) { return statEnumSupport.MarshJSON(uint(s)) }
 
 type StatsType uint
 
@@ -43,11 +43,11 @@ var statsTypeEnumSupport = newEnumSupport(map[uint]string{uint(StatsTypeInvalid)
 
 func (s StatsType) String() string { return statsTypeEnumSupport.String(uint(s)) }
 func (s *StatsType) UnmarshalJSON(b []byte) error {
-	out, err := statsTypeEnumSupport.UnmarshalJSON(b)
+	out, err := statsTypeEnumSupport.UnmarshJSON(b)
 	*s = StatsType(out)
 	return err
 }
-func (s StatsType) MarshalJSON() ([]byte, error) { return statsTypeEnumSupport.MarshalJSON(uint(s)) }
+func (s StatsType) MarshalJSON() ([]byte, error) { return statsTypeEnumSupport.MarshJSON(uint(s)) }
 
 /*
 Stats records the key statistics for a given measurement.  You generally don't make Stats directly - but you can fetch them from Experiments using GetStats() and from Measurements using Stats().

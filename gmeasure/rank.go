@@ -27,11 +27,11 @@ var rcEnumSupport = newEnumSupport(map[uint]string{uint(LowerMeanIsBetter): "Low
 
 func (s RankingCriteria) String() string { return rcEnumSupport.String(uint(s)) }
 func (s *RankingCriteria) UnmarshalJSON(b []byte) error {
-	out, err := rcEnumSupport.UnmarshalJSON(b)
+	out, err := rcEnumSupport.UnmarshJSON(b)
 	*s = RankingCriteria(out)
 	return err
 }
-func (s RankingCriteria) MarshalJSON() ([]byte, error) { return rcEnumSupport.MarshalJSON(uint(s)) }
+func (s RankingCriteria) MarshalJSON() ([]byte, error) { return rcEnumSupport.MarshJSON(uint(s)) }
 
 /*
 Ranking ranks a set of Stats by a specified RankingCritera.  Use RankStats to create a Ranking.

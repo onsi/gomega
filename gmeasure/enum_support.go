@@ -26,7 +26,7 @@ func (es enumSupport) String(e uint) string {
 	return es.toString[e]
 }
 
-func (es enumSupport) UnmarshalJSON(b []byte) (uint, error) {
+func (es enumSupport) UnmarshJSON(b []byte) (uint, error) {
 	var dec string
 	if err := json.Unmarshal(b, &dec); err != nil {
 		return 0, err
@@ -35,7 +35,7 @@ func (es enumSupport) UnmarshalJSON(b []byte) (uint, error) {
 	return out, nil
 }
 
-func (es enumSupport) MarshalJSON(e uint) ([]byte, error) {
+func (es enumSupport) MarshJSON(e uint) ([]byte, error) {
 	if e == 0 || e > es.maxEnum {
 		return json.Marshal(nil)
 	}

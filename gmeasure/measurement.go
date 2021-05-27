@@ -22,11 +22,11 @@ var letEnumSupport = newEnumSupport(map[uint]string{uint(MeasurementTypeInvalid)
 
 func (s MeasurementType) String() string { return letEnumSupport.String(uint(s)) }
 func (s *MeasurementType) UnmarshalJSON(b []byte) error {
-	out, err := letEnumSupport.UnmarshalJSON(b)
+	out, err := letEnumSupport.UnmarshJSON(b)
 	*s = MeasurementType(out)
 	return err
 }
-func (s MeasurementType) MarshalJSON() ([]byte, error) { return letEnumSupport.MarshalJSON(uint(s)) }
+func (s MeasurementType) MarshalJSON() ([]byte, error) { return letEnumSupport.MarshJSON(uint(s)) }
 
 /*
 Measurement records all captured data for a given measurement.  You generally don't make Measurements directly - but you can fetch them from Experiments using Get().
