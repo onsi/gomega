@@ -222,6 +222,8 @@ var _ = Describe("Experiment", func() {
 				time.Sleep(10 * time.Millisecond)
 			}, gmeasure.SamplingConfig{N: 100, Duration: 100 * time.Millisecond, NumParallel: 3})
 
+			lock.Lock()
+			defer lock.Unlock()
 			Ω(len(indices)).Should(BeNumerically("~", 30, 10))
 			Ω(indices).Should(ConsistOf(ints(len(indices))))
 		})
