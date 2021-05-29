@@ -2562,7 +2562,7 @@ These formatting decorators **must** be applied to the _first_ data point record
 
 Just to get concrete here's a fleshed out example that uses all the things:
 
-```
+```go
     It("explores a complex object", func() {
         experiment := gmeasure.NewExperiment("exploring the encabulator")
         AddReportEntry(experiment.Name, experiment)
@@ -2599,5 +2599,92 @@ This simple connection point ensures that the output is appropriately formatted 
 
 ### Caching Experiments 
 
-Cahing docs coming soon.
+`gmeasure` supports caching experiments to local disk.  Experiments can be stored and retreived from the cache by name and version number.  Caching allows you to skip rerunning expensive experiments and versioned caching allows you to bust the cache by incrementing the version number.  Under the hood, the cache is simply a set of files in a directory.  Each file contains a JSON encoded header with the experiment's name and version number followed by the JSON-encoded experiment.  The various cache methods are documented over at [pkg.go.dev](https://pkg.go.dev/github.com/onsi/gomega/gmeasure#ExperimentCache).
 
+Using an `ExperimentCache` with Ginkgo takes a little bit of wiring.  Here's an example:
+
+```go
+    const EXPERIMENT_VERSION = 1 //bump this to bust the cache and recompute _all_ experiments
+
+    Describe("some experiments", func() {
+        var cache gmeasure.ExperimentCache
+        var experiment *gmeasure.Experiment
+
+        BeforeEach(func() {
+            cache = gmeasure.NewExperimentCache("./gmeasure-cache")
+            name := CurrentSpecReport().LeafNodeText // we use the text in each It block as the name of the experiment
+            experiment = cache.Load(name, EXPERIMENT_VERSION) // we try to load the experiment from the cache
+            if experiment != nil {
+                // we have a cache hit - report on the experiment and skip this test.
+                AddReportEntry(experiment)
+                Skip("cached")
+            }
+            //we have a cache miss, make a new experiment and proceed with the test.
+            experiment = gmeasure.NewExperiment(name)
+            AddReportEntry(experiment)
+        })
+
+        It("measures foo runtime", func() {
+            experiment.SampleDuration("runtime", func() {
+                //do stuff
+            }, gmeasure.SamplingConfig{N:100})
+        })
+
+        It("measures bar runtime", func() {
+            experiment.SampleDuration("runtime", func() {
+                //do stuff
+            }, gmeasure.SamplingConfig{N:100})
+        })
+
+        AfterEach(func() {
+            // AfterEaches always run, even for tests that call `Skip`.  So we make sure we aren't a skipped test then save the experiment to the cache
+            if !CurrentSpecReport().State.Is(types.SpecStateSkipped) {
+                cache.Save(experiment.Name, EXPERIMENT_VERSION, experiment)
+            }
+        })
+    })
+```
+
+this test will load the experiment from the cache if it's available or run the experiment and store it in the cache if it is not.  Incrementing `EXPERIMENT_VERSION` will force all experiments to rerun.
+
+Another usecase for `ExperimentCache` is to cache and commit experiments to source control for use as future baselines.  Your code can assert that measurements are within a certain range of the stored baseline.  For example:
+
+```go
+    Describe("server performance", func() {
+        It("ensures a performance regression has not been introduced", func() {
+            // make an experiment
+            experiment := gmeasure.NewExperiment("performance regression test")
+            AddReportEntry(experiment.Name, experiment)
+
+            // measure the performance of one endpoint
+            experiment.SampleDuration("fetching one", func() {
+                model, err := client.Get("id-1")
+                Expect(err).NotTo(HaveOccurred())
+                Expect(model.Id).To(Equal("id-1"))
+            }, gmeasure.SamplingConfig{N:100})
+
+            // measure the performance of another endpoint
+            experiment.SampleDuration("listing", func() {
+                models, err := client.List()
+                Expect(err).NotTo(HaveOccurred())
+                Expect(models).To(HaveLen(30))
+            }, gmeasure.SamplingConfig{N:100})
+
+            cache := gmeasure.NewExperimentCache("./gemasure-cache")
+            baseline := cache.Load("performance regression test", 1)
+            if baseline == nil {
+                // this is the first run, let's store a baseline
+                cache.Save("performacne regression test", 1, experiment)
+            } else {
+                for _, m := range []string{"fetching one", "listing"} {
+                    baselineStats := baseline.GetStats(m)
+                    currentStats := experiment.GetStats(m)
+
+                    //make sure the mean of the current performance measure is within one standard deviation of the baseline
+                    Expect(currentStats.DurationFor(gmeasure.StatMean)).To(BeNumerically("~", baselineStats.DurationFor(gmeasure.StatsMean), baselineStats.DurationFor(gmeasure.StatsStdDev)), m)
+                }
+            }
+        })        
+    })
+
+```
