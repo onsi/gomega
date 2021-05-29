@@ -2253,3 +2253,351 @@ Example:
         "Logs":               m.Ignore(),
     }))
 ```
+
+---
+
+## `gmeasure`: Benchmarking Code
+
+**`gmeasure` is currently in beta and the API may change in future releases.  `gmeasure` is slated to go GA alongside the GA release of Ginkgo V2.**
+
+`gmeasure` provides support for measuring and recording benchmarks of your code and tests.  It can be used as a simple standalone benchmarking framework, or as part of your code's test suite.  `gmeasure` integrates cleanly with Ginkgo V2 to enable rich benchmarking of code alognside your tests.
+
+### A Mental Model for `gmeasure`
+
+`gmeasure` is organized around the metaphor of `Experiment`s that can each record multiple `Measurement`s.  To use `gmeasure` you create a `NewExperiment` and use the resulting `experiment` object to record values and durations.  You can then print out the `experiment` to get a report of all measurements or access specific measurements and their statistical aggregates to perform comparisons and/or make assertions.
+
+An `experiment` can record _multiple_ `Measurement`s.  Each `Measurement` has a `Name`, a `Type` (either `MeasurementTypeDuration` or `MeasurementTypeValue`), and a collection of recorded data points (of type `float64` for Value measurements and `time.Duration` for Duration measurements).  In this way an experiment might describe a system or context being measured and can contain multiple measurements - one for each aspect of the system in question.
+
+`Experiment`s can either record values and durations that the user passes in directly.  Or they can invoke callbacks and accept their return values as Value data points, or measure their runtimes to compute Duration data points.  `Experiment`s can also _sample_ callbacks, calling them repeatedly to get an ensemble of data points.
+
+A `Measurement` is created when its first data point is recorded by an `Experiment`.  Subsequent data points with the same measurement name are appended to the measurement:
+
+```go
+    experiment := gmeasure.NewExperiment("My Experiment")
+    experiment.RecordDuration("runtime", 3*time.Second) //creates a new Measurement called "runtime"
+    experiment.RecordDuration("runtime", 5*time.Second) //appends a data point to "runtime"
+```
+
+As described below, Measurements can be decorated with additional information.  This includes information about the `Units` for the measurement, the `Precision` with which to render the measurement, and any `Style` to apply when rendering the measurement.  Individual data points can also be decorated with an `Annotation` - an arbitrary string that is associated with that data point and gives it context.  Decorations are applied as typed variadic arguments:
+
+```go
+    experiment := gmeasure.NewExperiment("My Experiment")
+
+    // The first call to `RecordValue` for a measurement must set up any units, style, or precision decorations
+    experiment.RecordValue("length", 3.141, gmeasure.Units("inches"), gmeasure.Style("{{blue}}"), gmeasure.Precision(2), gmeasure.Annotation("box A)"))
+
+    // Subsequent calls can attach an annotation.  In this call a new data-point of `2.71` is added to the `length` measurement with the annotation `box B`.
+    experiment.RecordValue("length", 2.71, gmeasure.Annotation("box B"))
+```
+
+Once recorded, `Measurements` can be fetched from the `experiment` by name via `experiment.Get("name")`.  The returned `Measurement` object includes all the data points.  To get a statistical summary of the data points (that includes the min, max, median, mean, and standard deviation) call `measurement.Stats()` or `experiment.GetStats("name")`.  These statistical summaries can also be rank-ordered with `RankStats()`.
+
+`gmeasure` is designed to integrate with Ginkgo.  This is done by registering `Experiment`s, `Measurement`s and `Ranking`s as `ReportEntry`s via Ginkgo's `AddReportEntry`.  This will cause Ginkgo to emit nicely formatted and styled summaries of each of these objects when generating the test report.
+
+Finally, `gmeasure` provides a mechanism to cache `Experiment`s to disk with a specified version number.  This enables multiple use-cases.  You can cache expensive experiments to avoid rerunning them while you iterate on other experiments.  You can also compare experiments to cached experiments to explore whether changes in performance have been introduced to the codebase under test.
+
+`gmeasure` includes detailed [godoc documentation](https://pkg.go.dev/github.com/onsi/gomega/gmeasure) - this narrative documentation is intended to help you get started with `gmeasure`.
+
+### Measuring Values
+
+`Experiment`s can record arbitrary `float64` values.  You can do this by directly providing a `float64` via `experiment.RecordValue(measurementName string, value float64, decorators ...interface{})` or by providing a callback that returns a float64 via `experiment.MeasureValue(measurementName string, callback func() float64, decorators ...interface{})`.
+
+You can apply `Units`, `Style`, and `Precision` decorators to control the appearance of the `Measurement` when reports are generated.  These decorators must be applied when the first data point is recorded but can be elided thereafter.  You can also associate an `Annotation` decoration with any recorded data point.
+
+`Experiment`s are thread-safe so you can call `RecordValue` and `MeasureValue` from any goroutine.
+
+### Measuring Durations
+
+`Experiment`s can record arbitrary `time.Duration` durations.  You can do this by directly providing a `time.Duration` via `experiment.RecordDuration(measurementName string, duration time.Duration, decorators ...interface{})` or by providing a callback via `experiment.MeasureDuration(measurementName string, callback func(), decorators ...interface{})`.  `gmeasure` will run the callback and measure how long it takes to complete.
+
+You can apply `Style` and `Precision` decorators to control the appearance of the `Measurement` when reports are generated.  These decorators must be applied when the first data point is recorded but can be elided thereafter.  You can also associate an `Annotation` decoration with any recorded data point.
+
+`Experiment`s are thread-safe so you can call `RecordDuration` and `MeasureDuration` from any goroutine.
+
+### Sampling
+
+`Experiment`s support sampling callback functions repeatedly to build an ensemble of data points.  All the sampling methods are configured by passing in a `SamplingConfig`:
+
+```go
+    type SamplingConfig struct {
+        N int
+        Duration time.Duration
+        NumParallel int
+    }
+```
+
+Setting `SamplingConfig.N` limits the total number of samples to perform to `N`.  Setting `SamplingConfig.Duration` limits the total time spent sampling to `Duration`.  At least one of these fields must be set.  If both are set then `gmeasure` will `sample` until the first limiting condition is met.
+
+By default, the `Experiment`'s sampling methods will run their callbacks serially within the calling goroutine.  If `NumParallel` greater than `1`, however, the sampling methods will spin up `NumParallel` goroutines and farm the work among them.
+
+The basic sampling method is `experiment.Sample(callback func(idx int), samplingConfig SamplingConfig)`.  This will call the callback function repeatedly, passing in an `idx` counter that increments between each call.  The sampling will end based on the conditions provided in `SamplingConfig`.  Note that `experiment.Sample` is not explicitly associated with a measurement.  You can use `experiment.Sample` whenever you want to repeatedly invoke a callback up to a limit of `N` and/or `Duration`.  You can then record arbitrarily many value or duration measurements in the body of the callback.
+
+A common use-case, however, is to invoke a callback repeatedly to measure its duration or record its returned value and thereby generate an ensemble of data-points.  This is supported via the `SampleX` family of methods built on top of `Sample`:
+
+```go
+    experiment.SampleValue(measurementName string, callback func(idx int) float64, samplingConfig SamplingConfig, decorations ...interface{})
+    experiment.SampleDuration(measurementName string, callback func(idx int), samplingConfig SamplingConfig, decorations ...interface{})
+    experiment.SampleAnnotatedValue(measurementName string, callback func(idx int) (float64, Annotation), samplingConfig SamplingConfig, decorations ...interface{})
+    experiment.SampleAnnotatedDuration(measurementName string, callback func(idx int) Annotation, samplingConfig SamplingConfig, decorations ...interface{})
+```
+
+each of these will contribute data points to the `Measurement` with name `measurementName`.  `SampleValue` records the `float64` values returned by its callback.  `SampleDuration` times each invocation of its callback and records the measured duration.  `SampleAnnotatedValue` and `SampleAnnotatedDuration` expect their callbacks to return `Annotation`s.  These are attached to each generated data point.
+
+All these methods take the same decorators as their corresponding `RecordX` methods.
+
+### Measuring Durations with `Stopwatch`
+
+In addition to `RecordDuration` and `MeasureDuration`, `gmeasure` also provides a `Stopwatch`-based abstraction for recording durations.  To motivate `Stopwatch` consider the following example.  Let's say we want to measure the end-to-end performance of a web-server.  Here's the code we'd like to measure:
+
+```go
+    It("measures the end-to-end performance of the web-server", func() {
+        model, err := client.Fetch("model-id-17")
+        Expect(err).NotTo(HaveOccurred())
+
+        err = model.ReticulateSpines()
+        Expect(err).NotTo(HaveOccurred())
+
+        Expect(client.Save(model)).To(Succeed())
+
+        reticulatedModels, err := client.List("reticulated-models")
+        Expect(err).NotTo(HaveOccurred())
+        Expect(reticulatedModels).To(ContainElement(model))
+    })
+```
+
+One approach would be to use `MeasureDuration`:
+
+```go
+    It("measures the end-to-end performance of the web-server", func() {
+        experiment := gmeasure.NewExperiment("end-to-end web-server performance")
+        AddReportEntry(experiment.Name, experiment)
+
+        var model Model
+        var err error
+        experiment.MeasureDuration("fetch", func() {
+            model, err = client.Fetch("model-id-17")
+        })
+        Expect(err).NotTo(HaveOccurred())
+
+        err = model.ReticulateSpines()
+        Expect(err).NotTo(HaveOccurred())
+
+        experiment.MeasureDuration("save", func() {
+            Expect(client.Save(model)).To(Succeed())
+        })
+
+        var reticulatedModels []Models
+        experiment.MeasureDuration("list", func() {
+            reticulatedModels, err = client.List("reticulated-models")
+        })
+        Expect(err).NotTo(HaveOccurred())
+        Expect(reticulatedModels).To(ContainElement(model))
+    })
+```
+
+this... _works_.  But all those closures and local variables make the test a bit harder to read.  We can clean it up with a `Stopwatch`:
+
+```go
+    It("measures the end-to-end performance of the web-server", func() {
+        experiment := gmeasure.NewExperiment("end-to-end web-server performance")
+        AddReportEntry(experiment.Name, experiment)
+
+        stopwatch := experiment.NewStopwatch() // start the stopwatch
+
+        model, err := client.Fetch("model-id-17")
+        stopwatch.Record("fetch") // record the amount of time elapsed and store it in a Measurement named fetch
+        Expect(err).NotTo(HaveOccurred())
+
+        err = model.ReticulateSpines()
+        Expect(err).NotTo(HaveOccurred())
+
+        stopwatch.Reset() // reset the stopwatch
+        Expect(client.Save(model)).To(Succeed())
+        stopwatch.Record("save").Reset() // record the amount of time elapsed since the last Reset and store it in a Measurement named save, then reset the stopwatch 
+
+        reticulatedModels, err := client.List("reticulated-models")
+        stopwatch.Record("list")
+        Expect(err).NotTo(HaveOccurred())
+        Expect(reticulatedModels).To(ContainElement(model))
+    })
+```
+
+that's now much cleaner and easier to reason about.  If we wanted to sample the server's performance concurrently we could now simply wrap the relevant code in an `experiment.Sample`:
+
+```go
+    It("measures the end-to-end performance of the web-server", func() {
+        experiment := gmeasure.NewExperiment("end-to-end web-server performance")
+        AddReportEntry(experiment.Name, experiment)
+
+        experiment.Sample(func(idx int) {
+            defer GinkgoRecover() // necessary since these will launch as goroutines and contain assertions
+            stopwatch := experiment.NewStopwatch() // we make a new stopwatch for each sample.  Experiments are threadsafe, but Stopwatches are not.
+
+            model, err := client.Fetch("model-id-17")
+            stopwatch.Record("fetch")
+            Expect(err).NotTo(HaveOccurred())
+
+            err = model.ReticulateSpines()
+            Expect(err).NotTo(HaveOccurred())
+
+            stopwatch.Reset()
+            Expect(client.Save(model)).To(Succeed())
+            stopwatch.Record("save").Reset()
+
+            reticulatedModels, err := client.List("reticulated-models")
+            stopwatch.Record("list")
+            Expect(err).NotTo(HaveOccurred())
+            Expect(reticulatedModels).To(ContainElement(model))
+        }, gmeasure.SamplingConfig{N:100, Duration:time.Minute, NumParallel:8})
+    })
+```
+
+Check out the [godoc documentation](https://pkg.go.dev/github.com/onsi/gomega/gmeasure#Stopwatch) for more details about `Stopwatch` including support for `Pause`ing and `Resume`ing the stopwatch.
+
+### Stats and Rankings: Comparing Measurements
+
+Once you've recorded a few measurements you'll want to try to understand and interpret them.  `gmeasure` allows you to quickly compute statistics for a given measurement.  Consider the following example.  Let's say we have two different ideas for how to implement a sorting algorithm and want to hone in on the algorithm with the shortest median runtime.  We could run an experiment:
+
+```go
+    It("identifies the fastest algorithm", func() {
+        experiment := gmeasure.NewExperiment("dueling algorithms")
+        AddReportEntry(experiment.Name, experiment)
+
+        experiment.SampleDuration("runtime: algorithm 1", func(_ int) {
+            RunAlgorithm1()
+        }, gmeasure.SamplingConfig{N:1000})
+
+        experiment.SampleDuration("runtime: algorithm 2", func(_ int) {
+            RunAlgorithm2()
+        }, gmeasure.SamplingConfig{N:1000})
+    })
+```
+
+This will sample the two competing tables and print out a tabular representation of the resulting statistics.  (Note - you don't need to use Ginkgo here, you could just use `gmeasure` in your code directly and then `fmt.Println` the `experiment` to get the tabular report).
+
+We could compare the tables by eye manually - or ask `gmeasure` to pick the winning algorithm for us:
+
+```go
+    It("identifies the fastest algorithm", func() {
+        experiment := gmeasure.NewExperiment("dueling algorithms")
+        AddReportEntry(experiment.Name, experiment)
+
+        experiment.SampleDuration("runtime: algorithm 1", func(_ int) {
+            RunAlgorithm1()
+        }, gmeasure.SamplingConfig{N:1000})
+
+        experiment.SampleDuration("runtime: algorithm 2", func(_ int) {
+            RunAlgorithm2()
+        }, gmeasure.SamplingConfig{N:1000})
+
+        ranking := gmeasure.RankStats(gmeasure.LowerMedianIsBetter, experiment.GetStats("runtime: algorithm 1"), experiment.GetStats("runtime: algorithm 2"))
+        AddReportEntry("Ranking", ranking)
+    })
+```
+
+This will now emit a ranking result that will highlight the winning algorithm (in this case, the algorithm with the lower Median).  `RankStats` supports the following `RankingCriteria`:
+
+- `LowerMeanIsBetter`
+- `HigherMeanIsBetter`
+- `LowerMedianIsBetter`
+- `HigherMedianIsBetter`
+- `LowerMinIsBetter`
+- `HigherMinIsBetter`
+- `LowerMaxIsBetter`
+- `HigherMaxIsBetter`
+
+We can also inspect the statistics of the two algorithms programatically.  `experiment.GetStats` returns a `Stats` object that provides access to the following `Stat`s:
+
+- `StatMin` - the data point with the smallest value
+- `StatMax` - the data point with the highest values
+- `StatMedian` - the median data point
+- `StatMean` - the mean of all the data points
+- `StatStdDev` - the standard deviation of all the data points
+
+`Stats` can represent either Value Measurements or Duration Measurements.  When inspecting a Value Measurement you can pull out the requested `Stat` (say, `StatMedian`) via `stats.ValueFor(StatMedian)` - this returns a `float64`.  When inspecting Duration Measurements you can fetch `time.Duration` statistics via `stats.DurationFor(StatX)`.  For either type you can fetch an appropriately formatted string representation of the stat via `stats.StringFor(StatX)`.  You can also get a `float64` for either type by calling `stats.FloatFor(StatX)` (this simply returns a `float64(time.Duration)` for Duration Measurements and can be useful when you need to do some math with the stats).
+
+Going back to our dueling algorithms example.  Lets say we find that Algorithm 2 is the winner with a median runtime of around 3 seconds - and we want to be alerted by a failing test should the winner ever change, or the median runtime vary substantially.  We can do that by writing a few assertions:
+
+```go
+    It("identifies the fastest algorithm", func() {
+        experiment := gmeasure.NewExperiment("dueling algorithms")
+        AddReportEntry(experiment.Name, experiment)
+
+        experiment.SampleDuration("runtime: algorithm 1", func(_ int) {
+            RunAlgorithm1()
+        }, gmeasure.SamplingConfig{N:1000})
+
+        experiment.SampleDuration("runtime: algorithm 2", func(_ int) {
+            RunAlgorithm2()
+        }, gmeasure.SamplingConfig{N:1000})
+
+        ranking := gmeasure.RankStats(gmeasure.LowerMedianIsBetter, experiment.GetStats("runtime: algorithm 1"), experiment.GetStats("runtime: algorithm 2"))
+        AddReportEntry("Ranking", ranking)
+
+        //assert that algorithm 2 is the winner
+        Expect(ranking.Winner().MeasurementName).To(Equal("runtime: algorithm 2"))
+
+        //assert that algorithm 2's median is within 0.5 seconds of 3 seconds
+        Expect(experiment.GetStats("runtime: algorithm 2").DurationFor(gmeasure.StatMedian)).To(BeNumerically("~", 3*time.Second, 500*time.Millisecond))
+    })
+```
+
+### Formatting Experiment and Measurement Output
+
+`gmeasure` can produce formatted tabular output for `Experiment`s, `Measurement`s, and `Ranking`s.  Each of these objects provides a `String()` method and a `ColorableString()` method.  The `String()` method returns a string that does not include any styling tags whereas the `ColorableString()` method returns a string that includes Ginkgo's console styling tags (e.g. Ginkgo will render a string like `{{blue}}{{bold}}hello{{/}} there` as a bold blue "hello" followed by a default-styled " there").  `ColorableString()` is called for you automatically when you register any of these `gmeasure` objects as Ginkgo `ReportEntry`s.
+
+When printing out `Experiment`s, `gmeasure` will produce a table whose columns correspond to the key statistics provided by `gmeasure.Stats` and whose rows are the various `Measurement`s recorded by the `Experiment`.  Users can also record and emit notes - contextual information about the experiment - by calling `experiment.RecordNote(note string)`.  Each note will get its own row in the table.
+
+When printing out `Measurement`s, `gmeasure` will produce a table that includes _all_ the data points and annotations for the `Measurement`.
+
+When printing out `Ranking`s, `gmeasure` will produce a table similar to the `Experiment` table with the `Measurement`s sorted by `RankingCriteria`.
+
+Users can adjust a few aspects of `gmeasure`s output.  This is done by providing decorators to the `Experiment` methods that record data points:
+
+- `Units(string)` - the `Units` decorator allows you to associate a set of units with a measurement.  Subsequent renderings of the measurement's name will include the units in `[]` square brackets.
+- `Precision(int or time.Duration)` - the `Precision` decorator controls the rendering of numerical information.  For Value Measurements an `int` is used to express the number of decimal points to print.  For example `Precision(3)` will render values with `fmt.Sprintf("%.3f", value)`.  For Duration Measurements a `time.Duration` is used to round durations before rendering them.  For example `Precision(time.Second)` will render durations via `duration.Round(time.Second).String()`.
+- `Style(string)` - the `Style` decorator allows you to associate a Ginkgo console style to a measurement.  The measurement's row will be rendered with this style.  For example `Style("{{green}}")` will emit a green row.
+
+These formatting decorators **must** be applied to the _first_ data point recorded for a given Measurement (this is when the Measurement object is initialized and its style, precision, and units fields are populated).
+
+Just to get concrete here's a fleshed out example that uses all the things:
+
+```
+    It("explores a complex object", func() {
+        experiment := gmeasure.NewExperiment("exploring the encabulator")
+        AddReportEntry(experiment.Name, experiment)
+
+        experiment.RecordNote("Encabulation Properties")
+        experiment.Sample(func(idx int) {
+            stopwatch := experiment.NewStopwatch()
+            encabulator.Encabulate()
+            stopwatch.Record("Encabulate Runtime", gmeasure.Style("{{green}}"), gmeasure.Precision(time.Millisecond))
+
+            var m runtime.MemStats
+            runtime.ReadMemStats(&m)
+            experiment.RecordValue("Encabulate Memory Usage", float64(m.Alloc / 1024 / 1024), gmeasure.Style("{{red}}"), gmeasure.Precision(3), gmeasure.Units("MB"), gmeasure.Annotation(fmt.Sprintf("%d", idx)))
+        }, gmeasure.SamplingConfig{N:1000, NumParallel:4})
+
+        experiment.RecordNote("Encabulation Teardown")
+        experiment.MeasureDuration("Teardown Runtime", func() {
+            encabulator.Teardown()
+        }, gmeasure.Style("{{yellow}}"))
+
+        memoryStats := experiment.GetStats("Encabulate Memory Usage")
+        minMemory := memoryStats.ValueFor(gmeasure.StatMin)
+        maxMemory := memoryStats.ValueFor(gmeasure.StatMax)
+        Expect(maxMemory - minMemory).To(BeNumerically("<=", 10), "Should not see memory fluctuations exceeding 10 megabytes")        
+    })
+
+```
+
+### Ginkgo Integration
+
+The examples throughout this documentation have illustrated how `gmeasure` interoperates with Ginkgo.  In short - you can emit output for `Experiment`, `Measurement`s, and `Ranking`s by registering them as Ginkgo `ReportEntry`s via `AddReportEntry()`.
+
+This simple connection point ensures that the output is appropriately formatted and associated with the spec in question.  It also ensures that Ginkgo's machine readable reports will include appropriately encoded versions of these `gmeasure` objects.  So, for example, `ginkgo --json-report=report.json` will include JSON encoded `Experiment`s in `report.json` if you remember to `AddReportEntry` the `Experiment`s.
+
+### Caching Experiments 
+
+Cahing docs coming soon.
+
