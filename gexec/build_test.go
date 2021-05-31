@@ -24,6 +24,7 @@ var _ = Describe(".Build", func() {
 			compiledPath, err := gexec.Build(packagePath)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(compiledPath).Should(BeAnExistingFile())
+			Expect(filepath.Base(compiledPath)).Should(MatchRegexp(`firefly(|.exe)$`))
 		})
 
 		Context("and CleanupBuildArtifacts has been called", func() {
