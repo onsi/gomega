@@ -2157,13 +2157,13 @@ Additionally, `gstruct` provides `MatchAllElementsWithIndex` and `MatchElementsW
     id := func(index int, _ interface{}) string {
         return strconv.Itoa(index)
     }
-    Expect(actual).To(MatchAllElements(id, Elements{
+    Expect(actual).To(MatchAllElementsWithIndex(id, Elements{
         "0": Not(BeZero()),
         "1": MatchRegexp("[A-Z]: [a-z ]+"),
         "2": ContainSubstring("end"),
     }))
     // IndexIdentity is a helper function equivalent to id in this example
-    Expect(actual).To(MatchAllElements(IndexIdentity, Elements{
+    Expect(actual).To(MatchAllElementsWithIndex(IndexIdentity, Elements{
         "0": Not(BeZero()),
         "1": MatchRegexp("[A-Z]: [a-z ]+"),
         "2": ContainSubstring("end"),
