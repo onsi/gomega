@@ -2,6 +2,7 @@ package asyncassertion_test
 
 import (
 	"errors"
+	"runtime"
 	"time"
 
 	"github.com/onsi/gomega/internal/testingtsupport"
@@ -182,6 +183,52 @@ var _ = Describe("Async Assertion", func() {
 			})
 		})
 
+		Context("when the polled function makes assertions", func() {
+			It("fails if those assertions never succeed", func() {
+				var file string
+				var line int
+				err := InterceptGomegaFailure(func() {
+					i := 0
+					Eventually(func() int {
+						_, file, line, _ = runtime.Caller(0)
+						Expect(i).To(BeNumerically(">", 5))
+						return 2
+					}, 200*time.Millisecond, 20*time.Millisecond).Should(Equal(2))
+				})
+				Ω(err.Error()).Should(ContainSubstring("Timed out after"))
+				Ω(err.Error()).Should(ContainSubstring("Assertion in callback at %s:%d failed:", file, line+1))
+				Ω(err.Error()).Should(ContainSubstring("to be >"))
+			})
+
+			It("eventually succeeds if the assertions succeed", func() {
+				err := InterceptGomegaFailure(func() {
+					i := 0
+					Eventually(func() int {
+						i++
+						Expect(i).To(BeNumerically(">", 5))
+						return 2
+					}, 200*time.Millisecond, 20*time.Millisecond).Should(Equal(2))
+				})
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("succeeds if the assertions succeed even if the function doesn't return anything", func() {
+				i := 0
+				Eventually(func() {
+					i++
+					Expect(i).To(BeNumerically(">", 5))
+				}, 200*time.Millisecond, 20*time.Millisecond).Should(Succeed())
+			})
+
+			It("succeeds if the function returns nothing, the assertions eventually fail and the Eventually is assertion that it ShouldNot(Succeed()) ", func() {
+				i := 0
+				Eventually(func() {
+					i++
+					Expect(i).To(BeNumerically("<", 5))
+				}, 200*time.Millisecond, 20*time.Millisecond).ShouldNot(Succeed())
+			})
+		})
+
 		Context("Making an assertion without a registered fail handler", func() {
 			It("should panic", func() {
 				defer func() {
@@ -316,6 +363,55 @@ var _ = Describe("Async Assertion", func() {
 			})
 		})
 
+		Context("when the polled function makes assertions", func() {
+			It("fails if those assertions ever fail", func() {
+				var file string
+				var line int
+
+				err := InterceptGomegaFailure(func() {
+					i := 0
+					Consistently(func() int {
+						_, file, line, _ = runtime.Caller(0)
+						Expect(i).To(BeNumerically("<", 5))
+						i++
+						return 2
+					}, 200*time.Millisecond, 20*time.Millisecond).Should(Equal(2))
+				})
+				Ω(err.Error()).Should(ContainSubstring("Failed after"))
+				Ω(err.Error()).Should(ContainSubstring("Assertion in callback at %s:%d failed:", file, line+1))
+				Ω(err.Error()).Should(ContainSubstring("to be <"))
+			})
+
+			It("succeeds if the assertion consistently succeeds", func() {
+				err := InterceptGomegaFailure(func() {
+					i := 0
+					Consistently(func() int {
+						i++
+						Expect(i).To(BeNumerically("<", 1000))
+						return 2
+					}, 200*time.Millisecond, 20*time.Millisecond).Should(Equal(2))
+				})
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("succeeds if the assertions succeed even if the function doesn't return anything", func() {
+				i := 0
+				Consistently(func() {
+					i++
+					Expect(i).To(BeNumerically("<", 1000))
+				}, 200*time.Millisecond, 20*time.Millisecond).Should(Succeed())
+			})
+
+			It("succeeds if the assertions fail even if the function doesn't return anything and Consistently is checking for ShouldNot(Succeed())", func() {
+				i := 0
+				Consistently(func() {
+					i++
+					Expect(i).To(BeNumerically(">", 1000))
+				}, 200*time.Millisecond, 20*time.Millisecond).ShouldNot(Succeed())
+			})
+
+		})
+
 		Context("Making an assertion without a registered fail handler", func() {
 			It("should panic", func() {
 				defer func() {
@@ -333,14 +429,18 @@ var _ = Describe("Async Assertion", func() {
 		})
 	})
 
-	When("passed a function with the wrong # or arguments & returns", func() {
+	When("passed a function with the wrong # or arguments", func() {
 		It("should panic", func() {
 			Expect(func() {
 				asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func() {}, fakeFailWrapper, 0, 0, 1)
-			}).Should(Panic())
+			}).ShouldNot(Panic())
 
 			Expect(func() {
 				asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func(a string) int { return 0 }, fakeFailWrapper, 0, 0, 1)
+			}).Should(Panic())
+
+			Expect(func() {
+				asyncassertion.New(asyncassertion.AsyncAssertionTypeEventually, func(a string) {}, fakeFailWrapper, 0, 0, 1)
 			}).Should(Panic())
 
 			Expect(func() {
