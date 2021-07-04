@@ -206,10 +206,21 @@ var _ = Describe("Experiment", func() {
 			e.Sample(func(idx int) {
 				indices = append(indices, idx)
 				time.Sleep(10 * time.Millisecond)
-			}, gmeasure.SamplingConfig{N: 100, Duration: 100 * time.Millisecond})
+			}, gmeasure.SamplingConfig{N: 100, Duration: 100 * time.Millisecond, MinSamplingInterval: 5 * time.Millisecond})
 
 			Ω(len(indices)).Should(BeNumerically("~", 10, 3))
 			Ω(indices).Should(Equal(ints(len(indices))))
+		})
+
+		It("can ensure a minimum interval between samples", func() {
+			times := map[int]time.Time{}
+			e.Sample(func(idx int) {
+				times[idx] = time.Now()
+			}, gmeasure.SamplingConfig{N: 10, Duration: 200 * time.Millisecond, MinSamplingInterval: 50 * time.Millisecond, NumParallel: 1})
+
+			Ω(len(times)).Should(BeNumerically("~", 4, 2))
+			Ω(times[1]).Should(BeTemporally(">", times[0], 50*time.Millisecond))
+			Ω(times[2]).Should(BeTemporally(">", times[1], 50*time.Millisecond))
 		})
 
 		It("can run samples in parallel", func() {
@@ -228,10 +239,16 @@ var _ = Describe("Experiment", func() {
 			Ω(indices).Should(ConsistOf(ints(len(indices))))
 		})
 
-		It("panics if the SamplingConfig is misconfigured", func() {
+		It("panics if the SamplingConfig does not specify a ceiling", func() {
 			Expect(func() {
-				e.Sample(func(_ int) {}, gmeasure.SamplingConfig{})
+				e.Sample(func(_ int) {}, gmeasure.SamplingConfig{MinSamplingInterval: time.Second})
 			}).To(PanicWith("you must specify at least one of SamplingConfig.N and SamplingConfig.Duration"))
+		})
+
+		It("panics if the SamplingConfig includes both a minimum interval and a directive to run in parallel", func() {
+			Expect(func() {
+				e.Sample(func(_ int) {}, gmeasure.SamplingConfig{N: 10, MinSamplingInterval: time.Second, NumParallel: 2})
+			}).To(PanicWith("you cannot specify both SamplingConfig.MinSamplingInterval and SamplingConfig.NumParallel"))
 		})
 	})
 

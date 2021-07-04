@@ -53,14 +53,16 @@ import (
 SamplingConfig configures the Sample family of experiment methods.
 These methods invoke passed-in functions repeatedly to sample and record a given measurement.
 SamplingConfig is used to control the maximum number of samples or time spent sampling (or both).  When both are specified sampling ends as soon as one of the conditions is met.
-SamplingConfig can also enable concurrent sampling.
+SamplingConfig can also ensure a minimum interval between samples and can enable concurrent sampling.
 */
 type SamplingConfig struct {
 	// N - the maximum number of samples to record
 	N int
 	// Duration - the maximum amount of time to spend recording samples
 	Duration time.Duration
-	// NumParallel - the number of parallel workers to spin up to record samples.
+	// MinSamplingInterval - the minimum time that must elapse between samplings.  It is an error to specify both MinSamplingInterval and NumParallel.
+	MinSamplingInterval time.Duration
+	// NumParallel - the number of parallel workers to spin up to record samples.  It is an error to specify both MinSamplingInterval and NumParallel.
 	NumParallel int
 }
 
@@ -445,6 +447,9 @@ func (e *Experiment) Sample(callback func(idx int), samplingConfig SamplingConfi
 	if samplingConfig.N == 0 && samplingConfig.Duration == 0 {
 		panic("you must specify at least one of SamplingConfig.N and SamplingConfig.Duration")
 	}
+	if samplingConfig.MinSamplingInterval > 0 && samplingConfig.NumParallel > 1 {
+		panic("you cannot specify both SamplingConfig.MinSamplingInterval and SamplingConfig.NumParallel")
+	}
 	maxTime := time.Now().Add(100000 * time.Hour)
 	if samplingConfig.Duration > 0 {
 		maxTime = time.Now().Add(samplingConfig.Duration)
@@ -457,6 +462,7 @@ func (e *Experiment) Sample(callback func(idx int), samplingConfig SamplingConfi
 	if samplingConfig.NumParallel > numParallel {
 		numParallel = samplingConfig.NumParallel
 	}
+	minSamplingInterval := samplingConfig.MinSamplingInterval
 
 	work := make(chan int)
 	if numParallel > 1 {
@@ -479,6 +485,10 @@ func (e *Experiment) Sample(callback func(idx int), samplingConfig SamplingConfi
 			callback(idx)
 		}
 		dt := time.Since(t)
+		if numParallel == 1 && dt < minSamplingInterval {
+			time.Sleep(minSamplingInterval - dt)
+			dt = time.Since(t)
+		}
 		if idx >= numParallel {
 			avgDt = (avgDt*time.Duration(idx-numParallel) + dt) / time.Duration(idx-numParallel+1)
 		}
