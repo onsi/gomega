@@ -250,7 +250,7 @@ For example:
     }).ShouldNot(Equal("Stuck Waiting"))
 ```
 
-`Eventually` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `GomegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
+`Eventually` will poll the passed in function (which must take no arguments) repeatedly and check the return value against the `GomegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
 
 The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing them in just after your function:
 
@@ -276,6 +276,38 @@ The function that you pass to `Eventually` can have more than one return value. 
 ```go
     Eventually(myInstance.FetchNameFromNetwork).Should(Equal("archibald"))
 ```
+
+`Eventually` allows you to make assertions in the passed-in function.  The function is assumed to have failed and will be retried if any assertion in the function fails.
+For example:
+
+```go
+    Eventually(func() Widget {
+      resp, err := http.Get(url)
+      Expect(err).NotTo(HaveOccurred())
+      defer resp.Body.Close()
+      Expect(resp.SatusCode).To(Equal(http.StatusOK))
+      var widget Widget
+      Expect(json.NewDecoder(resp.Body).Decode(&widget)).To(Succeed())
+      return widget
+    }).Should(Equal(expectedWidget))
+```
+
+will keep trying the passed-in function until all its assertions pass (i.e. the http request succeeds) _and_ the returned object satisfies the passed-in matcher.
+
+Functions passed to `Eventually` typically have a return value.  However you are allowed to pass in a function with no return value.  `Eventually` assumes such a function
+is making assertions and will turn it into a function that returns an error if any assertion fails, or nil if no assertion fails.  This allows you to use the `Succeed()` matcher
+to express that a complex operation should eventually succeed.  For example:
+
+```go
+   Eventually(func() {
+       model, err := db.Find("foo")
+       Expect(err).NotTo(HaveOccurred())
+       Expect(model.Reticulated()).To(BeTrue())
+       Expect(model.Save()).To(Succeed())
+   }).Should(Succeed())
+```
+
+will rerun the function until all its assertions pass.
 
 If the argument to `Eventually` is *not* a function, `Eventually` will simply run the matcher against the argument.  This works really well with the Gomega matchers geared towards working with channels:
 
@@ -309,7 +341,7 @@ For example:
     }).Should(BeNumerically("<", 10))
 ```
 
-`Consistently` will poll the passed in function (which must have zero-arguments and at least one return value) repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
+`Consistently` will poll the passed in function (which must have zero-arguments) repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
 
 ```go
     Consistently(func() []int {
@@ -327,7 +359,7 @@ As with `Eventually`, these can be `time.Duration`s, string representations of a
 
 To assert that nothing gets sent to a channel.
 
-As with `Eventually`, if you pass `Consistently` a function that returns more than one value, it will pass the first value to the matcher and assert that all other values are `nil` or zero-valued.
+As with `Eventually`, if you pass `Consistently` a function that returns more than one value, it will pass the first value to the matcher and assert that all other values are `nil` or zero-valued.  Like `Eventually`, `Consistently` also supports functions that make assertions - and will require that all assertions pass consistently.  A function with no return value is assumed to contain assertions and `Consistently` will ensure that those assertions pass consistently.
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
@@ -2323,12 +2355,13 @@ You can apply `Style` and `Precision` decorators to control the appearance of th
         N int
         Duration time.Duration
         NumParallel int
+        MinSamplingInterval time.Duration
     }
 ```
 
-Setting `SamplingConfig.N` limits the total number of samples to perform to `N`.  Setting `SamplingConfig.Duration` limits the total time spent sampling to `Duration`.  At least one of these fields must be set.  If both are set then `gmeasure` will `sample` until the first limiting condition is met.
+Setting `SamplingConfig.N` limits the total number of samples to perform to `N`.  Setting `SamplingConfig.Duration` limits the total time spent sampling to `Duration`.  At least one of these fields must be set.  If both are set then `gmeasure` will `sample` until the first limiting condition is met.  Setting `SamplingConfig.MinSamplingInterval` causes `gmeasure` to wait until at least `MinSamplingInterval` has elapsed between subsequent samples.
 
-By default, the `Experiment`'s sampling methods will run their callbacks serially within the calling goroutine.  If `NumParallel` greater than `1`, however, the sampling methods will spin up `NumParallel` goroutines and farm the work among them.
+By default, the `Experiment`'s sampling methods will run their callbacks serially within the calling goroutine.  If `NumParallel` greater than `1`, however, the sampling methods will spin up `NumParallel` goroutines and farm the work among them.  You cannot use `NumParallel` with `MinSamplingInterval`.
 
 The basic sampling method is `experiment.Sample(callback func(idx int), samplingConfig SamplingConfig)`.  This will call the callback function repeatedly, passing in an `idx` counter that increments between each call.  The sampling will end based on the conditions provided in `SamplingConfig`.  Note that `experiment.Sample` is not explicitly associated with a measurement.  You can use `experiment.Sample` whenever you want to repeatedly invoke a callback up to a limit of `N` and/or `Duration`.  You can then record arbitrarily many value or duration measurements in the body of the callback.
 
