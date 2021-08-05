@@ -279,7 +279,7 @@ When testing complex systems it can be valuable to assert that a _set_ of assert
 
 Here's an example that makes some asssertions and returns a value and error:
 
-	Eventually(func(g Gomega) (Wiget, error) {
+	Eventually(func(g Gomega) (Widget, error) {
 		ids, err := client.FetchIDs()
 		g.Expect(err).NotTo(HaveOccurred())
 		g.Expect(ids).To(ContainElement(1138))
