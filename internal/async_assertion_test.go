@@ -452,7 +452,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 						ig.G.Eventually(func(g Gomega) int {
 							g.Expect(true).To(BeTrue())
 							panic("boom")
-							return 10
 						}, "30ms", "10ms").Should(Equal(10))
 					}).Should(PanicWith("boom"))
 					Ω(ig.FailureMessage).Should(BeEmpty())
@@ -530,7 +529,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 						ig.G.Consistently(func(g Gomega) int {
 							g.Expect(true).To(BeTrue())
 							panic("boom")
-							return 10
 						}, "50ms", "10ms").Should(Equal(10))
 					}).Should(PanicWith("boom"))
 					Ω(ig.FailureMessage).Should(BeEmpty())
