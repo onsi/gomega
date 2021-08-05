@@ -217,7 +217,7 @@ func ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) Asse
 /*
 Eventually enables making assertions on asynchronous behavior.
 
-Eventually blocks when called and attempts an assertion periodically until it passes or a timeout occurs.  Both the timeout and polling interval are configurable as optional arguments.
+Eventually checks that an assertion *eventually* passes.  Eventually blocks when called and attempts an assertion periodically until it passes or a timeout occurs.  Both the timeout and polling interval are configurable as optional arguments.
 The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings or floats/integers (in which case they are interpreted as seconds).
 
 Eventually works with any Gomega compatible matcher and supports making assertions against three categories of actual value:
