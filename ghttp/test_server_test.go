@@ -259,8 +259,8 @@ var _ = Describe("TestServer", func() {
 				s.AppendHandlers(func(w http.ResponseWriter, req *http.Request) {
 					// Expect(true).Should(BeFalse()) <-- would be nice to do it this way, but the test just can't be written this way
 
-					By("We're cheating a bit here -- we're throwing a GINKGO_PANIC which simulates a failed assertion")
-					panic(GINKGO_PANIC)
+					By("We're cheating a bit here -- we're pretending to throw a Ginkgo panic which simulates a failed assertion")
+					panic("defer GinkgoRecover()")
 				})
 			})
 
