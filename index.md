@@ -236,98 +236,124 @@ Gomega has support for making *asynchronous* assertions.  There are two function
 
 ### Eventually
 
-`Eventually` checks that an assertion *eventually* passes.  It does this by polling its argument until the matcher succeeds.
-
-For example:
+`Eventually` checks that an assertion *eventually* passes.  `Eventually` blocks when called and attempts an assertion periodically until it passes or a timeout occurs.  Both the timeout and polling interval are configurable as optional arguments:
 
 ```go
-    Eventually(func() []int {
-        return thing.SliceImMonitoring
-    }).Should(HaveLen(2))
-
-    Eventually(func() string {
-        return thing.Status
-    }).ShouldNot(Equal("Stuck Waiting"))
+    Eventually(ACTUAL, (TIMEOUT), (POLLING_INTERVAL)).Should(MATCHER)
 ```
 
-`Eventually` will poll the passed in function (which must take no arguments) repeatedly and check the return value against the `GomegaMatcher`.  `Eventually` then blocks until the match succeeds or until a timeout interval has elapsed.
+The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings (e.g. "100ms") or `float64` (in which case they are interpreted as seconds).
 
-The default value for the timeout is 1 second and the default value for the polling interval is 10 milliseconds.  You can change these values by passing them in just after your function:
+> As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
+
+Eventually works with any Gomega compatible matcher and supports making assertions against three categories of `ACTUAL` value:
+
+#### Category 1: Making `Eventually` assertions on values
+
+There are several examples of values that can change over time.  These can be passed in to `Eventually` and will be passed to the matcher repeatedly until a match occurs.  For example:
 
 ```go
-    Eventually(func() []int {
-        return thing.SliceImMonitoring
-    }, TIMEOUT, POLLING_INTERVAL).Should(HaveLen(2))
+    c := make(chan bool)
+    go DoStuff(c)
+    Eventually(c, "50ms").Should(BeClosed())
 ```
 
-These can be passed in as `time.Duration`s, string representations of a `time.Duration` (e.g. `"2s"`) or `float64` values (in which case they are interpreted as seconds).
+will poll the channel repeatedly until it is closed.  In this example `Eventually` will block until either the specified timeout of 50ms has elapsed or the channel is closed, whichever comes first.
 
-`Eventually` is especially handy when writing integration tests against asynchronous services or components:
-
-```go
-    externalProcess.DoSomethingAmazing()
-    Eventually(func() bool {
-        return somethingAmazingHappened()
-    }).Should(BeTrue())
-```
-
-The function that you pass to `Eventually` can have more than one return value.  In that case, `Eventually` passes the first return value to the matcher and asserts that all other return values are `nil` or zero-valued.  This allows you to use `Eventually` with functions that return a value and an error -- a common pattern in Go.  For example, say you have a method on an object named `FetchNameFromNetwork()` that returns a string value and an error.  Given an instance then you could simply write:
-
-```go
-    Eventually(myInstance.FetchNameFromNetwork).Should(Equal("archibald"))
-```
-
-`Eventually` allows you to make assertions in the passed-in function.  The function is assumed to have failed and will be retried if any assertion in the function fails.
-For example:
-
-```go
-    Eventually(func() Widget {
-      resp, err := http.Get(url)
-      Expect(err).NotTo(HaveOccurred())
-      defer resp.Body.Close()
-      Expect(resp.SatusCode).To(Equal(http.StatusOK))
-      var widget Widget
-      Expect(json.NewDecoder(resp.Body).Decode(&widget)).To(Succeed())
-      return widget
-    }).Should(Equal(expectedWidget))
-```
-
-will keep trying the passed-in function until all its assertions pass (i.e. the http request succeeds) _and_ the returned object satisfies the passed-in matcher.
-
-Functions passed to `Eventually` typically have a return value.  However you are allowed to pass in a function with no return value.  `Eventually` assumes such a function
-is making assertions and will turn it into a function that returns an error if any assertion fails, or nil if no assertion fails.  This allows you to use the `Succeed()` matcher
-to express that a complex operation should eventually succeed.  For example:
-
-```go
-   Eventually(func() {
-       model, err := db.Find("foo")
-       Expect(err).NotTo(HaveOccurred())
-       Expect(model.Reticulated()).To(BeTrue())
-       Expect(model.Save()).To(Succeed())
-   }).Should(Succeed())
-```
-
-will rerun the function until all its assertions pass.
-
-If the argument to `Eventually` is *not* a function, `Eventually` will simply run the matcher against the argument.  This works really well with the Gomega matchers geared towards working with channels:
-
-```go
-    Eventually(channel).Should(BeClosed())
-    Eventually(channel).Should(Receive())
-```
-
-This also pairs well with `gexec`'s `Session` command wrappers and `gbyte`'s `Buffer`s:
+Several Gomega libraries allow you to use Eventually in this way.  For example, the `gomega/gexec` package allows you to block until a `*gexec.Session` exits successfuly via:
 
 ```go
     Eventually(session).Should(gexec.Exit(0))
-    //the wrapped command should exit with status 0, eventually
-
-    Eventually(buffer).Should(Say("something matching this regexp"))
-    Eventually(session.Out).Should(Say("Splines reticulated"))
 ```
 
-> Note that `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- `Eventually` will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice := append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.  In such cases you should always pass `Eventually` a function that, when polled, returns the slice.
-> As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
+And the `gomega/gbytes` package allows you to monitor a streaming `*gbytes.Buffer` until a given string is seen:
+
+```go
+    Eventually(buffer).Should(gbytes.Say("hello there"))
+```
+
+In these examples, both `session` and `buffer` are designed to be thread-safe when polled by the `Exit` and `Say` matchers.  This is not true in general of most raw values, so while it is tempting to do something like:
+
+```go
+    // THIS IS NOT THREAD-SAFE
+    var s *string
+    go mutateStringEventually(s)
+    Eventually(s).Should(Equal("I've changed"))
+```
+
+this will trigger Go's race detector as the goroutine polling via Eventually will race over the value of `s` with the goroutine mutating the string.
+
+Similarly, something like `Eventually(slice).Should(HaveLen(N))` probably won't do what you think it should -- `Eventually` will be passed a pointer to the slice, yes, but if the slice is being `append`ed to (as in: `slice = append(slice, ...)`) Go will generate a new pointer and the pointer passed to `Eventually` will not contain the new elements.
+
+In both cases you should always pass `Eventually` a function that, when polled, returns the latest value of the object in question in a thread-safe way.
+
+#### Category 2: Making `Eventually` assertions on functions
+
+`Eventually` can be passed functions that **take no arguments** and **return at least one value**.  When configured this way, `Eventually` will poll the function repeatedly and pass the first returned value to the matcher.
+
+For example:
+
+```go
+    Eventually(func() int {
+        return client.FetchCount()
+    }).Should(BeNumerically(">=", 17))
+```
+
+will repeatedly poll `client.FetchCount` until the `BeNumerically` matcher is satisfied.
+
+> Note that this example could have been written as `Eventually(client.FetchCount).Should(BeNumerically(">=", 17))`
+
+If multple values are returned by the function, `Eventually` will pass the first value to the matcher and require that all others are zero-valued.  This allows you to pass `Eventually` a function that returns a value and an error - a common pattern in Go.
+
+For example, consider a method that returns a value and an error:
+
+```go
+    func FetchFromDB() (string, error)
+```
+
+Then
+
+```go
+    Eventually(FetchFromDB).Should(Equal("got it"))
+```
+
+will pass only if and when the returned error is `nil` *and* the returned string satisfies the matcher.
+
+It is important to note that the function passed into Eventually is invoked **synchronously** when polled.  `Eventually` does not (in fact, it cannot) kill the function if it takes longer to return than `Eventually`'s configured timeout.  You should design your functions with this in mind.
+
+#### Category 3: Making assertions _in_ the function passed into `Eventually`
+
+When testing complex systems it can be valuable to assert that a *set* of assertions passes `Eventually`.  `Eventually` supports this by accepting functions that take **a single `Gomega` argument** and **return zero or more values**.
+
+Here's an example that makes some asssertions and returns a value and error:
+
+```go
+    Eventually(func(g Gomega) (Widget, error) {
+        ids, err := client.FetchIDs()
+        g.Expect(err).NotTo(HaveOccurred())
+        g.Expect(ids).To(ContainElement(1138))
+        return client.FetchWidget(1138)
+    }).Should(Equal(expectedWidget))
+```
+
+will pass only if all the assertions in the polled function pass and the return value satisfied the matcher.  Note that the assertions in the body of the polled function must be performed using the passed-in `g Gomega` object.  If you use the global DSL expectations, `Eventually` will not intercept any failures and the test will fail.
+
+`Eventually` also supports a special case polling function that takes a single `Gomega` argument and returns no values.  `Eventually` assumes such a function is making assertions and is designed to work with the `Succeed` matcher to validate that all assertions have passed.
+
+For example:
+
+```go
+    Eventually(func(g Gomega) {
+        model, err := client.Find(1138)
+        g.Expect(err).NotTo(HaveOccurred())
+        g.Expect(model.Reticulate()).To(Succeed())
+        g.Expect(model.IsReticulated()).To(BeTrue())
+        g.Expect(model.Save()).To(Succeed())
+    }).Should(Succeed())
+```
+
+will rerun the function until all assertions pass.
+
 
 ### Consistently
 
@@ -341,12 +367,10 @@ For example:
     }).Should(BeNumerically("<", 10))
 ```
 
-`Consistently` will poll the passed in function (which must have zero-arguments) repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
+`Consistently` will poll the passed in function repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
 
 ```go
-    Consistently(func() []int {
-        return thing.MemoryUsage()
-    }, DURATION, POLLING_INTERVAL).Should(BeNumerically("<", 10))
+    Consistently(ACTUAL, DURATION, POLLING_INTERVAL).Should(MATCHER)
 ```
 
 As with `Eventually`, these can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
@@ -359,7 +383,7 @@ As with `Eventually`, these can be `time.Duration`s, string representations of a
 
 To assert that nothing gets sent to a channel.
 
-As with `Eventually`, if you pass `Consistently` a function that returns more than one value, it will pass the first value to the matcher and assert that all other values are `nil` or zero-valued.  Like `Eventually`, `Consistently` also supports functions that make assertions - and will require that all assertions pass consistently.  A function with no return value is assumed to contain assertions and `Consistently` will ensure that those assertions pass consistently.
+As with `Eventually`, you can also pass `Consistently` a function.  In fact, `Consistently` works with the three categories of `ACTUAL` value outlined for `Eventually` in the section above.
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
@@ -373,6 +397,8 @@ By default, `Eventually` will poll every 10 milliseconds for up to 1 second and 
     SetDefaultConsistentlyDuration(t time.Duration)
     SetDefaultConsistentlyPollingInterval(t time.Duration)
 ```
+
+You can also adjust these global timeouts by setting the `GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT`, `GOMEGA_DEFAULT_EVENTUALLY_POLLING_INTERVAL`, `GOMEGA_DEFAULT_CONSISTENTLY_DURATION`, and `GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL` environment variables to a parseable duration string.
 
 ---
 
