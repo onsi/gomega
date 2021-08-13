@@ -1,8 +1,10 @@
 package matchers_test
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,6 +19,7 @@ var _ = Describe("HaveHTTPStatus", func() {
 				Expect(resp).NotTo(HaveHTTPStatus(http.StatusNotFound))
 			})
 		})
+
 		When("EXPECTED is string", func() {
 			It("matches the Status", func() {
 				resp := &http.Response{Status: "200 OK"}
@@ -24,6 +27,7 @@ var _ = Describe("HaveHTTPStatus", func() {
 				Expect(resp).NotTo(HaveHTTPStatus("404 Not Found"))
 			})
 		})
+
 		When("EXPECTED is anything else", func() {
 			It("does not match", func() {
 				failures := InterceptGomegaFailures(func() {
@@ -43,6 +47,7 @@ var _ = Describe("HaveHTTPStatus", func() {
 				Expect(resp).NotTo(HaveHTTPStatus(http.StatusNotFound))
 			})
 		})
+
 		When("EXPECTED is string", func() {
 			It("matches the Status", func() {
 				resp := &httptest.ResponseRecorder{Code: http.StatusOK}
@@ -50,6 +55,7 @@ var _ = Describe("HaveHTTPStatus", func() {
 				Expect(resp).NotTo(HaveHTTPStatus("404 Not Found"))
 			})
 		})
+
 		When("EXPECTED is anything else", func() {
 			It("does not match", func() {
 				failures := InterceptGomegaFailures(func() {
@@ -73,19 +79,44 @@ var _ = Describe("HaveHTTPStatus", func() {
 	Describe("FailureMessage", func() {
 		It("returns message", func() {
 			failures := InterceptGomegaFailures(func() {
-				resp := &http.Response{StatusCode: http.StatusBadGateway}
+				resp := &http.Response{
+					StatusCode: http.StatusBadGateway,
+					Status:     "502 Bad Gateway",
+					Body:       ioutil.NopCloser(strings.NewReader("did not like it")),
+				}
 				Expect(resp).To(HaveHTTPStatus(http.StatusOK))
 			})
-			Expect(failures).To(ConsistOf(MatchRegexp("Expected(.|\n)*StatusCode: 502(.|\n)*to have HTTP status\n    <int>: 200")))
+			Expect(failures).To(HaveLen(1))
+			Expect(failures[0]).To(Equal(`Expected
+    <*http.Response>: {
+        Status:     <string>: "502 Bad Gateway"
+        StatusCode: <int>: 502
+        Body:       <string>: "did not like it"
+    }
+to have HTTP status
+    <int>: 200`), failures[0])
 		})
 	})
+
 	Describe("NegatedFailureMessage", func() {
 		It("returns message", func() {
 			failures := InterceptGomegaFailures(func() {
-				resp := &http.Response{StatusCode: http.StatusOK}
+				resp := &http.Response{
+					StatusCode: http.StatusOK,
+					Status:     "200 OK",
+					Body:       ioutil.NopCloser(strings.NewReader("got it!")),
+				}
 				Expect(resp).NotTo(HaveHTTPStatus(http.StatusOK))
 			})
-			Expect(failures).To(ConsistOf(MatchRegexp("Expected(.|\n)*StatusCode: 200(.|\n)*not to have HTTP status\n    <int>: 200")))
+			Expect(failures).To(HaveLen(1))
+			Expect(failures[0]).To(Equal(`Expected
+    <*http.Response>: {
+        Status:     <string>: "200 OK"
+        StatusCode: <int>: 200
+        Body:       <string>: "got it!"
+    }
+not to have HTTP status
+    <int>: 200`), failures[0])
 		})
 	})
 })
