@@ -131,6 +131,28 @@ var _ = Describe(".BuildIn", func() {
 })
 
 var _ = Describe(".CompileTest", func() {
+	var (
+		original string
+		gopath   string
+	)
+
+	BeforeEach(func() {
+		var err error
+		original = os.Getenv("GOPATH")
+		gopath, err = ioutil.TempDir("", "")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(os.Setenv("GOPATH", gopath)).To(Succeed())
+	})
+
+	AfterEach(func() {
+		if original == "" {
+			Expect(os.Unsetenv("GOPATH")).To(Succeed())
+		} else {
+			Expect(os.Setenv("GOPATH", original)).To(Succeed())
+		}
+		Expect(os.RemoveAll(gopath)).To(Succeed())
+	})
+
 	Context("a remote package", func() {
 		const remotePackage = "github.com/onsi/ginkgo/types"
 
