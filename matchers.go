@@ -423,7 +423,8 @@ func BeADirectory() types.GomegaMatcher {
 //Expected must be either an int or a string.
 //  Expect(resp).Should(HaveHTTPStatus(http.StatusOK))   // asserts that resp.StatusCode == 200
 //  Expect(resp).Should(HaveHTTPStatus("404 Not Found")) // asserts that resp.Status == "404 Not Found"
-func HaveHTTPStatus(expected interface{}) types.GomegaMatcher {
+//  Expect(resp).Should(HaveHTTPStatus(http.StatusOK, http.StatusNoContent))   // asserts that resp.StatusCode == 200 || resp.StatusCode == 204
+func HaveHTTPStatus(expected ...interface{}) types.GomegaMatcher {
 	return &matchers.HaveHTTPStatusMatcher{Expected: expected}
 }
 

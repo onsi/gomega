@@ -12,7 +12,7 @@ import (
 )
 
 type HaveHTTPStatusMatcher struct {
-	Expected interface{}
+	Expected []interface{}
 }
 
 func (matcher *HaveHTTPStatusMatcher) Match(actual interface{}) (success bool, err error) {
@@ -26,22 +26,42 @@ func (matcher *HaveHTTPStatusMatcher) Match(actual interface{}) (success bool, e
 		return false, fmt.Errorf("HaveHTTPStatus matcher expects *http.Response or *httptest.ResponseRecorder. Got:\n%s", format.Object(actual, 1))
 	}
 
-	switch e := matcher.Expected.(type) {
-	case int:
-		return resp.StatusCode == e, nil
-	case string:
-		return resp.Status == e, nil
+	if len(matcher.Expected) == 0 {
+		return false, fmt.Errorf("HaveHTTPStatus matcher must be passed an int or a string. Got nothing")
 	}
 
-	return false, fmt.Errorf("HaveHTTPStatus matcher must be passed an int or a string. Got:\n%s", format.Object(matcher.Expected, 1))
+	for _, expected := range matcher.Expected {
+		switch e := expected.(type) {
+		case int:
+			if resp.StatusCode == e {
+				return true, nil
+			}
+		case string:
+			if resp.Status == e {
+				return true, nil
+			}
+		default:
+			return false, fmt.Errorf("HaveHTTPStatus matcher must be passed int or string types. Got:\n%s", format.Object(expected, 1))
+		}
+	}
+
+	return false, nil
 }
 
 func (matcher *HaveHTTPStatusMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n%s\n%s\n%s", formatHttpResponse(actual), "to have HTTP status", format.Object(matcher.Expected, 1))
+	return fmt.Sprintf("Expected\n%s\n%s\n%s", formatHttpResponse(actual), "to have HTTP status", matcher.expectedString())
 }
 
 func (matcher *HaveHTTPStatusMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n%s\n%s\n%s", formatHttpResponse(actual), "not to have HTTP status", format.Object(matcher.Expected, 1))
+	return fmt.Sprintf("Expected\n%s\n%s\n%s", formatHttpResponse(actual), "not to have HTTP status", matcher.expectedString())
+}
+
+func (matcher *HaveHTTPStatusMatcher) expectedString() string {
+	var lines []string
+	for _, expected := range matcher.Expected {
+		lines = append(lines, format.Object(expected, 1))
+	}
+	return strings.Join(lines, "\n")
 }
 
 func formatHttpResponse(input interface{}) string {
