@@ -1040,21 +1040,76 @@ Any other comparator is an error.
 #### HaveHTTPStatus(expected interface{})
 
 ```go
-    Ω(ACTUAL).Should(HaveHTTPStatus(EXPECTED))
+    Expect(ACTUAL).To(HaveHTTPStatus(EXPECTED, ...))
 ```
 
 succeeds if the `Status` or `StatusCode` field of an HTTP response matches.
 
 `ACTUAL` must be either a `*http.Response` or `*httptest.ResponseRecorder`.
-`EXPECTED` must be either an `int` or a `string`.
+
+`EXPECTED` must be one or more `int` or `string` types. An `int` is compared
+to `StatusCode` and a `string` is compared to `Status`.
+The matcher succeeds if any of the `EXPECTED` values match.
 
 Here are some examples:
 
-- `Ω(resp).Should(HaveHTTPStatus(http.StatusOK))`:
-    asserts that `resp.StatusCode == 200`.
+- `Expect(resp).To(HaveHTTPStatus(http.StatusOK, http.StatusNoContext))`:
+    asserts that `resp.StatusCode == 200` or `resp.StatusCode == 204`
 
-- `Ω(resp).Should(HaveHTTPStatus("404 Not Found"))`:
+- `Expect(resp).To(HaveHTTPStatus("404 Not Found"))`:
     asserts that `resp.Status == "404 Not Found"`.
+
+#### HaveHTTPBody(expected interface{})
+
+```go
+    Expect(ACTUAL).To(HaveHTTPBody(EXPECTED))
+```
+
+Succeeds if the body of an HTTP Response matches.
+
+`ACTUAL` must be either a `*http.Response` or `*httptest.ResponseRecorder`.
+
+`EXPECTED` must be one of the following:
+- A `string`
+- A `[]byte`
+- A matcher, in which case the matcher will be called with the body as a `[]byte`.
+
+Here are some examples:
+
+- `Expect(resp).To(HaveHTTPBody("bar"))`:
+    asserts that when `resp.Body` is read, it will equal `bar`.
+
+- `Expect(resp).To(HaveHTTPBody(MatchJSON("{\"some\":\"json\""))`:
+    asserts that when `resp.Body` is read, the `MatchJSON` matches it to `{"some":"json"}`.
+
+Note that the body is an `io.ReadCloser` and the `HaveHTTPBody()` will read it and the close it.
+This means that subsequent attempts to read the body may have unexpected results.
+
+#### HaveHTTPHeaderWithValue(key string, value interface{})
+
+```go
+    Expect(ACTUAL).To(HaveHTTPHeaderWithValue(KEY, VALUE))
+```
+
+Succeeds if the HTTP Response has a matching header and value.
+
+`ACTUAL` must be either a `*http.Response` or `*httptest.ResponseRecorder`.
+
+`KEY` must be a `string`. It is passed to
+[`http.Header.Get(key string)`](https://pkg.go.dev/net/http#Header.Get),
+and will have the same behaviors regarding order of headers and capitalization.
+
+`VALUE` must be one of the following:
+- A `string`
+- A matcher, in which case the matcher will be called to match the value.
+
+Here are some examples:
+
+- `Expect(resp).To(HaveHTTPHeaderWithValue("Content-Type", "application/json"))`:
+    asserts that the `Content-Type` header has exactly the value `application/json`.
+
+- `Expect(resp).To(HaveHTTPHeaderWithValue(ContainsSubstring("json")))`:
+    asserts that the `Content-Type` header contains the substring `json`.
 
 ### Asserting on Panics
 
