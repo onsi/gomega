@@ -2,8 +2,11 @@ package matchers
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 
 	"github.com/onsi/gomega/format"
 )
@@ -34,9 +37,40 @@ func (matcher *HaveHTTPStatusMatcher) Match(actual interface{}) (success bool, e
 }
 
 func (matcher *HaveHTTPStatusMatcher) FailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, "to have HTTP status", matcher.Expected)
+	return fmt.Sprintf("Expected\n%s\n%s\n%s", formatHttpResponse(actual), "to have HTTP status", format.Object(matcher.Expected, 1))
 }
 
 func (matcher *HaveHTTPStatusMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return format.Message(actual, "not to have HTTP status", matcher.Expected)
+	return fmt.Sprintf("Expected\n%s\n%s\n%s", formatHttpResponse(actual), "not to have HTTP status", format.Object(matcher.Expected, 1))
+}
+
+func formatHttpResponse(input interface{}) string {
+	var resp *http.Response
+	switch r := input.(type) {
+	case *http.Response:
+		resp = r
+	case *httptest.ResponseRecorder:
+		resp = r.Result()
+	default:
+		return "cannot format invalid HTTP response"
+	}
+
+	body := "<nil>"
+	if resp.Body != nil {
+		defer resp.Body.Close()
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			data = []byte("<error reading body>")
+		}
+		body = format.Object(string(data), 0)
+	}
+
+	var s strings.Builder
+	s.WriteString(fmt.Sprintf("%s<%s>: {\n", format.Indent, reflect.TypeOf(input)))
+	s.WriteString(fmt.Sprintf("%s%sStatus:     %s\n", format.Indent, format.Indent, format.Object(resp.Status, 0)))
+	s.WriteString(fmt.Sprintf("%s%sStatusCode: %s\n", format.Indent, format.Indent, format.Object(resp.StatusCode, 0)))
+	s.WriteString(fmt.Sprintf("%s%sBody:       %s\n", format.Indent, format.Indent, body))
+	s.WriteString(fmt.Sprintf("%s}", format.Indent))
+
+	return s.String()
 }
