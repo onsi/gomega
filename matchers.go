@@ -427,6 +427,13 @@ func HaveHTTPStatus(expected interface{}) types.GomegaMatcher {
 	return &matchers.HaveHTTPStatusMatcher{Expected: expected}
 }
 
+// HaveHTTPBody matches if the body matches.
+// Actual must be either a *http.Response or *httptest.ResponseRecorder.
+// Expected must be either a string, []byte, or other matcher
+func HaveHTTPBody(expected interface{}) types.GomegaMatcher {
+	return &matchers.HaveHTTPBodyMatcher{Expected: expected}
+}
+
 //And succeeds only if all of the given matchers succeed.
 //The matchers are tried in order, and will fail-fast if one doesn't succeed.
 //  Expect("hi").To(And(HaveLen(2), Equal("hi"))
