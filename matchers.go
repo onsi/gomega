@@ -427,6 +427,17 @@ func HaveHTTPStatus(expected interface{}) types.GomegaMatcher {
 	return &matchers.HaveHTTPStatusMatcher{Expected: expected}
 }
 
+// HaveHTTPHeaderWithValue succeeds if the header is found and the value matches.
+// Actual must be either a *http.Response or *httptest.ResponseRecorder.
+// Expected must be a string header name, followed by a header value which
+// can be a string, or another matcher.
+func HaveHTTPHeaderWithValue(header string, value interface{}) types.GomegaMatcher {
+	return &matchers.HaveHTTPHeaderWithValueMatcher{
+		Header: header,
+		Value:  value,
+	}
+}
+
 // HaveHTTPBody matches if the body matches.
 // Actual must be either a *http.Response or *httptest.ResponseRecorder.
 // Expected must be either a string, []byte, or other matcher
