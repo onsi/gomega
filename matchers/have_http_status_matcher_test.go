@@ -1,7 +1,7 @@
 package matchers_test
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -121,7 +121,7 @@ var _ = Describe("HaveHTTPStatus", func() {
 				resp := &http.Response{
 					StatusCode: http.StatusBadGateway,
 					Status:     "502 Bad Gateway",
-					Body:       ioutil.NopCloser(strings.NewReader("did not like it")),
+					Body:       io.NopCloser(strings.NewReader("did not like it")),
 				}
 				Expect(resp).To(HaveHTTPStatus(http.StatusOK))
 			})
@@ -141,7 +141,7 @@ to have HTTP status
 				resp := &http.Response{
 					StatusCode: http.StatusBadGateway,
 					Status:     "502 Bad Gateway",
-					Body:       ioutil.NopCloser(strings.NewReader("did not like it")),
+					Body:       io.NopCloser(strings.NewReader("did not like it")),
 				}
 				Expect(resp).To(HaveHTTPStatus(http.StatusOK, http.StatusNotFound, "204 No content"))
 			})
@@ -165,7 +165,7 @@ to have HTTP status
 				resp := &http.Response{
 					StatusCode: http.StatusOK,
 					Status:     "200 OK",
-					Body:       ioutil.NopCloser(strings.NewReader("got it!")),
+					Body:       io.NopCloser(strings.NewReader("got it!")),
 				}
 				Expect(resp).NotTo(HaveHTTPStatus(http.StatusOK))
 			})
@@ -185,7 +185,7 @@ not to have HTTP status
 				resp := &http.Response{
 					StatusCode: http.StatusOK,
 					Status:     "200 OK",
-					Body:       ioutil.NopCloser(strings.NewReader("got it!")),
+					Body:       io.NopCloser(strings.NewReader("got it!")),
 				}
 				Expect(resp).NotTo(HaveHTTPStatus(http.StatusOK, "204 No content", http.StatusGone))
 			})
