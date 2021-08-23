@@ -1,7 +1,6 @@
 package matchers_test
 
 import (
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo"
@@ -14,12 +13,12 @@ var _ = Describe("BeADirectoryMatcher", func() {
 		It("should do the right thing", func() {
 			Expect("/dne/test").ShouldNot(BeADirectory())
 
-			tmpFile, err := ioutil.TempFile("", "gomega-test-tempfile")
+			tmpFile, err := os.CreateTemp("", "gomega-test-tempfile")
 			Expect(err).ShouldNot(HaveOccurred())
 			defer os.Remove(tmpFile.Name())
 			Expect(tmpFile.Name()).ShouldNot(BeADirectory())
 
-			tmpDir, err := ioutil.TempDir("", "gomega-test-tempdir")
+			tmpDir, err := os.MkdirTemp("", "gomega-test-tempdir")
 			Expect(err).ShouldNot(HaveOccurred())
 			defer os.Remove(tmpDir)
 			Expect(tmpDir).Should(BeADirectory())

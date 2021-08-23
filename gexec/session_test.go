@@ -4,7 +4,6 @@ package gexec_test
 
 import (
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"syscall"
 	"time"
@@ -326,8 +325,8 @@ var _ = Describe("Session", func() {
 
 			When("discarding the output of the command", func() {
 				BeforeEach(func() {
-					outWriter = ioutil.Discard
-					errWriter = ioutil.Discard
+					outWriter = io.Discard
+					errWriter = io.Discard
 				})
 
 				It("executes succesfuly", func() {
@@ -387,8 +386,8 @@ var _ = Describe("Session", func() {
 
 			When("discarding the output of the command", func() {
 				BeforeEach(func() {
-					outWriter = ioutil.Discard
-					errWriter = ioutil.Discard
+					outWriter = io.Discard
+					errWriter = io.Discard
 				})
 
 				It("executes succesfuly", func() {

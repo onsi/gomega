@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -66,16 +65,16 @@ func (cache ExperimentCache) readHeader(filename string) (CachedExperimentHeader
 List returns a list of all Cached Experiments found in the cache.
 */
 func (cache ExperimentCache) List() ([]CachedExperimentHeader, error) {
-	out := []CachedExperimentHeader{}
-	infos, err := ioutil.ReadDir(cache.Path)
+	var out []CachedExperimentHeader
+	entries, err := os.ReadDir(cache.Path)
 	if err != nil {
 		return out, err
 	}
-	for _, info := range infos {
-		if filepath.Ext(info.Name()) != CACHE_EXT {
+	for _, entry := range entries {
+		if filepath.Ext(entry.Name()) != CACHE_EXT {
 			continue
 		}
-		header, err := cache.readHeader(info.Name())
+		header, err := cache.readHeader(entry.Name())
 		if err != nil {
 			return out, err
 		}
@@ -88,15 +87,15 @@ func (cache ExperimentCache) List() ([]CachedExperimentHeader, error) {
 Clear empties out the cache - this will delete any and all detected cache files in the cache directory.  Use with caution!
 */
 func (cache ExperimentCache) Clear() error {
-	infos, err := ioutil.ReadDir(cache.Path)
+	entries, err := os.ReadDir(cache.Path)
 	if err != nil {
 		return err
 	}
-	for _, info := range infos {
-		if filepath.Ext(info.Name()) != CACHE_EXT {
+	for _, entry := range entries {
+		if filepath.Ext(entry.Name()) != CACHE_EXT {
 			continue
 		}
-		err := os.Remove(filepath.Join(cache.Path, info.Name()))
+		err := os.Remove(filepath.Join(cache.Path, entry.Name()))
 		if err != nil {
 			return err
 		}

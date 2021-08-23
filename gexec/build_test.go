@@ -2,7 +2,6 @@ package gexec_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -99,7 +98,7 @@ var _ = Describe(".BuildIn", func() {
 	BeforeEach(func() {
 		var err error
 		original = os.Getenv("GOPATH")
-		gopath, err = ioutil.TempDir("", "")
+		gopath, err = os.MkdirTemp("", "")
 		Expect(err).NotTo(HaveOccurred())
 		copyFile(filepath.Join("_fixture", "firefly", "main.go"), filepath.Join(gopath, "src", target), "main.go")
 		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "emptyFakeGopath"))).To(Succeed())
@@ -235,7 +234,7 @@ var _ = Describe(".CompiledTestIn", func() {
 	BeforeEach(func() {
 		var err error
 		original = os.Getenv("GOPATH")
-		gopath, err = ioutil.TempDir("", "")
+		gopath, err = os.MkdirTemp("", "")
 		Expect(err).NotTo(HaveOccurred())
 		copyFile(filepath.Join("_fixture", "firefly", "main.go"), filepath.Join(gopath, "src", target), "main.go")
 		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "emptyFakeGopath"))).To(Succeed())
@@ -278,7 +277,7 @@ var _ = Describe(".CompiledTestIn", func() {
 
 func copyFile(source, directory, basename string) {
 	Expect(os.MkdirAll(directory, 0755)).To(Succeed())
-	content, err := ioutil.ReadFile(source)
+	content, err := os.ReadFile(source)
 	Expect(err).NotTo(HaveOccurred())
-	Expect(ioutil.WriteFile(filepath.Join(directory, basename), content, 0644)).To(Succeed())
+	Expect(os.WriteFile(filepath.Join(directory, basename), content, 0644)).To(Succeed())
 }

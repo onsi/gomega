@@ -2,7 +2,7 @@ package matchers_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -34,7 +34,7 @@ func Test(t *testing.T) {
 
 func readFileContents(filePath string) []byte {
 	f := openFile(filePath)
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		panic(fmt.Errorf("failed to read file contents: %v", err))
 	}

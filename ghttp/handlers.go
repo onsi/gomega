@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -117,7 +117,7 @@ func (g GHTTPWithGomega) VerifyHeaderKV(key string, values ...string) http.Handl
 func (g GHTTPWithGomega) VerifyBody(expectedBody []byte) http.HandlerFunc {
 	return CombineHandlers(
 		func(w http.ResponseWriter, req *http.Request) {
-			body, err := ioutil.ReadAll(req.Body)
+			body, err := io.ReadAll(req.Body)
 			req.Body.Close()
 			g.gomega.Expect(err).ShouldNot(HaveOccurred())
 			g.gomega.Expect(body).Should(Equal(expectedBody), "Body Mismatch")
@@ -133,7 +133,7 @@ func (g GHTTPWithGomega) VerifyJSON(expectedJSON string) http.HandlerFunc {
 	return CombineHandlers(
 		g.VerifyMimeType("application/json"),
 		func(w http.ResponseWriter, req *http.Request) {
-			body, err := ioutil.ReadAll(req.Body)
+			body, err := io.ReadAll(req.Body)
 			req.Body.Close()
 			g.gomega.Expect(err).ShouldNot(HaveOccurred())
 			g.gomega.Expect(body).Should(MatchJSON(expectedJSON), "JSON Mismatch")
@@ -182,7 +182,7 @@ func (g GHTTPWithGomega) VerifyProtoRepresenting(expected proto.Message) http.Ha
 	return CombineHandlers(
 		g.VerifyContentType("application/x-protobuf"),
 		func(w http.ResponseWriter, req *http.Request) {
-			body, err := ioutil.ReadAll(req.Body)
+			body, err := io.ReadAll(req.Body)
 			g.gomega.Expect(err).ShouldNot(HaveOccurred())
 			req.Body.Close()
 
