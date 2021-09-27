@@ -485,9 +485,14 @@ func Not(matcher types.GomegaMatcher) types.GomegaMatcher {
 }
 
 //WithTransform applies the `transform` to the actual value and matches it against `matcher`.
-//The given transform must be a function of one parameter that returns one value.
+//The given transform must be either a function of one parameter that returns one value or a
+// function of one parameter that returns two values, where the second value must be of the
+// error type.
 //  var plus1 = func(i int) int { return i + 1 }
 //  Expect(1).To(WithTransform(plus1, Equal(2))
+//
+//   var failingplus1 = func(i int) (int, error) { return 42, "this does not compute" }
+//   Expect(1).To(WithTrafo(failingplus1, Equal(2)))
 //
 //And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
 func WithTransform(transform interface{}, matcher types.GomegaMatcher) types.GomegaMatcher {
