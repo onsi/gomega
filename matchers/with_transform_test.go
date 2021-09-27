@@ -35,6 +35,11 @@ var _ = Describe("WithTransformMatcher", func() {
 				panicsWithTransformer(func(i int) (int, int) { return 5, 6 })
 			})
 		})
+		Context("Invalid number of return values, but correct number of arguments", func() {
+			It("Two return values, but second return value not an error", func() {
+				panicsWithTransformer(func(interface{}) (int, int) { return 5, 6 })
+			})
+		})
 	})
 
 	When("the actual value is incompatible", func() {
@@ -118,6 +123,16 @@ var _ = Describe("WithTransformMatcher", func() {
 				m := Not(WithTransform(plus1, Equal(3)))
 				Expect(m.Match(2)).To(BeFalse())
 				Expect(m.FailureMessage(2)).To(Equal("Expected\n    <int>: 3\nnot to equal\n    <int>: 3"))
+			})
+		})
+
+		When("transform fails", func() {
+			It("reports the transformation error", func() {
+				actual, trafo := "foo", func(string) (string, error) { return "", errors.New("that does not transform") }
+				success, err := WithTransform(trafo, Equal(actual)).Match(actual)
+				Expect(success).To(BeFalse())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("that does not transform"))
 			})
 		})
 
