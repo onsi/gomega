@@ -64,7 +64,7 @@ func (m *WithTransformMatcher) Match(actual interface{}) (bool, error) {
 	result := fn.Call([]reflect.Value{param})
 	if len(result) == 2 {
 		if !result[1].IsNil() {
-			return false, fmt.Errorf("Transform function failed: %e", result[1].Interface())
+			return false, fmt.Errorf("Transform function failed: %s", result[1].Interface().(error).Error())
 		}
 	}
 	m.transformedValue = result[0].Interface() // expect exactly one value
