@@ -51,7 +51,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return MATCH
 					}
 					return NO_MATCH
-				}, "200ms", "20ms").Should(SpecMatch())
+				}).WithTimeout(200 * time.Millisecond).WithPolling(20 * time.Millisecond).Should(SpecMatch())
 				Ω(counter).Should(BeNumerically(">", 2))
 				Ω(counter).Should(BeNumerically("<", 20))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
@@ -95,7 +95,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return NO_MATCH
 					}
 					return MATCH
-				}, "200ms", "20ms").ShouldNot(SpecMatch())
+				}).WithTimeout(200 * time.Millisecond).WithPolling(20 * time.Millisecond).ShouldNot(SpecMatch())
 				Ω(counter).Should(BeNumerically(">", 2))
 				Ω(counter).Should(BeNumerically("<", 20))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
@@ -106,7 +106,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 
 		Context("when a failure occurs", func() {
 			It("registers the appropriate helper functions", func() {
-				ig.G.Eventually(NO_MATCH, "50ms", "10ms").Should(SpecMatch())
+				ig.G.Eventually(NO_MATCH).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
 				Ω(ig.FailureSkip).Should(Equal([]int{3}))
@@ -115,23 +115,23 @@ var _ = Describe("Asynchronous Assertions", func() {
 			})
 
 			It("renders the matcher's error if an error occured", func() {
-				ig.G.Eventually(ERR_MATCH, "50ms", "10ms").Should(SpecMatch())
+				ig.G.Eventually(ERR_MATCH).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Error: spec matcher error"))
 			})
 
 			It("renders the optional description", func() {
-				ig.G.Eventually(NO_MATCH, "50ms", "10ms").Should(SpecMatch(), "boop")
+				ig.G.Eventually(NO_MATCH).WithTimeout(50*time.Millisecond).WithPolling(10*time.Millisecond).Should(SpecMatch(), "boop")
 				Ω(ig.FailureMessage).Should(ContainSubstring("boop"))
 			})
 
 			It("formats and renders the optional description when there are multiple arguments", func() {
-				ig.G.Eventually(NO_MATCH, "50ms", "10ms").Should(SpecMatch(), "boop %d", 17)
+				ig.G.Eventually(NO_MATCH).WithTimeout(50*time.Millisecond).WithPolling(10*time.Millisecond).Should(SpecMatch(), "boop %d", 17)
 				Ω(ig.FailureMessage).Should(ContainSubstring("boop 17"))
 			})
 
 			It("calls the optional description if it is a function", func() {
-				ig.G.Eventually(NO_MATCH, "50ms", "10ms").Should(SpecMatch(), func() string { return "boop" })
+				ig.G.Eventually(NO_MATCH).WithTimeout(50*time.Millisecond).WithPolling(10*time.Millisecond).Should(SpecMatch(), func() string { return "boop" })
 				Ω(ig.FailureMessage).Should(ContainSubstring("boop"))
 			})
 		})
@@ -144,7 +144,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				ig.G.Consistently(func() string {
 					counter++
 					return MATCH
-				}, "50ms", "10ms").Should(SpecMatch())
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(counter).Should(BeNumerically(">", 1))
 				Ω(counter).Should(BeNumerically("<", 7))
 				Ω(ig.FailureMessage).Should(BeZero())
@@ -158,7 +158,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return ERR_MATCH
 					}
 					return MATCH
-				}, "50ms", "10ms").Should(SpecMatch())
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(counter).Should(Equal(3))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Error: spec matcher error"))
@@ -172,7 +172,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return NO_MATCH
 					}
 					return MATCH
-				}, "50ms", "10ms").Should(SpecMatch())
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(counter).Should(Equal(3))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
@@ -185,7 +185,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				ig.G.Consistently(func() string {
 					counter++
 					return NO_MATCH
-				}, "50ms", "10ms").ShouldNot(SpecMatch())
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(SpecMatch())
 				Ω(counter).Should(BeNumerically(">", 1))
 				Ω(counter).Should(BeNumerically("<", 7))
 				Ω(ig.FailureMessage).Should(BeZero())
@@ -199,7 +199,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return ERR_MATCH
 					}
 					return NO_MATCH
-				}, "50ms", "10ms").ShouldNot(SpecMatch())
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(SpecMatch())
 				Ω(counter).Should(Equal(3))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Error: spec matcher error"))
@@ -213,7 +213,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return MATCH
 					}
 					return NO_MATCH
-				}, "50ms", "10ms").ShouldNot(SpecMatch())
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(SpecMatch())
 				Ω(counter).Should(Equal(3))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("negative: match"))
@@ -263,14 +263,14 @@ var _ = Describe("Asynchronous Assertions", func() {
 					time.Sleep(100 * time.Millisecond)
 					close(c)
 				}()
-				ig.G.Eventually(c, "1s", "10ms").Should(BeClosed())
+				ig.G.Eventually(c).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(BeClosed())
 				Ω(ig.FailureMessage).Should(BeZero())
 			})
 
 			It("(consistently) continuously checks on the value ensuring a match always occurs", func() {
 				c := make(chan bool)
 				close(c)
-				ig.G.Consistently(c, "50ms", "10ms").Should(BeClosed())
+				ig.G.Consistently(c).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeClosed())
 				Ω(ig.FailureMessage).Should(BeZero())
 			})
 		})
@@ -281,7 +281,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				ig.G.Eventually(func() int {
 					counter += 1
 					return counter
-				}, "1s", "10ms").Should(BeNumerically(">", 5))
+				}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(BeNumerically(">", 5))
 				Ω(ig.FailureMessage).Should(BeZero())
 			})
 
@@ -290,7 +290,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				ig.G.Consistently(func() int {
 					counter += 1
 					return counter
-				}, "50ms", "10ms").Should(BeNumerically("<", 20))
+				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 20))
 				Ω(counter).Should(BeNumerically(">", 2))
 				Ω(ig.FailureMessage).Should(BeZero())
 			})
@@ -303,7 +303,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return nil
 					}
 					return errors.New("oops")
-				}, "1s", "10ms").Should(BeNil())
+				}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(BeNil())
 				Ω(ig.FailureMessage).Should(BeZero())
 			})
 		})
@@ -322,7 +322,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							err = nil
 						}
 						return counter, s, f, err
-					}, "1s", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(BeZero())
 					Ω(counter).Should(Equal(4))
 				})
@@ -330,7 +330,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				It("reports on the non-zero value if it times out", func() {
 					ig.G.Eventually(func() (int, string, Foo, error) {
 						return 1, "", Foo{Bar: "hi"}, nil
-					}, "30ms", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero extra argument at index 2:"))
 					Ω(ig.FailureMessage).Should(ContainSubstring(`Foo{Bar:"hi"}`))
 				})
@@ -348,7 +348,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 								err = nil
 							}
 							return counter, s, f, err
-						}, "1s", "10ms").ShouldNot(BeNumerically("<", 0))
+						}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).ShouldNot(BeNumerically("<", 0))
 						Ω(ig.FailureMessage).Should(BeZero())
 						Ω(counter).Should(Equal(4))
 					})
@@ -362,7 +362,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Consistently(func() (int, string, Foo, error) {
 						counter += 1
 						return counter, s, f, err
-					}, "50ms", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(BeZero())
 					Ω(counter).Should(BeNumerically(">", 2))
 				})
@@ -376,7 +376,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							f = Foo{Bar: "welp"}
 						}
 						return counter, s, f, err
-					}, "50ms", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero extra argument at index 2:"))
 					Ω(ig.FailureMessage).Should(ContainSubstring(`Foo{Bar:"welp"}`))
 					Ω(counter).Should(Equal(3))
@@ -389,7 +389,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						ig.G.Consistently(func() (int, string, Foo, error) {
 							counter += 1
 							return counter, s, f, err
-						}, "50ms", "10ms").ShouldNot(BeNumerically(">", 100))
+						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(BeNumerically(">", 100))
 						Ω(ig.FailureMessage).Should(BeZero())
 						Ω(counter).Should(BeNumerically(">", 2))
 					})
@@ -403,7 +403,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 								s = "welp"
 							}
 							return counter, s, f, err
-						}, "50ms", "10ms").ShouldNot(BeNumerically(">", 100))
+						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(BeNumerically(">", 100))
 						Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero extra argument at index 1:"))
 						Ω(ig.FailureMessage).Should(ContainSubstring(`<string>: "welp"`))
 						Ω(counter).Should(Equal(3))
@@ -432,7 +432,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							panic("boom") //never see since the expectation stops execution
 						}
 						return counter, s, f, err
-					}, "1s", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(BeZero())
 					Ω(counter).Should(Equal(5))
 				})
@@ -442,7 +442,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Eventually(func(g Gomega) int {
 						g.Expect(false).To(BeTrue())
 						return 10
-					}, "30ms", "10ms").Should(Equal(10))
+					}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Equal(10))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Assertion in callback at %s:%d failed:", file, line+2))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <bool>: false\nto be true"))
 				})
@@ -452,7 +452,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						ig.G.Eventually(func(g Gomega) int {
 							g.Expect(true).To(BeTrue())
 							panic("boom")
-						}, "30ms", "10ms").Should(Equal(10))
+						}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Equal(10))
 					}).Should(PanicWith("boom"))
 					Ω(ig.FailureMessage).Should(BeEmpty())
 				})
@@ -476,7 +476,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 								panic("boom") //never see since the expectation stops execution
 							}
 							return counter, s, f, err
-						}, "1s", "10ms").ShouldNot(BeNumerically("<", 0))
+						}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).ShouldNot(BeNumerically("<", 0))
 						Ω(ig.FailureMessage).Should(BeZero())
 						Ω(counter).Should(Equal(5))
 					})
@@ -487,7 +487,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Eventually(func(g Gomega) int {
 						g.Expect(false).To(BeTrue())
 						return 9
-					}, "30ms", "10ms").ShouldNot(Equal(10))
+					}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Equal(10))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Assertion in callback at %s:%d failed:", file, line+2))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <bool>: false\nto be true"))
 				})
@@ -501,7 +501,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						counter += 1
 						g.Expect(true).To(BeTrue())
 						return counter, s, f, err
-					}, "50ms", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(BeZero())
 					Ω(counter).Should(BeNumerically(">", 2))
 				})
@@ -518,7 +518,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							panic("boom") //never see this
 						}
 						return counter, s, f, err
-					}, "50ms", "10ms").Should(BeNumerically("<", 100))
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Assertion in callback at %s:%d failed:", file, line+5))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <bool>: false\nto be true"))
 					Ω(counter).Should(Equal(3))
@@ -529,7 +529,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						ig.G.Consistently(func(g Gomega) int {
 							g.Expect(true).To(BeTrue())
 							panic("boom")
-						}, "50ms", "10ms").Should(Equal(10))
+						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Equal(10))
 					}).Should(PanicWith("boom"))
 					Ω(ig.FailureMessage).Should(BeEmpty())
 				})
@@ -539,7 +539,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						ig.G.Consistently(func(g Gomega) int {
 							g.Expect(true).To(BeTrue())
 							return 9
-						}, "50ms", "10ms").ShouldNot(Equal(10))
+						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Equal(10))
 						Ω(ig.FailureMessage).Should(BeEmpty())
 					})
 
@@ -554,7 +554,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 								panic("boom") //never see this
 							}
 							return 9
-						}, "50ms", "10ms").ShouldNot(Equal(10))
+						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Equal(10))
 						Ω(ig.FailureMessage).Should(ContainSubstring("Error: Assertion in callback at %s:%d failed:", file, line+5))
 						Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <bool>: false\nto be true"))
 					})
@@ -572,7 +572,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							g.Expect(false).To(BeTrue())
 							g.Expect("bloop").To(Equal("blarp"))
 						}
-					}, "1s", "10ms").Should(Succeed())
+					}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(Succeed())
 					Ω(counter).Should(Equal(5))
 					Ω(ig.FailureMessage).Should(BeZero())
 				})
@@ -585,7 +585,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							g.Expect(false).To(BeTrue())
 							g.Expect("bloop").To(Equal("blarp"))
 						}
-					}, "100ms", "10ms").Should(Succeed())
+					}).WithTimeout(100 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Succeed())
 					Ω(counter).Should(BeNumerically(">", 1))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected success, but got an error"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("<bool>: false"))
@@ -601,7 +601,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							g.Expect(false).To(BeTrue())
 							g.Expect("bloop").To(Equal("blarp"))
 						}
-					}, "100ms", "10ms").ShouldNot(Succeed())
+					}).WithTimeout(100 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Succeed())
 					Ω(counter).Should(Equal(6))
 					Ω(ig.FailureMessage).Should(BeZero())
 				})
@@ -609,7 +609,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				It("should fail to ShouldNot(Succeed) eventually if an error never occurs", func() {
 					ig.G.Eventually(func(g Gomega) {
 						g.Expect(true).To(BeTrue())
-					}, "50ms", "10ms").ShouldNot(Succeed())
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Succeed())
 					Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected failure, but got no error."))
 				})
@@ -621,7 +621,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Consistently(func(g Gomega) {
 						counter += 1
 						g.Expect(true).To(BeTrue())
-					}, "50ms", "10ms").Should(Succeed())
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Succeed())
 					Ω(counter).Should(BeNumerically(">", 2))
 					Ω(ig.FailureMessage).Should(BeZero())
 				})
@@ -635,7 +635,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							g.Expect(false).To(BeTrue())
 							g.Expect("bloop").To(Equal("blarp"))
 						}
-					}, "50ms", "10ms").Should(Succeed())
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Succeed())
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected success, but got an error"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("<bool>: false"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("to be true"))
@@ -648,7 +648,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Consistently(func(g Gomega) {
 						counter += 1
 						g.Expect(true).To(BeFalse())
-					}, "50ms", "10ms").ShouldNot(Succeed())
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Succeed())
 					Ω(counter).Should(BeNumerically(">", 2))
 					Ω(ig.FailureMessage).Should(BeZero())
 				})
@@ -662,7 +662,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						} else {
 							g.Expect(false).To(BeTrue())
 						}
-					}, "50ms", "10ms").ShouldNot(Succeed())
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Succeed())
 					Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected failure, but got no error."))
 					Ω(counter).Should(Equal(3))
@@ -695,7 +695,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 			close(c)
 
 			t := time.Now()
-			ig.G.Eventually(c, "100ms", "10ms").Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
+			ig.G.Eventually(c).WithTimeout(100*time.Millisecond).WithPolling(10*time.Millisecond).Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
 			Ω(time.Since(t)).Should(BeNumerically("<", 90*time.Millisecond))
 			Ω(ig.FailureMessage).Should(ContainSubstring("No future change is possible."))
 			Ω(ig.FailureMessage).Should(ContainSubstring("The channel is closed."))
@@ -706,7 +706,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 			close(c)
 
 			t := time.Now()
-			ig.G.Eventually(func() chan bool { return c }, "100ms", "10ms").Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
+			ig.G.Eventually(func() chan bool { return c }).WithTimeout(100*time.Millisecond).WithPolling(10*time.Millisecond).Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
 			Ω(time.Since(t)).Should(BeNumerically(">=", 90*time.Millisecond))
 			Ω(ig.FailureMessage).ShouldNot(ContainSubstring("No future change is possible."))
 			Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))

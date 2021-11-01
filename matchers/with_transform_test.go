@@ -14,7 +14,7 @@ var _ = Describe("WithTransformMatcher", func() {
 
 	Context("Panic if transform function invalid", func() {
 		panicsWithTransformer := func(transform interface{}) {
-			ExpectWithOffset(1, func() { WithTransform(transform, nil) }).To(Panic())
+			Expect(func() { WithTransform(transform, nil) }).WithOffset(1).To(Panic())
 		}
 		It("nil", func() {
 			panicsWithTransformer(nil)
