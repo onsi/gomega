@@ -215,9 +215,9 @@ var _ = Describe("Gomega DSL", func() {
 			doubleNested := func(eventually bool) {
 				func() {
 					if eventually {
-						EventuallyWithOffset(2, true, "10ms", "5ms").Should(BeFalse())
+						Eventually(true, "10ms", "5ms").WithOffset(2).Should(BeFalse())
 					} else {
-						ExpectWithOffset(2, true).To(BeFalse())
+						Expect(true).WithOffset(2).To(BeFalse())
 					}
 				}()
 			}

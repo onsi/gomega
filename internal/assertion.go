@@ -23,6 +23,11 @@ func NewAssertion(actualInput interface{}, g *Gomega, offset int, extra ...inter
 	}
 }
 
+func (assertion *Assertion) WithOffset(offset int) types.Assertion {
+	assertion.offset = offset
+	return assertion
+}
+
 func (assertion *Assertion) Should(matcher types.GomegaMatcher, optionalDescription ...interface{}) bool {
 	assertion.g.THelper()
 	return assertion.vetExtras(optionalDescription...) && assertion.match(matcher, true, optionalDescription...)

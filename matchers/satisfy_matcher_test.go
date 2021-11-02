@@ -13,7 +13,7 @@ var _ = Describe("SatisfyMatcher", func() {
 
 	Context("Panic if predicate is invalid", func() {
 		panicsWithPredicate := func(predicate interface{}) {
-			ExpectWithOffset(1, func() { Satisfy(predicate) }).To(Panic())
+			Expect(func() { Satisfy(predicate) }).WithOffset(1).To(Panic())
 		}
 		It("nil", func() {
 			panicsWithPredicate(nil)

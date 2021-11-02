@@ -61,9 +61,9 @@ var _ = Describe("Gomega", func() {
 			doubleNested := func(g Gomega, eventually bool) {
 				func() {
 					if eventually {
-						g.EventuallyWithOffset(2, true, "10ms", "5ms").Should(BeFalse())
+						g.Eventually(true, "10ms", "5ms").WithOffset(2).Should(BeFalse())
 					} else {
-						g.ExpectWithOffset(2, true).To(BeFalse())
+						g.Expect(true).WithOffset(2).To(BeFalse())
 					}
 				}()
 			}
