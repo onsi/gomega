@@ -132,7 +132,7 @@ var _ = Describe("WithTransformMatcher", func() {
 				success, err := WithTransform(trafo, Equal(actual)).Match(actual)
 				Expect(success).To(BeFalse())
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("that does not transform"))
+				Expect(err.Error()).To(MatchRegexp(": that does not transform$"))
 			})
 		})
 

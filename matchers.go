@@ -492,7 +492,7 @@ func Not(matcher types.GomegaMatcher) types.GomegaMatcher {
 //  Expect(1).To(WithTransform(plus1, Equal(2))
 //
 //   var failingplus1 = func(i int) (int, error) { return 42, "this does not compute" }
-//   Expect(1).To(WithTrafo(failingplus1, Equal(2)))
+//   Expect(1).To(WithTransform(failingplus1, Equal(2)))
 //
 //And(), Or(), Not() and WithTransform() allow matchers to be composed into complex expressions.
 func WithTransform(transform interface{}, matcher types.GomegaMatcher) types.GomegaMatcher {
