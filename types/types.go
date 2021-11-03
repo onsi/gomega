@@ -82,4 +82,6 @@ type Assertion interface {
 	NotTo(matcher GomegaMatcher, optionalDescription ...interface{}) bool
 
 	WithOffset(offset int) Assertion
+
+	Error() Assertion
 }

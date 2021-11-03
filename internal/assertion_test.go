@@ -1,6 +1,8 @@
 package internal_test
 
 import (
+	"errors"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -141,7 +143,51 @@ var _ = Describe("Making Synchronous Assertions", func() {
 		Entry(
 			"when the matcher matches but a non-zero-valued extra parameter is included, it fails",
 			MATCH, Extras(1, "bam", struct{ Foo string }{Foo: "foo"}, nil), OptionalDescription(),
-			SHOULD_MATCH, "Unexpected non-nil/non-zero extra argument at index 1:\n\t<int>: 1", IT_FAILS,
+			SHOULD_MATCH, "Unexpected non-nil/non-zero argument at index 1:\n\t<int>: 1", IT_FAILS,
 		),
 	)
+
+	var SHOULD_OCCUR = true
+	var SHOULD_NOT_OCCUR = false
+
+	DescribeTable("error expectations",
+		func(a, b int, e error, isPositiveAssertion bool, expectedFailureMessage string, expectedReturnValue bool) {
+			abe := func(a, b int, e error) (int, int, error) {
+				return a, b, e
+			}
+			ig := NewInstrumentedGomega()
+			var returnValue bool
+			if isPositiveAssertion {
+				returnValue = ig.G.Expect(abe(a, b, e)).Error().To(HaveOccurred())
+			} else {
+				returnValue = ig.G.Expect(abe(a, b, e)).Error().NotTo(HaveOccurred())
+			}
+			Expect(returnValue).To(Equal(expectedReturnValue))
+			Expect(ig.FailureMessage).To(Equal(expectedFailureMessage))
+			if expectedFailureMessage != "" {
+				Expect(ig.FailureSkip).To(Equal([]int{2}))
+			}
+		},
+		Entry(
+			"when non-zero results without error",
+			1, 2, nil,
+			SHOULD_NOT_OCCUR, "", IT_PASSES,
+		),
+		Entry(
+			"when non-zero results with error",
+			1, 2, errors.New("D'oh!"),
+			SHOULD_NOT_OCCUR, "Unexpected non-nil/non-zero argument at index 0:\n\t<int>: 1", IT_FAILS,
+		),
+		Entry(
+			"when non-zero results without error",
+			0, 0, errors.New("D'oh!"),
+			SHOULD_OCCUR, "", IT_PASSES,
+		),
+		Entry(
+			"when non-zero results with error",
+			1, 2, errors.New("D'oh!"),
+			SHOULD_OCCUR, "Unexpected non-nil/non-zero argument at index 0:\n\t<int>: 1", IT_FAILS,
+		),
+	)
+
 })
