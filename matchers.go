@@ -342,6 +342,34 @@ func HaveKeyWithValue(key interface{}, value interface{}) types.GomegaMatcher {
 	}
 }
 
+//HaveField succeeds if actual is a struct and the value at the passed in field
+//matches the passed in matcher.  By default HaveField used Equal() to perform the match,
+//however a matcher can be passed in in stead.
+//
+//The field must be a string that resolves to the name of a field in the struct.  Structs can be traversed
+//using the '.' delimiter.  If the field ends with '()' a method named field is assumed to exist on the struct and is invoked.
+//Such methods must take no arguments and return a single value:
+//
+//    type Book struct {
+//        Title string
+//        Author Person
+//    }
+//    type Person struct {
+//        FirstName string
+//        LastName string
+//		  DOB time.Time
+//    }
+//    Expect(book).To(HaveField("Title", "Les Miserables"))
+//    Expect(book).To(HaveField("Title", ContainSubstring("Les"))
+//    Expect(book).To(HaveField("Person.FirstName", Equal("Victor"))
+//    Expect(book).To(HaveField("Person.DOB.Year()", BeNumerically("<", 1900))
+func HaveField(field string, expected interface{}) types.GomegaMatcher {
+	return &matchers.HaveFieldMatcher{
+		Field:    field,
+		Expected: expected,
+	}
+}
+
 //BeNumerically performs numerical assertions in a type-agnostic way.
 //Actual and expected should be numbers, though the specific type of
 //number is irrelevant (float32, float64, uint8, etc...).
