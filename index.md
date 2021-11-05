@@ -1018,6 +1018,47 @@ By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to ass
     Ω(map[string]int{"Foo": 3, "BazFoo": 4}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), BeNumerically(">", 3)))
 ```
 
+#### HaveField(field interface{}, value interface{})
+
+```go
+    Ω(ACTUAL).Should(HaveField(FIELD, VALUE))
+```
+
+succeeds if `ACTUAL` is a struct with a value that can be traversed via `FIELD` that equals `VALUE`.  It is an error for `ACTUAL` to not be a `struct`.
+
+By default `HaveField()` uses the `Equal()` matcher under the hood to assert equality between the extracted value and `VALUE`.  You can change this, however, by passing `HaveField` a `GomegaMatcher` for `VALUE`.
+
+`FIELD` allows you to access fields within the `ACTUAL` struct.  Nested structs can be accessed using the `.` delimiter.  `HaveField()` also allows you to invoke methods on the struct by adding a `()` suffix to the `FIELD` - these methods must take no arguments and return exactly one value.  For example consider the following types:
+
+```go
+type Book struct {
+    Title string
+    Author Person
+}
+
+type Person struct {
+    Name string
+    DOB time.Time
+}
+```
+
+and an instance book `var book = Book{...}` - you can use `HaveField` to make assertions like:
+
+```go
+    Ω(book).Should(HaveField("Title", "Les Miserables"))
+    Ω(book).Should(HaveField("Title", ContainSubstring("Les Mis")))
+    Ω(book).Should(HaveField("Author.Name", "Victor Hugo"))
+    Ω(book).Should(HaveField("Author.DOB.Year()", BeNumerically("<", 1900)))
+```
+
+`HaveField` can pair powerfully with a collection matcher like `ContainElement`.  To assert that a list of books as at least one element with an author born in February you could write:
+
+```go
+    Ω(books).Should(ContainElement(HaveField("Author.DOB.Month()", Equal(2))))
+```
+
+If you want to make lots of complex assertions against the fields of a struct take a look at the [`gstruct`package](#gstruct-testing-complex-data-types) package documented below.  
+
 ### Working with Numbers and Times
 
 #### BeNumerically(comparator string, compareTo ...interface{})
