@@ -1322,6 +1322,32 @@ Or the same thing expressed by introducing a new, lightweight matcher:
     Ω(element).Should(HaveColor(BLUE)))
 ```
 
+`TRANSFORM` functions optionally can return an additional error value in case a transformation is not possible, avoiding the need to `panic`. Returning errors can be useful when using `WithTransform` to build lightweight matchers that accept different value types and that can gracefully fail when presented the wrong value type.
+
+As before, such a `TRANSFORM` expects a single actual value. But now it returns the transformed value together with an error value. This follows the common Go idiom to communicate errors via an explicit, separate return value.
+
+The following lightweight matcher expects to be used either on a `Sprocket` value or `*Sprocket` pointer. It gracefully fails when the actual value is something else.
+
+```go
+    // HaveSprocketName returns a matcher that expects the actual value to be
+    // either a Sprocket or a *Sprocket, having the specified name.
+    func HaveSprocketName(name string) GomegaMatcher {
+        return WithTransform(
+            func(actual interface{}) (string, error) {
+                switch sprocket := actual.(type) {
+                case *Sprocket:
+                    return Sprocket.Name, nil
+                case Sprocket:
+                    return Sprocket.Name, nil
+                default:
+                    return "", fmt.Errorf("HaveSprocketName expects a Sprocket or *Sprocket, but got %T", actual)
+                }
+            }, Equal(name))
+    }
+
+    Ω(element).Should(HaveSprocketName("gomega")))
+```
+
 #### Satisfy(predicate interface{})
 
 ```go
