@@ -156,6 +156,25 @@ Or you can write:
 
 > You should not use a function with multiple return values (like `DoSomethingHard`) with `Succeed`.  Matchers are only passed the *first* value provided to `Ω`/`Expect`, the subsequent arguments are handled by `Ω` and `Expect` as outlined above.  As a result of this behavior `Ω(DoSomethingHard()).ShouldNot(Succeed())` would never pass.
 
+Assertions about errors on functions with multiple return values can be made as follows (and in a lazy way when not asserting that all other return values are zero values):
+
+```go
+    _, _, _, err := MUltipleReturnValuesFunc()
+    Ω(err).Should(HaveOccurred())
+```
+
+Alternatively, such error assertions on multi return value functions can be simplified by chaining `Error` to `Ω` and `Expect`. Doing so will additionally automatically assert that all return values, except for the trailing error return value, are in fact zero values:
+
+```go
+    Ω(MultipleReturnValuesFunc()).Error().Should(HaveOccurred())
+```
+
+Similar, asserting that no error occured is supported, too (where the other return values are allowed to take on any value):
+
+```go
+    Ω(MultipleReturnValuesFunc()).Error().ShouldNot(HaveOccured())
+```
+
 ### Annotating Assertions
 
 You can annotate any assertion by passing either a format string (and optional inputs to format) or a function of type `func() string` after the `GomegaMatcher`:
@@ -245,6 +264,12 @@ Gomega has support for making *asynchronous* assertions.  There are two function
 The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings (e.g. "100ms") or `float64` (in which case they are interpreted as seconds).
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
+
+Alternatively, the timeout and polling interval can also be specified by chaining `WithTimeout` and `WithPolling` to `Eventually`:
+
+```go
+    Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).Should(MATCHER)
+```
 
 Eventually works with any Gomega compatible matcher and supports making assertions against three categories of `ACTUAL` value:
 
@@ -375,6 +400,12 @@ For example:
 
 As with `Eventually`, these can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
 
+Also as with `Eventually`, `Consistently` supports chaining `WithTimeout` and `WithPolling` in the form of:
+
+```go
+    Consistently(ACTUAL).WithTimeout(DURATION).WithPolling(POLLING_INTERVAL).Should(MATCHER)
+```
+
 `Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can assert that:
 
 ```go
@@ -444,6 +475,20 @@ With this, we can rewrite our helper as:
 ```
 
 Now, failed assertions will point to the correct call to the helper in the test.
+
+Alternatively, you can just use the baseline versions of `Expect`, `Eventually` and `Consistently` and combine them with `WithOffset`:
+
+```go
+    func assertTurboEncabulatorContains(components ...string) {
+        teComponents, err := turboEncabulator.GetComponents()
+        Expect(err).WithOffset(1).NotTo(HaveOccurred())
+
+        Expect(teComponents).WithOffset(1).To(HaveLen(components))
+        for _, component := range components {
+          Expect(teComponents).WithOffset(1).To(ContainElement(component))
+        }
+    }
+```
 
 ---
 
