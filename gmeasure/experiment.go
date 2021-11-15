@@ -1,8 +1,6 @@
 /*
 Package gomega/gmeasure provides support for benchmarking and measuring code.  It is intended as a more robust replacement for Ginkgo V1's Measure nodes.
 
-**gmeasure IS CURRENTLY IN BETA - THE API MAY CHANGE IN THE NEAR-FUTURE.  gmeasure WILL BE CONSIDERED GA WHEN Ginkgo V2 IS GA.
-
 gmeasure is organized around the metaphor of an Experiment that can record multiple Measurements.  A Measurement is a named collection of data points and gmeasure supports
 measuring Values (of type float64) and Durations (of type time.Duration).
 
