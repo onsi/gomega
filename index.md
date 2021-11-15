@@ -2483,8 +2483,6 @@ Example:
 
 ## `gmeasure`: Benchmarking Code
 
-**`gmeasure` is currently in beta and the API may change in future releases.  `gmeasure` is slated to go GA alongside the GA release of Ginkgo V2.**
-
 `gmeasure` provides support for measuring and recording benchmarks of your code and tests.  It can be used as a simple standalone benchmarking framework, or as part of your code's test suite.  `gmeasure` integrates cleanly with Ginkgo V2 to enable rich benchmarking of code alognside your tests.
 
 ### A Mental Model for `gmeasure`
