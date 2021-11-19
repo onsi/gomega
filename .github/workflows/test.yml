@@ -16,4 +16,5 @@ jobs:
     - uses: actions/checkout@v2
     - run: go mod tidy && git diff --exit-code go.mod go.sum
     - run: go vet ./...
+    - run: go get -d github.com/onsi/ginkgo/v2/ginkgo
     - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going
