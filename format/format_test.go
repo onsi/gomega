@@ -14,6 +14,14 @@ import (
 
 //recursive struct
 
+const truncateHelpText = `
+Gomega truncated this representation as it exceeds 'format.MaxLength'.
+Consider having the object provide a custom 'GomegaStringer' representation
+or adjust the parameters in Gomega's 'format' package.
+
+Learn more here: https://onsi.github.io/gomega/#adjusting-output
+`
+
 type StringAlias string
 type ByteAlias []byte
 type IntAlias int
@@ -124,7 +132,7 @@ var _ = Describe("Format", func() {
 
 			It("should print out an indented formatted representation of the value and the message, and trucate it when too long", func() {
 				tooLong := strings.Repeat("s", MaxLength+1)
-				tooLongResult := strings.Repeat("s", MaxLength) + "...\n" + TruncatedHelpText()
+				tooLongResult := strings.Repeat("s", MaxLength) + "...\n" + truncateHelpText
 				Expect(Message(tooLong, "to be truncated")).Should(Equal("Expected\n    <string>: " + tooLongResult + "\nto be truncated"))
 			})
 
