@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 )
@@ -131,7 +131,7 @@ var _ = Describe(".BuildIn", func() {
 
 var _ = Describe(".CompileTest", func() {
 	Context("a remote package", func() {
-		const remotePackage = "github.com/onsi/ginkgo/types"
+		const remotePackage = "github.com/onsi/ginkgo/v2/types"
 
 		It("compiles the specified test package", func() {
 			compiledPath, err := gexec.GetAndCompileTest(remotePackage)
@@ -199,7 +199,7 @@ var _ = Describe(".CompileTestWithEnvironment", func() {
 	}
 
 	Context("a remote package", func() {
-		const remotePackage = "github.com/onsi/ginkgo/types"
+		const remotePackage = "github.com/onsi/ginkgo/v2/types"
 
 		It("compiles the specified test package with the specified env vars", func() {
 			compiledPath, err := gexec.GetAndCompileTestWithEnvironment(remotePackage, env)
@@ -253,7 +253,7 @@ var _ = Describe(".CompiledTestIn", func() {
 	})
 
 	Context("a remote package", func() {
-		const remotePackage = "github.com/onsi/ginkgo/types"
+		const remotePackage = "github.com/onsi/ginkgo/v2/types"
 
 		It("compiles the specified test package", func() {
 			compiledPath, err := gexec.GetAndCompileTestIn(gopath, remotePackage)

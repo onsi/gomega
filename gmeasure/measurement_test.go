@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gmeasure"
 )
@@ -75,7 +75,7 @@ var _ = Describe("Measurement", func() {
 				Ω(stats.AnnotationBundle[gmeasure.StatMax]).Should(Equal("D"))
 				Ω(stats.ValueBundle[gmeasure.StatMedian]).Should(Equal(median))
 				Ω(stats.ValueBundle[gmeasure.StatMean]).Should(Equal(mean))
-				Ω(stats.ValueBundle[gmeasure.StatStdDev]).Should(Equal(stdDev))
+				Ω(stats.ValueBundle[gmeasure.StatStdDev]).Should(BeNumerically("~", stdDev))
 			})
 		})
 

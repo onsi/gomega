@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gmeasure"
 )
@@ -16,7 +16,7 @@ var _ = Describe("Cache", func() {
 
 	BeforeEach(func() {
 		var err error
-		path = fmt.Sprintf("./cache-%d", GinkgoParallelNode())
+		path = fmt.Sprintf("./cache-%d", GinkgoParallelProcess())
 		cache, err = gmeasure.NewExperimentCache(path)
 		Ω(err).ShouldNot(HaveOccurred())
 		e1 = gmeasure.NewExperiment("Experiment-1")

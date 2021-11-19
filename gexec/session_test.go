@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package gexec_test
@@ -11,7 +12,7 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -45,7 +46,7 @@ var _ = Describe("Session", func() {
 				Expect(command.Process).ShouldNot(BeNil())
 			})
 
-			It("should wrap the process's stdout and stderr with gbytes buffers", func(done Done) {
+			It("should wrap the process's stdout and stderr with gbytes buffers", func() {
 				Eventually(session.Out).Should(Say("We've done the impossible, and that makes us mighty"))
 				Eventually(session.Err).Should(Say("Ah, curse your sudden but inevitable betrayal!"))
 				defer session.Out.CancelDetects()
@@ -57,9 +58,9 @@ var _ = Describe("Session", func() {
 					Eventually(session).Should(Exit(1))
 				case <-session.Out.Detect("My work's illegal, but at least it's honest."):
 					Eventually(session).Should(Exit(2))
+				case <-time.After(5 * time.Second):
+					Fail("timed out waiting for detection")
 				}
-
-				close(done)
 			})
 
 			It("should satisfy the gbytes.BufferProvider interface, passing Stdout", func() {
