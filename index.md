@@ -1121,6 +1121,26 @@ There are six supported comparators:
 
 Any other comparator is an error.
 
+### Working with Values
+
+#### HaveValue(matcher types.GomegaMatcher)
+
+`HaveValue` applies `MATCHER` to the value that results from dereferencing `ACTUAL` in case of a pointer or an interface, or otherwise `ACTUAL` itself. Pointers and interfaces are dereferenced multiple times as necessary, with a limit of at most 31 dereferences.
+
+```go
+    Expect(ACTUAL).To(HaveValue(MATCHER))
+```
+
+For instance:
+
+```go
+    i := 42
+    Expect(&i).To(HaveValue(Equal(42)))
+    Expect(i).To(HaveValue(Equal(42)))
+```
+
+`HaveValue` can be used, for instance, in tests and custom matchers where the it doesn't matter (as opposed to `PointTo`) if a value first needs to be dereferenced or not. This is especially useful to custom matchers that are to be used in mixed contexts of pointers as well as non-pointers.
+
 ### Working with HTTP responses
 
 #### HaveHTTPStatus(expected interface{})
