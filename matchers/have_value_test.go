@@ -32,17 +32,20 @@ var _ = Describe("HaveValue", func() {
 		Expect(m.FailureMessage(&p)).To(MatchRegexp("not to be <nil>$"))
 	})
 
-	It("should unwrap the value pointed to", func() {
+	It("should unwrap the value pointed to, even repeatedly", func() {
 		i := 1
 		Expect(&i).To(HaveValue(Equal(1)))
 		Expect(&i).NotTo(HaveValue(Equal(2)))
 
-		p := &i
-		Expect(&p).To(HaveValue(Equal(1)))
-		Expect(&p).NotTo(HaveValue(Equal(2)))
+		pi := &i
+		Expect(pi).To(HaveValue(Equal(1)))
+		Expect(pi).NotTo(HaveValue(Equal(2)))
+
+		Expect(&pi).To(HaveValue(Equal(1)))
+		Expect(&pi).NotTo(HaveValue(Equal(2)))
 	})
 
-	It("should unwrap the value inside an interface", func() {
+	It("should unwrap the value of an interface", func() {
 		var i I = &S{V: 42}
 		Expect(i).To(HaveValue(Equal(S{V: 42})))
 		Expect(i).NotTo(HaveValue(Equal(S{})))
