@@ -357,12 +357,12 @@ func HaveKeyWithValue(key interface{}, value interface{}) types.GomegaMatcher {
 //    type Person struct {
 //        FirstName string
 //        LastName string
-//		  DOB time.Time
+//        DOB time.Time
 //    }
 //    Expect(book).To(HaveField("Title", "Les Miserables"))
 //    Expect(book).To(HaveField("Title", ContainSubstring("Les"))
-//    Expect(book).To(HaveField("Person.FirstName", Equal("Victor"))
-//    Expect(book).To(HaveField("Person.DOB.Year()", BeNumerically("<", 1900))
+//    Expect(book).To(HaveField("Author.FirstName", Equal("Victor"))
+//    Expect(book).To(HaveField("Author.DOB.Year()", BeNumerically("<", 1900))
 func HaveField(field string, expected interface{}) types.GomegaMatcher {
 	return &matchers.HaveFieldMatcher{
 		Field:    field,
