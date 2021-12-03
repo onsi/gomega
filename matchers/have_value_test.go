@@ -1,6 +1,8 @@
 package matchers_test
 
 import (
+	"reflect"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
@@ -21,15 +23,13 @@ var _ = Describe("HaveValue", func() {
 	It("should fail when passed nil", func() {
 		var p *struct{}
 		m := HaveValue(BeNil())
-		Expect(m.Match(p)).To(BeFalse())
-		Expect(m.FailureMessage(p)).To(MatchRegexp("not to be <nil>$"))
+		Expect(m.Match(p)).Error().To(MatchError(MatchRegexp("not to be <nil>$")))
 	})
 
 	It("should fail when passed nil indirectly", func() {
 		var p *struct{}
 		m := HaveValue(BeNil())
-		Expect(m.Match(&p)).To(BeFalse())
-		Expect(m.FailureMessage(&p)).To(MatchRegexp("not to be <nil>$"))
+		Expect(m.Match(&p)).Error().To(MatchError(MatchRegexp("not to be <nil>$")))
 	})
 
 	It("should unwrap the value pointed to, even repeatedly", func() {
@@ -43,6 +43,20 @@ var _ = Describe("HaveValue", func() {
 
 		Expect(&pi).To(HaveValue(Equal(1)))
 		Expect(&pi).NotTo(HaveValue(Equal(2)))
+	})
+
+	It("shouldn't endlessly star-gaze", func() {
+		dave := "It's full of stars!"
+		stargazer := reflect.ValueOf(dave)
+		for stars := 1; stars <= 31; stars++ {
+			p := reflect.New(stargazer.Type())
+			p.Elem().Set(stargazer)
+			stargazer = p
+		}
+		m := HaveValue(Equal(dave))
+		Expect(m.Match(stargazer.Interface())).Error().To(
+			MatchError(MatchRegexp(`too many indirections`)))
+		Expect(m.Match(stargazer.Elem().Interface())).To(BeTrue())
 	})
 
 	It("should unwrap the value of an interface", func() {
