@@ -32,6 +32,13 @@ var _ = Describe("HaveValue", func() {
 		Expect(m.Match(&p)).Error().To(MatchError(MatchRegexp("not to be <nil>$")))
 	})
 
+	It("should use the matcher's failure message", func() {
+		m := HaveValue(Equal(42))
+		Expect(m.Match(666)).To(BeFalse())
+		Expect(m.FailureMessage(nil)).To(Equal("Expected\n    <int>: 666\nto equal\n    <int>: 42"))
+		Expect(m.NegatedFailureMessage(nil)).To(Equal("Expected\n    <int>: 666\nnot to equal\n    <int>: 42"))
+	})
+
 	It("should unwrap the value pointed to, even repeatedly", func() {
 		i := 1
 		Expect(&i).To(HaveValue(Equal(1)))

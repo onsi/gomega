@@ -66,7 +66,7 @@ func (m *HaveValueMatcher) Match(actual interface{}) (bool, error) {
 }
 
 func (m *HaveValueMatcher) FailureMessage(_ interface{}) (message string) {
-	return m.Matcher.NegatedFailureMessage(m.resolvedActual)
+	return m.Matcher.FailureMessage(m.resolvedActual)
 }
 
 func (m *HaveValueMatcher) NegatedFailureMessage(_ interface{}) (message string) {
