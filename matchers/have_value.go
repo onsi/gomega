@@ -10,26 +10,6 @@ import (
 
 const maxIndirections = 31
 
-// HaveValue applies the given matcher to the value of actual, optionally and
-// repeatedly dereferencing pointers or taking the concrete value of interfaces.
-// Thus, the matcher will always be applied to non-pointer and non-interface
-// values only. HaveValue will fail with an error if a pointer or interface is
-// nil. It will also fail for more than 31 pointer or interface dereferences to
-// guard against mistakenly applying it to arbitrarily deep linked pointers.
-//
-// HaveValue differs from gstruct.PointTo in that it does not expect actual to
-// be a pointer (as gstruct.PointTo does) but instead also accepts non-pointer
-// and even interface values.
-//
-//   actual := 42
-//   Expect(actual).To(HaveValue(42))
-//   Expect(&actual).To(HaveValue(42))
-func HaveValue(matcher types.GomegaMatcher) types.GomegaMatcher {
-	return &HaveValueMatcher{
-		Matcher: matcher,
-	}
-}
-
 type HaveValueMatcher struct {
 	Matcher        types.GomegaMatcher // the matcher to apply to the "resolved" actual value.
 	resolvedActual interface{}         // the ("resolved") value.
