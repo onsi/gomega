@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
+	"google.golang.org/protobuf/proto"
 )
 
 type GHTTPWithGomega struct {
@@ -195,7 +195,7 @@ func (g GHTTPWithGomega) VerifyProtoRepresenting(expected proto.Message) http.Ha
 			err = proto.Unmarshal(body, actual)
 			g.gomega.Expect(err).ShouldNot(HaveOccurred(), "Failed to unmarshal protobuf")
 
-			g.gomega.Expect(actual).Should(Equal(expected), "ProtoBuf Mismatch")
+			g.gomega.Expect(proto.Equal(expected, actual)).Should(BeTrue(), "ProtoBuf Mismatch")
 		},
 	)
 }
