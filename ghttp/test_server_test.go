@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp/protobuf"
+	"google.golang.org/protobuf/proto"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

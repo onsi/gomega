@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package protobuf;
 
+option go_package = "./;protobuf";
+
 message SimpleMessage {
     required string description = 1;
     required int32 id = 2;
