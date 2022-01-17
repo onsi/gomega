@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/internal/gutil"
 	. "github.com/onsi/gomega/matchers"
 )
 
@@ -18,7 +19,7 @@ var _ = Describe("BeARegularFileMatcher", func() {
 			defer os.Remove(tmpFile.Name())
 			Expect(tmpFile.Name()).Should(BeARegularFile())
 
-			tmpDir, err := os.MkdirTemp("", "gomega-test-tempdir")
+			tmpDir, err := gutil.MkdirTemp("", "gomega-test-tempdir")
 			Expect(err).ShouldNot(HaveOccurred())
 			defer os.Remove(tmpDir)
 			Expect(tmpDir).ShouldNot(BeARegularFile())

@@ -10,6 +10,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp/protobuf"
+	"github.com/onsi/gomega/internal/gutil"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -59,7 +60,7 @@ var _ = Describe("TestServer", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(resp.StatusCode).Should(Equal(200))
 
-			body, err := io.ReadAll(resp.Body)
+			body, err := gutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			Expect(err).ShouldNot(HaveOccurred())
 
@@ -69,7 +70,7 @@ var _ = Describe("TestServer", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(resp.StatusCode).Should(Equal(200))
 
-			body2, err := io.ReadAll(resp.Body)
+			body2, err := gutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			Expect(err).ShouldNot(HaveOccurred())
 
@@ -101,7 +102,7 @@ var _ = Describe("TestServer", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(resp.StatusCode).Should(Equal(http.StatusForbidden))
 
-				data, err := io.ReadAll(resp.Body)
+				data, err := gutil.ReadAll(resp.Body)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(data).Should(BeEmpty())
 			})
@@ -791,7 +792,7 @@ var _ = Describe("TestServer", func() {
 
 					Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
 
-					body, err := io.ReadAll(resp.Body)
+					body, err := gutil.ReadAll(resp.Body)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(body).Should(Equal([]byte("sweet")))
 
@@ -800,7 +801,7 @@ var _ = Describe("TestServer", func() {
 
 					Expect(resp.StatusCode).Should(Equal(http.StatusOK))
 
-					body, err = io.ReadAll(resp.Body)
+					body, err = gutil.ReadAll(resp.Body)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(body).Should(Equal([]byte("sour")))
 				})
@@ -819,7 +820,7 @@ var _ = Describe("TestServer", func() {
 					Expect(err).ShouldNot(HaveOccurred())
 
 					Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
-					Expect(io.ReadAll(resp.Body)).Should(Equal([]byte("sweet")))
+					Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("sweet")))
 					Expect(resp.Header.Get("X-Custom-Header")).Should(Equal("my header"))
 				})
 			})
@@ -853,7 +854,7 @@ var _ = Describe("TestServer", func() {
 
 				Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
 
-				body, err := io.ReadAll(resp.Body)
+				body, err := gutil.ReadAll(resp.Body)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(body).Should(Equal([]byte("tasty")))
 
@@ -862,7 +863,7 @@ var _ = Describe("TestServer", func() {
 
 				Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
 
-				body, err = io.ReadAll(resp.Body)
+				body, err = gutil.ReadAll(resp.Body)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(body).Should(Equal([]byte("treat")))
 			})
@@ -880,7 +881,7 @@ var _ = Describe("TestServer", func() {
 
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(resp.StatusCode).Should(Equal(http.StatusOK))
-					body, err := io.ReadAll(resp.Body)
+					body, err := gutil.ReadAll(resp.Body)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(body).Should(BeEmpty())
 
@@ -904,7 +905,7 @@ var _ = Describe("TestServer", func() {
 
 					Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
 
-					body, err := io.ReadAll(resp.Body)
+					body, err := gutil.ReadAll(resp.Body)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(body).Should(MatchJSON("[1,2,3]"))
 				})
@@ -989,7 +990,7 @@ var _ = Describe("TestServer", func() {
 
 					Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
 
-					body, err := io.ReadAll(resp.Body)
+					body, err := gutil.ReadAll(resp.Body)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(body).Should(MatchJSON(`{"Key": "Jim", "Value": "Codes"}`))
 				})
@@ -1070,7 +1071,7 @@ var _ = Describe("TestServer", func() {
 					Expect(resp.StatusCode).Should(Equal(http.StatusCreated))
 
 					var received protobuf.SimpleMessage
-					body, err := io.ReadAll(resp.Body)
+					body, err := gutil.ReadAll(resp.Body)
 					Expect(err).ShouldNot(HaveOccurred())
 					err = proto.Unmarshal(body, &received)
 					Expect(err).ShouldNot(HaveOccurred())

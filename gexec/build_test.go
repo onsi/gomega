@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/internal/gutil"
 )
 
 var packagePath = "./_fixture/firefly"
@@ -98,7 +99,7 @@ var _ = Describe(".BuildIn", func() {
 	BeforeEach(func() {
 		var err error
 		original = os.Getenv("GOPATH")
-		gopath, err = os.MkdirTemp("", "")
+		gopath, err = gutil.MkdirTemp("", "")
 		Expect(err).NotTo(HaveOccurred())
 		copyFile(filepath.Join("_fixture", "firefly", "main.go"), filepath.Join(gopath, "src", target), "main.go")
 		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "emptyFakeGopath"))).To(Succeed())
@@ -234,7 +235,7 @@ var _ = Describe(".CompiledTestIn", func() {
 	BeforeEach(func() {
 		var err error
 		original = os.Getenv("GOPATH")
-		gopath, err = os.MkdirTemp("", "")
+		gopath, err = gutil.MkdirTemp("", "")
 		Expect(err).NotTo(HaveOccurred())
 		copyFile(filepath.Join("_fixture", "firefly", "main.go"), filepath.Join(gopath, "src", target), "main.go")
 		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "emptyFakeGopath"))).To(Succeed())
@@ -277,7 +278,7 @@ var _ = Describe(".CompiledTestIn", func() {
 
 func copyFile(source, directory, basename string) {
 	Expect(os.MkdirAll(directory, 0755)).To(Succeed())
-	content, err := os.ReadFile(source)
+	content, err := gutil.ReadFile(source)
 	Expect(err).NotTo(HaveOccurred())
-	Expect(os.WriteFile(filepath.Join(directory, basename), content, 0644)).To(Succeed())
+	Expect(gutil.WriteFile(filepath.Join(directory, basename), content)).To(Succeed())
 }
