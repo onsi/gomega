@@ -9,9 +9,11 @@ import (
 )
 
 type Book struct {
-	Title  string
-	Author person
-	Pages  int
+	Title   string
+	Author  person
+	Pages   int
+	Sequel  *Book
+	Prequel *Book
 }
 
 func (book Book) AuthorName() string {
@@ -54,6 +56,9 @@ var _ = Describe("HaveField", func() {
 				DOB:       time.Date(1802, 2, 26, 0, 0, 0, 0, time.UTC),
 			},
 			Pages: 2783,
+			Sequel: &Book{
+				Title: "Les Miserables 2",
+			},
 		}
 	})
 
@@ -67,6 +72,7 @@ var _ = Describe("HaveField", func() {
 		Entry("Top-level method", "AuthorName()", "Victor Hugo"),
 		Entry("Nested method", "Author.DOB.Year()", BeNumerically("<", 1900)),
 		Entry("Traversing past a method", "AbbreviatedAuthor().FirstName", Equal("Vic")),
+		Entry("Traversing a pointer", "Sequel.Title", "Les Miserables 2"),
 	)
 
 	DescribeTable("negation works",
@@ -78,6 +84,7 @@ var _ = Describe("HaveField", func() {
 		Entry("Nested field", "Author.FirstName", "Hugo"),
 		Entry("Top-level method", "AuthorName()", "Victor M. Hugo"),
 		Entry("Nested method", "Author.DOB.Year()", BeNumerically(">", 1900)),
+		Entry("Traversing a pointer", "Sequel.Title", "Les Mis 2"),
 	)
 
 	Describe("when field lookup fails", func() {
@@ -117,6 +124,10 @@ var _ = Describe("HaveField", func() {
 			success, err = HaveField("Author.Abbreviation", "Vic").Match(book)
 			Ω(success).Should(BeFalse())
 			Ω(err.Error()).Should(ContainSubstring("HaveField could not find field named '%s' in struct:", "Abbreviation"))
+
+			success, err = HaveField("Prequel.Title", "Les Miserables 0").Match(book)
+			Ω(success).Should(BeFalse())
+			Ω(err.Error()).Should(ContainSubstring("HaveField encountered nil while dereferencing a pointer of type *matchers_test.Book."))
 		})
 	})
 
