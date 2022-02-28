@@ -10,8 +10,6 @@ var _ = Describe("HaveEach", func() {
 	When("passed a supported type", func() {
 		Context("and expecting a non-matcher", func() {
 			It("should do the right thing", func() {
-				Expect([]int{}).Should(HaveEach(42))
-
 				Expect([2]int{2, 2}).Should(HaveEach(2))
 				Expect([2]int{2, 3}).ShouldNot(HaveEach(3))
 
@@ -57,13 +55,25 @@ var _ = Describe("HaveEach", func() {
 		})
 	})
 
-	When("passed a correctly typed nil", func() {
-		It("should operate succesfully on the passed in value", func() {
+	When("passed an empty supported type or correctly typed nil", func() {
+		It("should error", func() {
+			success, err := (&HaveEachMatcher{Element: []int{}}).Match(42)
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(HaveOccurred())
+
 			var nilSlice []int
-			Expect(nilSlice).Should(HaveEach(1))
+			success, err = (&HaveEachMatcher{Element: nilSlice}).Match(1)
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(HaveOccurred())
 
 			var nilMap map[int]string
-			Expect(nilMap).Should(HaveEach("foo"))
+			success, err = (&HaveEachMatcher{Element: nilMap}).Match(1)
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(HaveOccurred())
+
+			// again, we eat our own documentation food here...
+			Expect([]int{}).To(Or(BeEmpty(), HaveEach(42)))
+			Expect([]int{1}).NotTo(Or(BeEmpty(), HaveEach(42)))
 		})
 	})
 

@@ -23,6 +23,11 @@ func (matcher *HaveEachMatcher) Match(actual interface{}) (success bool, err err
 	}
 
 	value := reflect.ValueOf(actual)
+	if value.Len() == 0 {
+		return false, fmt.Errorf("HaveEach matcher expects a non-empty array/slice/map.  Got:\n%s",
+			format.Object(actual, 1))
+	}
+
 	var valueAt func(int) interface{}
 	if isMap(actual) {
 		keys := value.MapKeys()
