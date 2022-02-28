@@ -978,6 +978,8 @@ Note that Go's type system does not allow you to write this as `ConsistOf([]stri
 
 succeeds if `ACTUAL` solely consists of elements that equal `ELEMENT`.  `ACTUAL` must be an `array`, `slice`, or `map` -- anything else is an error.  For `map`s `HaveEach` searches through the map's values (not keys!).
 
+In order to avoid ambiguity it is an error for `ACTUAL` to be an empty `array`, `slice`, or `map` (or a correctly typed `nil`) -- in these cases it cannot be decided if `HaveEach` should match, or should not match. If in your test it is acceptable for `ACTUAL` to be empty, you can use `Or(BeEmpty(), HaveEach(ELEMENT))` instead.
+
 By default `HaveEach()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `HaveEach` a `GomegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
 
 ```go
