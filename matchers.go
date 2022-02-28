@@ -320,6 +320,20 @@ func ContainElements(elements ...interface{}) types.GomegaMatcher {
 	}
 }
 
+//HaveEach succeeds if actual solely contains elements that match the passed in element.
+//Please note that if actual is empty, HaveEach always will succeed.
+//By default HaveEach() uses Equal() to perform the match, however a
+//matcher can be passed in instead:
+//    Expect([]string{"Foo", "FooBar"}).Should(HaveEach(ContainSubstring("Foo")))
+//
+//Actual must be an array, slice or map.
+//For maps, HaveEach searches through the map's values.
+func HaveEach(element interface{}) types.GomegaMatcher {
+	return &matchers.HaveEachMatcher{
+		Element: element,
+	}
+}
+
 //HaveKey succeeds if actual is a map with the passed in key.
 //By default HaveKey uses Equal() to perform the match, however a
 //matcher can be passed in instead:

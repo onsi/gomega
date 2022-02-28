@@ -970,6 +970,20 @@ is the only element passed in to `ConsistOf`:
 Note that Go's type system does not allow you to write this as `ConsistOf([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
 
 
+#### HaveEach(element ...interface{})
+
+```go
+Ω(ACTUAL).Should(HaveEach(ELEMENT))
+```
+
+succeeds if `ACTUAL` solely consists of elements that equal `ELEMENT`.  `ACTUAL` must be an `array`, `slice`, or `map` -- anything else is an error.  For `map`s `HaveEach` searches through the map's values (not keys!).
+
+By default `HaveEach()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `HaveEach` a `GomegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
+
+```go
+Ω([]string{"Foo", "FooBar"}).Should(HaveEach(ContainSubstring("Foo")))
+```
+
 #### HaveKey(key interface{})
 
 ```go
