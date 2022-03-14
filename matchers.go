@@ -256,16 +256,26 @@ func BeZero() types.GomegaMatcher {
 	return &matchers.BeZeroMatcher{}
 }
 
-//ContainElement succeeds if actual contains the passed in element.
-//By default ContainElement() uses Equal() to perform the match, however a
-//matcher can be passed in instead:
+//ContainElement succeeds if actual contains the passed in element. By default
+//ContainElement() uses Equal() to perform the match, however a matcher can be
+//passed in instead:
 //    Expect([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 //
-//Actual must be an array, slice or map.
-//For maps, ContainElement searches through the map's values.
-func ContainElement(element interface{}) types.GomegaMatcher {
+//Actual must be an array, slice or map. For maps, ContainElement searches
+//through the map's values.
+//
+//If you want to have a copy of the matching element(s) found you can pass a
+//pointer to a variable of the appropriate type. If the variable isn't a slice
+//or map, then exactly one match will be expected and returned. If the variable
+//is a slice or map, then at least one match is expected and all matches will be
+//stored in the variable.
+//
+//    var findings []string
+//    Expect([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubString("Bar", &findings)))
+func ContainElement(element interface{}, result ...interface{}) types.GomegaMatcher {
 	return &matchers.ContainElementMatcher{
 		Element: element,
+		Result:  result,
 	}
 }
 
