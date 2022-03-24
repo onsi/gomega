@@ -416,7 +416,7 @@ SetDefaultConsistentlyDuration(t time.Duration)
 SetDefaultConsistentlyPollingInterval(t time.Duration)
 ```
 
-You can also adjust these global timeouts by setting the `GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT`, `GOMEGA_DEFAULT_EVENTUALLY_POLLING_INTERVAL`, `GOMEGA_DEFAULT_CONSISTENTLY_DURATION`, and `GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL` environment variables to a parseable duration string.
+You can also adjust these global timeouts by setting the `GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT`, `GOMEGA_DEFAULT_EVENTUALLY_POLLING_INTERVAL`, `GOMEGA_DEFAULT_CONSISTENTLY_DURATION`, and `GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL` environment variables to a parseable duration string. The environment variables have lower precedence than `SetDefault...()`.
 
 ## Making Assertions in Helper Functions
 
