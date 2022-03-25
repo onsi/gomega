@@ -452,7 +452,7 @@ func (e *Experiment) Sample(callback func(idx int), samplingConfig SamplingConfi
 	if samplingConfig.Duration > 0 {
 		maxTime = time.Now().Add(samplingConfig.Duration)
 	}
-	maxN := math.MaxInt64
+	maxN := math.MaxInt32
 	if samplingConfig.N > 0 {
 		maxN = samplingConfig.N
 	}
