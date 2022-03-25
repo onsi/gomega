@@ -886,12 +886,42 @@ succeeds if the capacity of `ACTUAL` is `INT`. `ACTUAL` must be of type `array`,
 Ω(ACTUAL).Should(ContainElement(ELEMENT))
 ```
 
+or
+
+```go
+Ω(ACTUAL).Should(ContainElement(ELEMENT, <Pointer>))
+```
+
+
 succeeds if `ACTUAL` contains an element that equals `ELEMENT`.  `ACTUAL` must be an `array`, `slice`, or `map` -- anything else is an error.  For `map`s `ContainElement` searches through the map's values (not keys!).
 
 By default `ContainElement()` uses the `Equal()` matcher under the hood to assert equality between `ACTUAL`'s elements and `ELEMENT`.  You can change this, however, by passing `ContainElement` a `GomegaMatcher`. For example, to check that a slice of strings has an element that matches a substring:
 
 ```go
 Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
+```
+
+In addition, there are occasions when you need to grab (all) matching contained elements, for instance, to make several assertions against the matching contained elements. To do this, you can ask the `ContainElement` matcher for the matching contained elements by passing it a pointer to a variable of the appropriate type. If multiple matching contained elements are expected, then a pointer to either a slice or a map should be passed (but not a pointer to an array), otherwise a pointer to a scalar (non-slice, non-map):
+
+```go
+var findings []string
+Ω([]string{"foo", "foobar", "bar"}).Should(ContainElement(ContainSubstring("foo"), &findings))
+
+var finding string
+Ω([]string{"foo", "foobar", "bar"}).Should(ContainElement("foobar", &finding))
+```
+
+The `ContainElement` matcher will fail with a descriptive error message in case of multiple matches when the pointer references a scalar type.
+
+In case of maps, the matching contained elements will be returned with their keys in the map referenced by the pointer.
+
+```go
+var findings map[int]string
+Ω(map[int]string{
+    1: "bar",
+    2: "foobar",
+    3: "foo",
+}).Should(ContainElement(ContainSubstring("foo"), &findings))
 ```
 
 #### ContainElements(element ...interface{})
