@@ -132,7 +132,7 @@ var _ = Describe(".BuildIn", func() {
 
 var _ = Describe(".CompileTest", func() {
 	Context("a remote package", func() {
-		const remotePackage = "github.com/onsi/ginkgo/v2/types"
+		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package", func() {
 			compiledPath, err := gexec.GetAndCompileTest(remotePackage)
@@ -200,7 +200,7 @@ var _ = Describe(".CompileTestWithEnvironment", func() {
 	}
 
 	Context("a remote package", func() {
-		const remotePackage = "github.com/onsi/ginkgo/v2/types"
+		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package with the specified env vars", func() {
 			compiledPath, err := gexec.GetAndCompileTestWithEnvironment(remotePackage, env)
@@ -223,9 +223,7 @@ var _ = Describe(".CompileTestWithEnvironment", func() {
 })
 
 var _ = Describe(".CompiledTestIn", func() {
-	const (
-		target = "github.com/onsi/gomega/gexec/_fixture/firefly"
-	)
+	const target = "github.com/onsi/gomega/gexec/_fixture/firefly"
 
 	var (
 		original string
@@ -237,7 +235,6 @@ var _ = Describe(".CompiledTestIn", func() {
 		original = os.Getenv("GOPATH")
 		gopath, err = gutil.MkdirTemp("", "")
 		Expect(err).NotTo(HaveOccurred())
-		copyFile(filepath.Join("_fixture", "firefly", "main.go"), filepath.Join(gopath, "src", target), "main.go")
 		Expect(os.Setenv("GOPATH", filepath.Join(os.TempDir(), "emptyFakeGopath"))).To(Succeed())
 		Expect(os.Environ()).To(ContainElement(fmt.Sprintf("GOPATH=%s", filepath.Join(os.TempDir(), "emptyFakeGopath"))))
 	})
@@ -254,7 +251,7 @@ var _ = Describe(".CompiledTestIn", func() {
 	})
 
 	Context("a remote package", func() {
-		const remotePackage = "github.com/onsi/ginkgo/v2/types"
+		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package", func() {
 			compiledPath, err := gexec.GetAndCompileTestIn(gopath, remotePackage)

@@ -3,18 +3,26 @@ name: test
 on: [push, pull_request]
 
 jobs:
+  mod:
+    runs-on: ubuntu-latest
+    name: Check modules
+    steps:
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+    - uses: actions/checkout@v3
+    - run: go mod tidy && git diff --exit-code go.mod go.sum
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [ '1.16', '1.17' ]
+        version: [ '1.17', '1.18' ]
     name: Go ${{ matrix.version }}
     steps:
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.version }}
-    - uses: actions/checkout@v2
-    - run: go mod tidy && git diff --exit-code go.mod go.sum
+    - uses: actions/checkout@v3
     - run: go vet ./...
     - run: mv ./tools ./tools.go
     - run: go get github.com/onsi/ginkgo/v2/ginkgo
