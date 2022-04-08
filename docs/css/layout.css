@@ -59,6 +59,13 @@ img[alt="Ginkgo"] {
 	margin-right: auto;
 }
 
+img[alt="Leakiee"] {
+	max-width: 80%;
+	max-height: 150px;
+	display: block;
+	float: right;
+}
+
 /* code styling */
 
 .markdown-body div.highlight {
