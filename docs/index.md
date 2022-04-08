@@ -1630,6 +1630,39 @@ Contributions are more than welcome.  Either [open an issue](http://github.com/o
 
 When adding a new matcher please mimic the style use in Gomega's current matchers: you should use the `format` package to format your output, put the matcher and its tests in the `matchers` package, and the constructor in the `matchers.go` file in the top-level package.
 
+## Extending Gomega
+
+The default Gomega can be wrapped by replacing it with an object that implements both the `gomega.Gomega` interface and the `inner` interface:
+
+```go
+type inner interface {
+    Inner() Gomega
+}
+```
+
+The `Inner()` method must return the actual `gomega.Default`. For Gomega to function properly your wrapper methods must call the same method on the real `gomega.Default`  This allows you to wrap every Goemga method call (e.g. `Expect()`) with your own code across your test suite.  You can use this to add random delays, additional logging, or just for tracking the number of `Expect()` calls made.
+
+```go
+func init() {
+    gomega.Default = &gomegaWrapper{
+        inner: gomega.Default,
+    }
+}
+
+type gomegaWrapper struct {
+    inner gomega.Gomega
+}
+func (g *gomegaWrapper) Inner() gomega.Gomega {
+    return g.inner
+}
+func (g *gomegaWrapper) Ω(actual interface{}, extra ...interface{}) types.Assertion {
+    // You now have an opportunity to add a random delay to help identify any timing
+    // dependencies in your tests or can add additional logging.
+    return g.inner.Ω(actual, extra...)
+}
+...
+```
+
 ## `ghttp`: Testing HTTP Clients
 The `ghttp` package provides support for testing http *clients*.  The typical pattern in Go for testing http clients entails spinning up an `httptest.Server` using the `net/http/httptest` package and attaching test-specific handlers that perform assertions.
 
