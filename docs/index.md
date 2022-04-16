@@ -3049,18 +3049,20 @@ the testing frameworks (such as Go's own testing package and Gomega).
 ### Using Goroutine Snapshots in Leak Testing
 
 Often, it might be sufficient to cover for additional "non-leaky" goroutines by
-taking a "snapshot" of goroutines _before_ a test and then _afterwards_ use ths
+taking a "snapshot" of goroutines _before_ a test and then _afterwards_ use the
 snapshot to filter out the supposedly "non-leaky" goroutines.
 
+Using Ginkgo's v2 `DeferCleanup` this can be expressed in a compact manner and
+without the need for explicitly declaring a variable to carry the list of known
+goroutines over from `BeforeEach` to `AfterEach`. This keeps all things declared
+neatly in a single place.
+
 ```go
-var ignoreGood []goroutine.Goroutine
-
 BeforeEach(func() {
-    ignoreGood = Goroutines()
-})
-
-AfterEach(func() {
-    Eventually(Goroutines).ShouldNot(HaveLeaked(ignoreGood))
+    goods := Goroutines()
+    DeferCleanup(func() {
+        Eventually(Goroutines).ShouldNot(HaveLeaked(goods))
+    })
 })
 ```
 
@@ -3183,7 +3185,7 @@ criteria:
 
 ### Adjusting Leaky Goroutine Reporting
 
-When `HaveLeaked` finds leaked goroutines, Gomega prints out a description of
+When `HaveLeaked` finds leaked goroutines, `gleak` prints out a description of
 (only) the _leaked_ goroutines. This is different from panic output that
 contains backtraces of all goroutines.
 
