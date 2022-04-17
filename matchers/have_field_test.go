@@ -28,6 +28,14 @@ func (book Book) AbbreviatedAuthor() person {
 	}
 }
 
+func (book Book) ReceiverTitle() string {
+	return book.Title
+}
+
+func (book *Book) PointerReceiverTitle() string {
+	return book.Title
+}
+
 func (book Book) NoReturn() {
 }
 
@@ -150,4 +158,26 @@ var _ = Describe("HaveField", func() {
 			Ω(msg).Should(Equal("Value for field 'Title' satisfied matcher, but should not have.\nExpected\n    <string>: Les Miserables\nnot to equal\n    <string>: Les Miserables"))
 		})
 	})
+
+	Describe("receiver lookup", func() {
+		DescribeTable("(pointer) receiver lookup works",
+			func(field string, expected interface{}) {
+				Ω(&book).Should(HaveField(field, expected))
+			},
+			Entry("non-pointer receiver", "ReceiverTitle()", "Les Miserables"),
+			Entry("pointer receiver", "PointerReceiverTitle()", "Les Miserables"),
+		)
+
+		It("correctly fails", func() {
+			matcher := HaveField("ReceiverTitle()", "Les Miserables")
+			answer := struct{}{}
+			Ω(matcher.Match(answer)).Error().Should(MatchError(
+				"HaveField could not find method named 'ReceiverTitle()' in struct of type struct {}."))
+
+			matcher = HaveField("PointerReceiverTitle()", "Les Miserables")
+			Ω(matcher.Match(book)).Error().Should(MatchError(
+				"HaveField could not find method named 'PointerReceiverTitle()' in struct of type matchers_test.Book."))
+		})
+	})
+
 })
