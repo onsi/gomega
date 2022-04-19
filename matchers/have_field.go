@@ -27,6 +27,9 @@ func extractField(actual interface{}, field string) (interface{}, error) {
 
 	if strings.HasSuffix(fields[0], "()") {
 		extractedValue = actualValue.MethodByName(strings.TrimSuffix(fields[0], "()"))
+		if extractedValue == (reflect.Value{}) && actualValue.CanAddr() {
+			extractedValue = actualValue.Addr().MethodByName(strings.TrimSuffix(fields[0], "()"))
+		}
 		if extractedValue == (reflect.Value{}) {
 			return nil, fmt.Errorf("HaveField could not find method named '%s' in struct of type %T.", fields[0], actual)
 		}
