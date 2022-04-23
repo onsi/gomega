@@ -12,7 +12,7 @@ type CompareMatcher struct {
 	Options  cmp.Options
 }
 
-func (matcher *CompareMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *CompareMatcher) Match(actual interface{}) (success bool, matchErr error) {
 	if actual == nil && matcher.Expected == nil {
 		return false, fmt.Errorf("Refusing to compare <nil> to <nil>.\nBe explicit and use BeNil() instead.  This is to avoid mistakes where both sides of an assertion are erroneously uninitialized.")
 	}
@@ -24,6 +24,17 @@ func (matcher *CompareMatcher) Match(actual interface{}) (success bool, err erro
 			return bytes.Equal(actualByteSlice, expectedByteSlice), nil
 		}
 	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			success = false
+			if err, ok := r.(error); ok {
+				matchErr = err
+			} else if errMsg, ok := r.(string); ok {
+				matchErr = fmt.Errorf(errMsg)
+			}
+		}
+	}()
 
 	return cmp.Equal(actual, matcher.Expected, matcher.Options...), nil
 }

@@ -43,16 +43,17 @@ var _ = Describe("Compare", func() {
 	})
 
 	Context("When asserting time with different location ", func() {
-		var t1, t2 time.Time
+		var t1, t2, t3 time.Time
 
 		BeforeEach(func() {
 			t1 = time.Time{}
 			t2 = time.Time{}.Local()
+			t3 = t1.Add(time.Second)
 		})
 
 		It("should do the right thing", func() {
-			Expect(t1).ShouldNot(Equal(t2))
 			Expect(t1).Should(Compare(t2))
+			Expect(t1).ShouldNot(Compare(t3))
 		})
 	})
 
@@ -69,17 +70,10 @@ var _ = Describe("Compare", func() {
 			s2 = structWithUnexportedFields{unexported: "unexported", Exported: "Exported"}
 		})
 
-		It("should panic with unexported field", func() {
-			defer func() {
-				if e := recover(); e != nil {
-					Expect(e).Should(HavePrefix("cannot handle unexported field at"))
-				}
-			}()
-
-			matcher := &CompareMatcher{
-				Expected: s1,
-			}
-			_, _ = matcher.Match(s2)
+		It("should get match err", func() {
+			success, err := (&CompareMatcher{Expected: s1}).Match(s2)
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(HaveOccurred())
 		})
 
 		It("should do the right thing", func() {
