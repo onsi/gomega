@@ -518,13 +518,13 @@ When both `ACTUAL` and `EXPECTED` are a very long strings, it will attempt to pr
 
 > For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher.
 
-#### Compare(expected interface{}, ...opts cmp.Option)
+#### BeComparableTo(expected interface{}, ...opts cmp.Option)
 
 uses go-cmp cmp.Equal to compare `ACTUAL` with `EXPECTED`.
 
 ```go
-    Ω(ACTUAL).Should(Compare(EXPECTED))
-    Ω(ACTUAL).Should(Compare(EXPECTED), cmpopts.EquateApproxTime(time.Millisecond))
+    Ω(ACTUAL).Should(BeComparableTo(EXPECTED))
+    Ω(ACTUAL).Should(BeComparableTo(EXPECTED), cmpopts.EquateApproxTime(time.Millisecond))
 ```
 
 You can pass cmp.Option as options ,See the [go-cmp documentation](https://github.com/google/go-cmp) for more option information
