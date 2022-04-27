@@ -3,6 +3,7 @@ package gomega
 import (
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega/matchers"
 	"github.com/onsi/gomega/types"
 )
@@ -23,6 +24,15 @@ func Equal(expected interface{}) types.GomegaMatcher {
 func BeEquivalentTo(expected interface{}) types.GomegaMatcher {
 	return &matchers.BeEquivalentToMatcher{
 		Expected: expected,
+	}
+}
+
+//BeComparableTo uses gocmp.Equal to compare. You can pass cmp.Option as options.
+//It is an error for actual and expected to be nil.  Use BeNil() instead.
+func BeComparableTo(expected interface{}, opts ...cmp.Option) types.GomegaMatcher {
+	return &matchers.BeComparableToMatcher{
+		Expected: expected,
+		Options:  opts,
 	}
 }
 
