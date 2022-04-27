@@ -27,10 +27,10 @@ func BeEquivalentTo(expected interface{}) types.GomegaMatcher {
 	}
 }
 
-//Compare uses gocmp.Equal to compare. You can pass cmp.Option as options.
+//BeComparableTo uses gocmp.Equal to compare. You can pass cmp.Option as options.
 //It is an error for actual and expected to be nil.  Use BeNil() instead.
-func Compare(expected interface{}, opts ...cmp.Option) types.GomegaMatcher {
-	return &matchers.CompareMatcher{
+func BeComparableTo(expected interface{}, opts ...cmp.Option) types.GomegaMatcher {
+	return &matchers.BeComparableToMatcher{
 		Expected: expected,
 		Options:  opts,
 	}

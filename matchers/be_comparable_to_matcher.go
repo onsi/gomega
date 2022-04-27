@@ -7,12 +7,12 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
-type CompareMatcher struct {
+type BeComparableToMatcher struct {
 	Expected interface{}
 	Options  cmp.Options
 }
 
-func (matcher *CompareMatcher) Match(actual interface{}) (success bool, matchErr error) {
+func (matcher *BeComparableToMatcher) Match(actual interface{}) (success bool, matchErr error) {
 	if actual == nil && matcher.Expected == nil {
 		return false, fmt.Errorf("Refusing to compare <nil> to <nil>.\nBe explicit and use BeNil() instead.  This is to avoid mistakes where both sides of an assertion are erroneously uninitialized.")
 	}
@@ -39,10 +39,10 @@ func (matcher *CompareMatcher) Match(actual interface{}) (success bool, matchErr
 	return cmp.Equal(actual, matcher.Expected, matcher.Options...), nil
 }
 
-func (matcher *CompareMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *BeComparableToMatcher) FailureMessage(actual interface{}) (message string) {
 	return cmp.Diff(matcher.Expected, actual)
 }
 
-func (matcher *CompareMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *BeComparableToMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return format.Message(actual, "not to equal", matcher.Expected)
 }
