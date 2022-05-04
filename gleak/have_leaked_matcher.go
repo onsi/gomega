@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/gleak/goroutine"
 	"github.com/onsi/gomega/types"
@@ -44,6 +45,7 @@ var standardFilters = []types.GomegaMatcher{
 	// Ginkgo testing framework
 	IgnoringTopFunction("github.com/onsi/ginkgo/v2/internal.(*Suite).runNode"),
 	IgnoringTopFunction("github.com/onsi/ginkgo/v2/internal.(*Suite).runNode..."),
+	gomega.And(IgnoringTopFunction("runtime.goexit1"), IgnoringCreator("github.com/onsi/ginkgo/v2/internal.(*Suite).runNode")),
 	IgnoringTopFunction("github.com/onsi/ginkgo/v2/internal/interrupt_handler.(*InterruptHandler).registerForInterrupts..."),
 	IgnoringTopFunction("github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).registerForInterrupts"),
 
