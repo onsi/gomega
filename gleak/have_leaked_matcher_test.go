@@ -77,7 +77,8 @@ created by main.foo`,
 	})
 
 	It("considers testing and runtime goroutines not to be leaks", func() {
-		Expect(Goroutines()).NotTo(HaveLeaked(), "should not find any leaks by default")
+		Eventually(Goroutines).WithTimeout(2*time.Second).WithPolling(250*time.Millisecond).
+			ShouldNot(HaveLeaked(), "should not find any leaks by default")
 	})
 
 	When("using signals", func() {
