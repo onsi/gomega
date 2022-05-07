@@ -889,7 +889,7 @@ succeeds if the capacity of `ACTUAL` is `INT`. `ACTUAL` must be of type `array`,
 or
 
 ```go
-Ω(ACTUAL).Should(ContainElement(ELEMENT, <Pointer>))
+Ω(ACTUAL).Should(ContainElement(ELEMENT, <POINTER>))
 ```
 
 
@@ -901,7 +901,7 @@ By default `ContainElement()` uses the `Equal()` matcher under the hood to asser
 Ω([]string{"Foo", "FooBar"}).Should(ContainElement(ContainSubstring("Bar")))
 ```
 
-In addition, there are occasions when you need to grab (all) matching contained elements, for instance, to make several assertions against the matching contained elements. To do this, you can ask the `ContainElement` matcher for the matching contained elements by passing it a pointer to a variable of the appropriate type. If multiple matching contained elements are expected, then a pointer to either a slice or a map should be passed (but not a pointer to an array), otherwise a pointer to a scalar (non-slice, non-map):
+In addition, there are occasions when you need to grab (all) matching contained elements, for instance, to make several assertions against the matching contained elements. To do this, you can ask the `ContainElement()` matcher for the matching contained elements by passing it a pointer to a variable of the appropriate type. If multiple matching contained elements are expected, then a pointer to either a slice or a map should be passed (but not a pointer to an array), otherwise a pointer to a scalar (non-slice, non-map):
 
 ```go
 var findings []string
@@ -1084,6 +1084,22 @@ and an instance book `var book = Book{...}` - you can use `HaveField` to make as
 ```
 
 If you want to make lots of complex assertions against the fields of a struct take a look at the [`gstruct`package](#gstruct-testing-complex-data-types) package documented below.  
+
+#### HaveExistingField(field interface{})
+
+While `HaveField()` considers a missing field to be an error (instead of non-success), combining it with `HaveExistingField()` allows `HaveField()` to be reused in test contexts other than assertions: for instance, as filters to [`ContainElement(ELEMENT, <POINTER>)`](#containelementelement-interface) or in detecting resource leaks (like leaked file descriptors).
+
+```go
+Ω(ACTUAL).Should(HaveExistingField(FIELD))
+```
+
+succeeds if `ACTUAL` is a struct with a field `FIELD`, regardless of this field's value. It is an error for `ACTUAL` to not be a `struct`. Like `HaveField()`, `HaveExistingField()` supports accessing nested structs using the `.` delimiter. Methods on the struct are invoked by adding a `()` suffix to the `FIELD` - these methods must take no arguments and return exactly one value.
+
+To assert a particular field value, but only if such a field exists in an `ACTUAL` struct, use the composing [`And`](#andmatchers-gomegamatcher) matcher:
+
+```go
+Ω(ACTUAL).Should(And(HaveExistingField(FIELD), HaveField(FIELD, VALUE)))
+```
 
 ### Working with Numbers and Times
 
