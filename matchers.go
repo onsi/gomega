@@ -404,6 +404,19 @@ func HaveField(field string, expected interface{}) types.GomegaMatcher {
 	}
 }
 
+// HaveExistingField succeeds if actual is a struct and the specified field
+// exists.
+//
+// HaveExistingField can be combined with HaveField in order to cover use cases
+// with optional fields. HaveField alone would trigger an error in such situations.
+//
+//     Expect(MrHarmless).NotTo(And(HaveExistingField("Title"), HaveField("Title", "Supervillain")))
+func HaveExistingField(field string) types.GomegaMatcher {
+	return &matchers.HaveExistingFieldMatcher{
+		Field: field,
+	}
+}
+
 // HaveValue applies the given matcher to the value of actual, optionally and
 // repeatedly dereferencing pointers or taking the concrete value of interfaces.
 // Thus, the matcher will always be applied to non-pointer and non-interface
