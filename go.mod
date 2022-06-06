@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.5.8
 	github.com/onsi/ginkgo/v2 v2.1.4
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
