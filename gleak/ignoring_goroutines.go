@@ -3,8 +3,6 @@ package gleak
 import (
 	"sort"
 
-	"github.com/onsi/gomega/gleak/goroutine"
-
 	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
 )
@@ -14,7 +12,7 @@ import (
 // matcher is to take a snapshot of the current goroutines just right before a
 // test and then at the end of a test filtering out these "good" and known
 // goroutines.
-func IgnoringGoroutines(goroutines []goroutine.Goroutine) types.GomegaMatcher {
+func IgnoringGoroutines(goroutines []Goroutine) types.GomegaMatcher {
 	m := &ignoringGoroutinesMatcher{
 		ignoreGoids: map[uint64]struct{}{},
 	}
@@ -28,7 +26,7 @@ type ignoringGoroutinesMatcher struct {
 	ignoreGoids map[uint64]struct{}
 }
 
-// Match succeeds if actual is a goroutine.Goroutine and its ID is in the set of
+// Match succeeds if actual is a Goroutine and its ID is in the set of
 // goroutine IDs to expect and thus to ignore in leak checks.
 func (matcher *ignoringGoroutinesMatcher) Match(actual interface{}) (success bool, err error) {
 	g, err := G(actual, "IgnoringGoroutines")

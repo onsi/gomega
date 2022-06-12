@@ -3113,7 +3113,7 @@ in form of `GomegaMatcher`s or in shorthand notation:
   function on the backtrace stack has the exact name `foo.bar` _and_ the
   goroutine is in a state beginning with `chan receive`.
 
-- `[]goroutine.Goroutine` is shorthand for
+- `[]Goroutine` is shorthand for
   `IgnoringGoroutines(<SLICEOFGOROUTINES>)`: it filters out the specified
   goroutines, considering them to be non-leaky. The goroutines are identified by
   their [goroutine IDs](#goroutine-ids).
@@ -3123,7 +3123,7 @@ in form of `GomegaMatcher`s or in shorthand notation:
 
 - additionally, any other `GomegaMatcher` can be passed to `HaveLeaked()`, as
   long as this matcher can work on a passed-in actual value of type
-  `goroutine.Goroutine`.
+  `Goroutine`.
 
 ### Goroutine Matchers
 
@@ -3151,9 +3151,9 @@ criteria:
 - `"foo.bar [state]"` matches if a goroutine's topmost function has this exact
   name and the goroutine's state begins with the specified state string.
 
-`ACTUAL` must be an array or slice of `goroutine.Goroutine`s.
+`ACTUAL` must be an array or slice of `Goroutine`s.
 
-#### IgnoringGoroutines(goroutines []goroutine.Goroutine)
+#### IgnoringGoroutines(goroutines []Goroutine)
 
 ```go
 Eventually(ACTUAL).ShouldNot(HaveLeaked(IgnoringGoroutines(GOROUTINES)))
@@ -3164,7 +3164,7 @@ are elements of `GOROUTINES`, causing `HaveLeaked` to filter out the matched
 goroutine(s) as non-leaky. `IgnoringGoroutines` compares goroutines by their
 `ID`s (see [Goroutine IDs](#gorotuine-ids) for background information).
 
-`ACTUAL` must be an array or slice of `goroutine.Goroutine`s.
+`ACTUAL` must be an array or slice of `Goroutine`s.
 
 #### IgnoringInBacktrace(fname string)
 
@@ -3178,7 +3178,7 @@ filter out the matched goroutine as non-leaky. Please note that
 `IgnoringInBacktrace` uses a (somewhat lazy) `strings.Contains` to check for any
 occurence of `FNAME` in backtraces.
 
-`ACTUAL` must be an array or slice of `goroutine.Goroutine`s.
+`ACTUAL` must be an array or slice of `Goroutine`s.
 
 #### IgnoringCreator(creatorname string)
 

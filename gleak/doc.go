@@ -26,7 +26,7 @@ because no one wants leaked goroutines.
 
 A typical pattern to detect goroutines leaked in individual tests is as follows:
 
-    var ignoreGood []goroutine.Goroutine
+    var ignoreGood []Goroutine
 
     BeforeEach(func() {
         ignoreGood = Goroutines()
@@ -65,7 +65,7 @@ arguments to HaveLeaked(...):
     IgnoringCreator("foo.bar...")                 // creator function name with prefix "foo.bar."
 
 In addition, you can use any other GomegaMatcher, as long as it can work on a
-(single) goroutine.Goroutine. For instance, Gomega's HaveField and WithTransform
+(single) Goroutine. For instance, Gomega's HaveField and WithTransform
 matchers are good foundations for writing project-specific gleak matchers.
 
 Leaked Goroutine Dump
