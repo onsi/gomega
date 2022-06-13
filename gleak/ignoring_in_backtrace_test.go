@@ -14,7 +14,7 @@ var _ = Describe("IgnoringInBacktrace matcher", func() {
 	It("returns an error for an invalid actual", func() {
 		m := IgnoringInBacktrace("foo.bar")
 		Expect(m.Match(nil)).Error().To(MatchError(
-			"IgnoringInBacktrace matcher expects a goroutine.Goroutine or *goroutine.Goroutine.  Got:\n    <nil>: nil"))
+			"IgnoringInBacktrace matcher expects a Goroutine or *Goroutine.  Got:\n    <nil>: nil"))
 	})
 
 	It("matches", func() {
@@ -26,14 +26,14 @@ var _ = Describe("IgnoringInBacktrace matcher", func() {
 
 	It("returns failure messages", func() {
 		m := IgnoringInBacktrace("foo.bar")
-		Expect(m.FailureMessage(goroutine.Goroutine{Backtrace: "abc"})).To(MatchRegexp(
+		Expect(m.FailureMessage(Goroutine{Backtrace: "abc"})).To(MatchRegexp(
 			`Expected\n    <goroutine.Goroutine>: {ID: 0, State: "", TopFunction: "", CreatorFunction: "", BornAt: ""}\nto contain "foo.bar" in the goroutine's backtrace`))
-		Expect(m.NegatedFailureMessage(goroutine.Goroutine{Backtrace: "abc"})).To(MatchRegexp(
+		Expect(m.NegatedFailureMessage(Goroutine{Backtrace: "abc"})).To(MatchRegexp(
 			`Expected\n    <goroutine.Goroutine>: {ID: 0, State: "", TopFunction: "", CreatorFunction: "", BornAt: ""}\nnot to contain "foo.bar" in the goroutine's backtrace`))
 	})
 
 })
 
-func somefunction() goroutine.Goroutine {
+func somefunction() Goroutine {
 	return goroutine.Current()
 }

@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/onsi/gomega/gleak/goroutine"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -18,7 +16,7 @@ import (
 var _ = Describe("HaveLeaked", func() {
 
 	It("renders indented goroutine information including (malformed) backtrace", func() {
-		gs := []goroutine.Goroutine{
+		gs := []Goroutine{
 			{
 				ID:    42,
 				State: "stoned",
@@ -34,7 +32,7 @@ created by main.foo
         main.foo.func1() at foo/test.go:6
         created by main.foo at foo/test.go:5`))
 
-		gs = []goroutine.Goroutine{
+		gs = []Goroutine{
 			{
 				ID:    42,
 				State: "stoned",
@@ -48,7 +46,7 @@ created by main.foo
         main.foo.func1() at foo/test.go:6
         created by main.foo at foo/test.go:5`))
 
-		gs = []goroutine.Goroutine{
+		gs = []Goroutine{
 			{
 				ID:    42,
 				State: "stoned",
@@ -62,7 +60,7 @@ created by main.foo
         main.foo.func1() at foo/test.go:6
         created by main.foo at foo/test.go:5`))
 
-		gs = []goroutine.Goroutine{
+		gs = []Goroutine{
 			{
 				ID:    42,
 				State: "stoned",
@@ -121,7 +119,7 @@ created by main.foo`,
 
 	Context("failure messages", func() {
 
-		var snapshot []goroutine.Goroutine
+		var snapshot []Goroutine
 
 		BeforeEach(func() {
 			snapshot = Goroutines()
@@ -164,12 +162,12 @@ created by main.foo`,
 
 			It("accepts plain strings as filters", func() {
 				m := HaveLeaked("foo.bar")
-				Expect(m.Match([]goroutine.Goroutine{
+				Expect(m.Match([]Goroutine{
 					{TopFunction: "foo.bar"},
 				})).To(BeFalse())
 			})
 
-			It("expects actual to be a slice of goroutine.Goroutine", func() {
+			It("expects actual to be a slice of Goroutine", func() {
 				m := HaveLeaked()
 				Expect(m.Match(nil)).Error().To(MatchError(
 					"HaveLeaked matcher expects an array or slice of goroutines.  Got:\n    <nil>: nil"))
@@ -181,7 +179,7 @@ created by main.foo`,
 
 			It("handles filter matcher errors", func() {
 				m := HaveLeaked(HaveField("foobar", BeNil()))
-				Expect(m.Match([]goroutine.Goroutine{
+				Expect(m.Match([]Goroutine{
 					{ID: 0},
 				})).Error().To(HaveOccurred())
 			})
@@ -192,7 +190,7 @@ created by main.foo`,
 
 	Context("wrapped around test nodes", func() {
 
-		var snapshot []goroutine.Goroutine
+		var snapshot []Goroutine
 
 		When("not leaking", func() {
 
