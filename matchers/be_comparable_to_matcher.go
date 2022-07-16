@@ -3,6 +3,7 @@ package matchers
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega/format"
 )
@@ -40,7 +41,7 @@ func (matcher *BeComparableToMatcher) Match(actual interface{}) (success bool, m
 }
 
 func (matcher *BeComparableToMatcher) FailureMessage(actual interface{}) (message string) {
-	return cmp.Diff(matcher.Expected, actual)
+	return cmp.Diff(matcher.Expected, actual, matcher.Options)
 }
 
 func (matcher *BeComparableToMatcher) NegatedFailureMessage(actual interface{}) (message string) {
