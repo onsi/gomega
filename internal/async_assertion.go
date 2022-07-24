@@ -104,11 +104,13 @@ func (assertion *AsyncAssertion) WithPolling(interval time.Duration) types.Async
 
 func (assertion *AsyncAssertion) Should(matcher types.GomegaMatcher, optionalDescription ...interface{}) bool {
 	assertion.g.THelper()
+	vetOptionalDescription("Asynchronous assertion", optionalDescription...)
 	return assertion.match(matcher, true, optionalDescription...)
 }
 
 func (assertion *AsyncAssertion) ShouldNot(matcher types.GomegaMatcher, optionalDescription ...interface{}) bool {
 	assertion.g.THelper()
+	vetOptionalDescription("Asynchronous assertion", optionalDescription...)
 	return assertion.match(matcher, false, optionalDescription...)
 }
 
