@@ -2,6 +2,7 @@ package internal_test
 
 import (
 	"errors"
+	"reflect"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -188,5 +189,34 @@ var _ = Describe("Making Synchronous Assertions", func() {
 			SHOULD_OCCUR, "Unexpected non-nil/non-zero argument at index 0:\n\t<int>: 1", IT_FAILS,
 		),
 	)
+
+	When("vetting optional description parameters", func() {
+
+		It("panics when Gomega matcher is at the beginning of optional description parameters", func() {
+			ig := NewInstrumentedGomega()
+			for _, expectator := range []string{
+				"To", "NotTo", "ToNot",
+				"Should", "ShouldNot",
+			} {
+				Expect(func() {
+					expect := ig.G.Expect(42) // sic!
+					meth := reflect.ValueOf(expect).MethodByName(expectator)
+					Expect(meth.IsValid()).To(BeTrue())
+					meth.Call([]reflect.Value{
+						reflect.ValueOf(HaveLen(1)),
+						reflect.ValueOf(ContainElement(42)),
+					})
+				}).To(PanicWith(MatchRegexp("Assertion has a GomegaMatcher as the first element of optionalDescription")))
+			}
+		})
+
+		It("accepts Gomega matchers in optional description parameters after the first", func() {
+			Expect(func() {
+				ig := NewInstrumentedGomega()
+				ig.G.Expect(42).To(HaveLen(1), "foo", ContainElement(42))
+			}).NotTo(Panic())
+		})
+
+	})
 
 })

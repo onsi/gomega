@@ -2,6 +2,7 @@ package internal_test
 
 import (
 	"errors"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -712,4 +713,33 @@ var _ = Describe("Asynchronous Assertions", func() {
 			Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
 		})
 	})
+
+	When("vetting optional description parameters", func() {
+
+		It("panics when Gomega matcher is at the beginning of optional description parameters", func() {
+			ig := NewInstrumentedGomega()
+			for _, expectator := range []string{
+				"Should", "ShouldNot",
+			} {
+				Expect(func() {
+					eventually := ig.G.Eventually(42) // sic!
+					meth := reflect.ValueOf(eventually).MethodByName(expectator)
+					Expect(meth.IsValid()).To(BeTrue())
+					meth.Call([]reflect.Value{
+						reflect.ValueOf(HaveLen(1)),
+						reflect.ValueOf(ContainElement(42)),
+					})
+				}).To(PanicWith(MatchRegexp("Asynchronous assertion has a GomegaMatcher as the first element of optionalDescription")))
+			}
+		})
+
+		It("accepts Gomega matchers in optional description parameters after the first", func() {
+			Expect(func() {
+				ig := NewInstrumentedGomega()
+				ig.G.Eventually(42).Should(HaveLen(1), "foo", ContainElement(42))
+			}).NotTo(Panic())
+		})
+
+	})
+
 })
