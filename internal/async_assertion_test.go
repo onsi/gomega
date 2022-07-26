@@ -742,4 +742,22 @@ var _ = Describe("Asynchronous Assertions", func() {
 
 	})
 
+	Context("eventual nil-ism", func() { // issue #555
+
+		It("doesn't panic on nil actual", func() {
+			ig := NewInstrumentedGomega()
+			Expect(func() {
+				ig.G.Eventually(nil).Should(BeNil())
+			}).NotTo(Panic())
+		})
+
+		It("doesn't panic on function returning nil error", func() {
+			ig := NewInstrumentedGomega()
+			Expect(func() {
+				ig.G.Eventually(func() error { return nil }).Should(BeNil())
+			}).NotTo(Panic())
+		})
+
+	})
+
 })
