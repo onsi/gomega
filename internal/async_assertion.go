@@ -40,7 +40,7 @@ func NewAsyncAssertion(asyncType AsyncAssertionType, actualInput interface{}, g 
 	}
 
 	switch actualType := reflect.TypeOf(actualInput); {
-	case actualType.Kind() != reflect.Func:
+	case actualInput == nil || actualType.Kind() != reflect.Func:
 		out.actualValue = actualInput
 	case actualType.NumIn() == 0 && actualType.NumOut() > 0:
 		out.actualIsFunc = true
