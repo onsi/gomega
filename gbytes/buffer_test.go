@@ -105,19 +105,6 @@ var _ = Describe("Buffer", func() {
 			Expect(err).Should(Equal(io.EOF))
 			Expect(n).Should(Equal(0))
 		})
-
-		Context("after the buffer has been closed", func() {
-			It("returns an error", func() {
-				buffer := BufferWithBytes([]byte("abcde"))
-
-				buffer.Close()
-
-				dest := make([]byte, 3)
-				n, err := buffer.Read(dest)
-				Expect(err).Should(HaveOccurred())
-				Expect(n).Should(Equal(0))
-			})
-		})
 	})
 
 	Describe("detecting regular expressions", func() {
