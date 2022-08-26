@@ -21,11 +21,11 @@ import (
 //
 // That is, with ReportFilenameWithPath==false:
 //
-//      foo/bar.go:123
+//	foo/bar.go:123
 //
 // Or with ReportFilenameWithPath==true:
 //
-//      /home/goworld/coolprojects/mymodule/foo/bar.go:123
+//	/home/goworld/coolprojects/mymodule/foo/bar.go:123
 var ReportFilenameWithPath = false
 
 // standardFilters specifies the always automatically included no-leak goroutine
@@ -48,6 +48,8 @@ var standardFilters = []types.GomegaMatcher{
 	gomega.And(IgnoringTopFunction("runtime.goexit1"), IgnoringCreator("github.com/onsi/ginkgo/v2/internal.(*Suite).runNode")),
 	IgnoringTopFunction("github.com/onsi/ginkgo/v2/internal/interrupt_handler.(*InterruptHandler).registerForInterrupts..."),
 	IgnoringTopFunction("github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).registerForInterrupts"),
+	IgnoringCreator("github.com/onsi/ginkgo/v2/internal.(*genericOutputInterceptor).ResumeIntercepting"),
+	IgnoringCreator("github.com/onsi/ginkgo/v2/internal.(*genericOutputInterceptor).ResumeIntercepting..."),
 
 	// goroutines of Go's own testing package for its own workings...
 	IgnoringTopFunction("testing.RunTests [chan receive]"),
@@ -83,32 +85,32 @@ var standardFilters = []types.GomegaMatcher{
 // Eventually's default timeout and polling interval settings, but these can be
 // overridden as usual:
 //
-//   // Remember to use "Goroutines" and not "Goroutines()" with Eventually()!
-//   Eventually(Goroutines).ShouldNot(HaveLeaked())
-//   Eventually(Goroutines).WithTimeout(5 * time.Second).ShouldNot(HaveLeaked())
+//	// Remember to use "Goroutines" and not "Goroutines()" with Eventually()!
+//	Eventually(Goroutines).ShouldNot(HaveLeaked())
+//	Eventually(Goroutines).WithTimeout(5 * time.Second).ShouldNot(HaveLeaked())
 //
 // In its simplest form, an expected non-leaky goroutine can be identified by
 // passing the (fully qualified) name (in form of a string) of the topmost
 // function in the backtrace. For instance:
 //
-//   Eventually(Goroutines).ShouldNot(HaveLeaked("foo.bar"))
+//	Eventually(Goroutines).ShouldNot(HaveLeaked("foo.bar"))
 //
 // This is the shorthand equivalent to this explicit form:
 //
-//   Eventually(Goroutines).ShouldNot(HaveLeaked(IgnoringTopFunction("foo.bar")))
+//	Eventually(Goroutines).ShouldNot(HaveLeaked(IgnoringTopFunction("foo.bar")))
 //
 // HaveLeak also accepts passing a slice of Goroutine objects to be considered
 // non-leaky goroutines.
 //
-//   snapshot := Goroutines()
-//   DoSomething()
-//   Eventually(Goroutines).ShouldNot(HaveLeaked(snapshot))
+//	snapshot := Goroutines()
+//	DoSomething()
+//	Eventually(Goroutines).ShouldNot(HaveLeaked(snapshot))
 //
 // Again, this is shorthand for the following explicit form:
 //
-//   snapshot := Goroutines()
-//   DoSomething()
-//   Eventually(Goroutines).ShouldNot(HaveLeaked(IgnoringGoroutines(snapshot)))
+//	snapshot := Goroutines()
+//	DoSomething()
+//	Eventually(Goroutines).ShouldNot(HaveLeaked(IgnoringGoroutines(snapshot)))
 //
 // Finally, HaveLeaked accepts any GomegaMatcher and will repeatedly pass it a
 // Goroutine object: if the matcher succeeds, the Goroutine object in question
@@ -116,11 +118,11 @@ var standardFilters = []types.GomegaMatcher{
 // built-in Goroutine filter matchers should hopefully cover most situations,
 // any suitable GomegaMatcher can be used for tricky leaky Goroutine filtering.
 //
-//   IgnoringTopFunction("foo.bar")
-//   IgnoringTopFunction("foo.bar...")
-//   IgnoringTopFunction("foo.bar [chan receive]")
-//   IgnoringGoroutines(expectedGoroutines)
-//   IgnoringInBacktrace("foo.bar.baz")
+//	IgnoringTopFunction("foo.bar")
+//	IgnoringTopFunction("foo.bar...")
+//	IgnoringTopFunction("foo.bar [chan receive]")
+//	IgnoringGoroutines(expectedGoroutines)
+//	IgnoringInBacktrace("foo.bar.baz")
 func HaveLeaked(ignoring ...interface{}) types.GomegaMatcher {
 	m := &HaveLeakedMatcher{filters: standardFilters}
 	for _, ign := range ignoring {

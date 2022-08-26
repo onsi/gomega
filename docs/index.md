@@ -3056,11 +3056,27 @@ correctly terminate without triggering false positives. Please refer to the
 interval (which defaults to 1s) and the polling interval (which defaults to
 10ms).
 
-This form of goroutine leak test can cause false positives in situations where a
-test suite or dependency module uses additional goroutines. This simple form
-only looks at all goroutines _after_ a test has run and filters out all
-_well-known_ "non-leaky" goroutines, such as goroutines from Go's runtime and
-the testing frameworks (such as Go's own testing package and Gomega).
+Please note that this simplest form of goroutine leak test can cause false
+positives in situations where a test suite or dependency module uses additional
+goroutines. This simple form only looks at all goroutines _after_ a test has run
+and filters out all _well-known_ "non-leaky" goroutines, such as goroutines from
+Go's runtime and the testing frameworks (such as Go's own testing package and
+Gomega).
+
+### Ginkgo -p
+
+In case you intend to run multiple package tests in parallel using `ginkgo -p
+...`, you'll need to update any existing `BeforeSuite` or add new `BeforeSuite`s
+in each of your packages. Calling `gleak.IgnoreGinkgoParallelClient` at the
+beginning of `BeforeSuite` ensures that `gleak` updates its internal ignore list
+to ignore a background goroutine related to the communication between Ginkgo and
+the parallel packages under test.
+
+```go
+var _ = BeforeSuite(func() {
+    IgnoreGinkgoParallelClient()
+})
+```
 
 ### Using Goroutine Snapshots in Leak Testing
 
