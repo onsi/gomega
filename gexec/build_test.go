@@ -131,7 +131,7 @@ var _ = Describe(".BuildIn", func() {
 })
 
 var _ = Describe(".CompileTest", func() {
-	Context("a remote package", func() {
+	Context("a remote package", Label("network"), func() {
 		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package", func() {
@@ -199,7 +199,7 @@ var _ = Describe(".CompileTestWithEnvironment", func() {
 		"GOARCH=amd64",
 	}
 
-	Context("a remote package", func() {
+	Context("a remote package", Label("network"), func() {
 		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package with the specified env vars", func() {
@@ -250,7 +250,7 @@ var _ = Describe(".CompiledTestIn", func() {
 		}
 	})
 
-	Context("a remote package", func() {
+	Context("a remote package", Label("remote"), func() {
 		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package", func() {

@@ -294,7 +294,7 @@ var _ = Describe("Session", func() {
 				failures := InterceptGomegaFailures(func() {
 					Eventually(session).Should(Say("blah blah blah blah blah"))
 				})
-				Expect(time.Since(t)).Should(BeNumerically("<=", 500*time.Millisecond))
+				Expect(time.Since(t)).Should(BeNumerically("<", time.Second))
 				Expect(failures).Should(HaveLen(1))
 			})
 		})
