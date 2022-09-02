@@ -59,6 +59,26 @@ var _ = Describe("Asynchronous Assertions", func() {
 				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
 				Ω(ig.FailureSkip).Should(Equal([]int{3}))
 			})
+
+			It("maps Within() correctly to timeout and polling intervals", func() {
+				counter := 0
+				ig.G.Eventually(func() bool {
+					counter++
+					return false
+				}).WithTimeout(0).WithPolling(20 * time.Millisecond).Within(200 * time.Millisecond).Should(BeTrue())
+				Ω(counter).Should(BeNumerically(">", 2))
+				Ω(counter).Should(BeNumerically("<", 20))
+
+				counter = 0
+				ig.G.Eventually(func() bool {
+					counter++
+					return false
+				}).WithTimeout(0).WithPolling(0). // first zero intervals, then set them
+									Within(200 * time.Millisecond).ProbeEvery(20 * time.Millisecond).
+									Should(BeTrue())
+				Ω(counter).Should(BeNumerically(">", 2))
+				Ω(counter).Should(BeNumerically("<", 20))
+			})
 		})
 
 		Context("the negative case", func() {
@@ -309,7 +329,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 			})
 		})
 
-		Context("when passed a function that takes no arguments and returns mutliple values", func() {
+		Context("when passed a function that takes no arguments and returns multiple values", func() {
 			Context("with Eventually", func() {
 				It("polls the function until the first returned value satisfies the matcher _and_ all additional values are zero", func() {
 					counter, s, f, err := 0, "hi", Foo{Bar: "hi"}, errors.New("hi")

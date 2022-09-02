@@ -102,6 +102,16 @@ func (assertion *AsyncAssertion) WithPolling(interval time.Duration) types.Async
 	return assertion
 }
 
+func (assertion *AsyncAssertion) Within(timeout time.Duration) types.AsyncAssertion {
+	assertion.timeoutInterval = timeout
+	return assertion
+}
+
+func (assertion *AsyncAssertion) ProbeEvery(interval time.Duration) types.AsyncAssertion {
+	assertion.pollingInterval = interval
+	return assertion
+}
+
 func (assertion *AsyncAssertion) Should(matcher types.GomegaMatcher, optionalDescription ...interface{}) bool {
 	assertion.g.THelper()
 	vetOptionalDescription("Asynchronous assertion", optionalDescription...)
