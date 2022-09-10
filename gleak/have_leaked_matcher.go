@@ -50,6 +50,7 @@ var standardFilters = []types.GomegaMatcher{
 	IgnoringTopFunction("github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).registerForInterrupts"),
 	IgnoringCreator("github.com/onsi/ginkgo/v2/internal.(*genericOutputInterceptor).ResumeIntercepting"),
 	IgnoringCreator("github.com/onsi/ginkgo/v2/internal.(*genericOutputInterceptor).ResumeIntercepting..."),
+	IgnoringCreator("github.com/onsi/ginkgo/v2/internal.RegisterForProgressSignal"),
 
 	// goroutines of Go's own testing package for its own workings...
 	IgnoringTopFunction("testing.RunTests [chan receive]"),
