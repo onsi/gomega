@@ -15,3 +15,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
+
+replace github.com/onsi/ginkgo/v2 => ../ginkgo

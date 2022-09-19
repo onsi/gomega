@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/onsi/gomega/gleak"
 	"github.com/onsi/gomega/gmeasure"
 )
 
@@ -224,6 +225,7 @@ var _ = Describe("Experiment", func() {
 		})
 
 		It("can run samples in parallel", func() {
+			g := gleak.Goroutines()
 			lock := &sync.Mutex{}
 
 			e.Sample(func(idx int) {
@@ -237,6 +239,8 @@ var _ = Describe("Experiment", func() {
 			defer lock.Unlock()
 			Ω(len(indices)).Should(BeNumerically("~", 30, 10))
 			Ω(indices).Should(ConsistOf(ints(len(indices))))
+
+			Eventually(gleak.Goroutines).ShouldNot(gleak.HaveLeaked(g))
 		})
 
 		It("panics if the SamplingConfig does not specify a ceiling", func() {

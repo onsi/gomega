@@ -250,7 +250,7 @@ var _ = Describe(".CompiledTestIn", func() {
 		}
 	})
 
-	Context("a remote package", Label("remote"), func() {
+	Context("a remote package", Label("network"), func() {
 		const remotePackage = "github.com/onsi/ginkgo/types"
 
 		It("compiles the specified test package", func() {
