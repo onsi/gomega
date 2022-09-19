@@ -966,6 +966,14 @@ The difference between the `ContainElements` and `ConsistOf` matchers is that th
 
 succeeds if `ACTUAL` equals one of the elements passed into the matcher. When a single element `ELEMENT` of type `array` or `slice` is passed into the matcher, `BeElementOf` succeeds if `ELEMENT` contains an element that equals `ACTUAL` (reverse of `ContainElement`). `BeElementOf` always uses the `Equal()` matcher under the hood to assert equality.
 
+#### BeKeyOf(m interface{})
+
+```go
+Ω(ACTUAL).Should(BeKeyOf(ELEMENT))
+```
+
+succeeds if `ACTUAL` equals one of the keys of the map passed into the matcher. `BeKeyOf` always uses the `Equal()` matcher under the hood to assert equality with a map key.
+
 #### ConsistOf(element ...interface{})
 
 ```go
