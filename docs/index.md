@@ -252,10 +252,11 @@ The first optional argument is the timeout (which defaults to 1s), the second is
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
 
-Alternatively, the timeout and polling interval can also be specified by chaining `WithTimeout` and `WithPolling` to `Eventually`:
+Alternatively, the timeout and polling interval can also be specified by chaining `Within` and `ProbeEvery` or `WithTimeout` and `WithPolling` to `Eventually`:
 
 ```go
 Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).Should(MATCHER)
+Eventually(ACTUAL).Within(TIMEOUT).ProbeEvery(POLLING_INTERVAL).Should(MATCHER)
 ```
 
 Eventually works with any Gomega compatible matcher and supports making assertions against three categories of `ACTUAL` value:
