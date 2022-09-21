@@ -318,7 +318,7 @@ func BeElementOf(elements ...interface{}) types.GomegaMatcher {
 }
 
 // BeKeyOf succeeds if actual is contained in the keys of the passed in map.
-// BeKeyOf() always uses Equal() to perform the match.
+// BeKeyOf() always uses Equal() to perform the match between actual and the map keys.
 //
 //	Expect("foo").Should(BeKeyOf(map[string]bool{"foo": true, "bar": false}))
 func BeKeyOf(element interface{}) types.GomegaMatcher {

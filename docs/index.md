@@ -970,10 +970,25 @@ succeeds if `ACTUAL` equals one of the elements passed into the matcher. When a 
 #### BeKeyOf(m interface{})
 
 ```go
-Ω(ACTUAL).Should(BeKeyOf(ELEMENT))
+Ω(ACTUAL).Should(BeKeyOf(MAP))
 ```
 
-succeeds if `ACTUAL` equals one of the keys of the map passed into the matcher. `BeKeyOf` always uses the `Equal()` matcher under the hood to assert equality with a map key.
+succeeds if `ACTUAL` equals one of the keys of `MAP`. It is an error for `MAP` to be of any type other than a map. `BeKeyOf` always uses the `Equal()` matcher under the hood to assert equality of `ACTUAL` with a map key.
+
+`BeKeyOf` can be used in situations where it is not possible to rewrite an assertion to use the more idiomatic `HaveKey`: one use is in combination with `ContainElement` doubling as a filter. For instance, the following example asserts that all expected specific sprockets are present in a larger list of sprockets:
+
+```go
+var names = map[string]struct {
+	detail string
+}{
+	"edgy_emil":              {detail: "sprocket_project_A"},
+	"furious_freddy":         {detail: "sprocket_project_B"},
+}
+
+var canaries []Sprocket
+Expect(projects).To(ContainElement(HaveField("Name", BeKeyOf(names)), &canaries))
+Expect(canaries).To(HaveLen(len(names)))
+```
 
 #### ConsistOf(element ...interface{})
 
@@ -3264,6 +3279,8 @@ names of the topmost functions on their stacks (backtraces):
   inner functions),
   - the anonymous inner functions of
   `github.com/onsi/ginkgo/v2/internal/interrupt_handler.(*InterruptHandler).registerForInterrupts`,
+  - the creators `github.com/onsi/ginkgo/v2/internal.(*genericOutputInterceptor).ResumeIntercepting` and `github.com/onsi/ginkgo/v2/internal.(*genericOutputInterceptor).ResumeIntercepting...`,
+  - the creator `github.com/onsi/ginkgo/v2/internal.RegisterForProgressSignal`,
   - and finally
   `github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).registerForInterrupts`
   (for v1 support).
