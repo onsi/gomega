@@ -193,9 +193,9 @@ func MatchRegexp(regexp string, args ...interface{}) types.GomegaMatcher {
 	}
 }
 
-// ContainSubstring succeeds if actual is a string or stringer that contains the
-// passed-in substring.  Optional arguments can be provided to construct the substring
-// via fmt.Sprintf().
+// ContainSubstring succeeds if actual is a string, stringer, []bytes, or json.RawMessage
+// that contains the passed-in substring.
+// Optional arguments can be provided to construct the substring via fmt.Sprintf().
 func ContainSubstring(substr string, args ...interface{}) types.GomegaMatcher {
 	return &matchers.ContainSubstringMatcher{
 		Substr: substr,
@@ -203,9 +203,9 @@ func ContainSubstring(substr string, args ...interface{}) types.GomegaMatcher {
 	}
 }
 
-// HavePrefix succeeds if actual is a string or stringer that contains the
-// passed-in string as a prefix.  Optional arguments can be provided to construct
-// via fmt.Sprintf().
+// HavePrefix succeeds if actual is a string, stringer, []bytes, or json.RawMessage
+// that contains the passed-in string as a prefix.
+// Optional arguments can be provided to construct the substring via fmt.Sprintf().
 func HavePrefix(prefix string, args ...interface{}) types.GomegaMatcher {
 	return &matchers.HavePrefixMatcher{
 		Prefix: prefix,
@@ -213,9 +213,9 @@ func HavePrefix(prefix string, args ...interface{}) types.GomegaMatcher {
 	}
 }
 
-// HaveSuffix succeeds if actual is a string or stringer that contains the
-// passed-in string as a suffix.  Optional arguments can be provided to construct
-// via fmt.Sprintf().
+// HaveSuffix succeeds if actual is a string, stringer, []bytes, or json.RawMessage
+// that contains the passed-in string as a suffix.
+// Optional arguments can be provided to construct the substring via fmt.Sprintf().
 func HaveSuffix(suffix string, args ...interface{}) types.GomegaMatcher {
 	return &matchers.HaveSuffixMatcher{
 		Suffix: suffix,
