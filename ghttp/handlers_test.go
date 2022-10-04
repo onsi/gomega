@@ -68,7 +68,10 @@ func ExampleRespondWithMultiple() {
 			RespondWith(http.StatusInternalServerError, "Internal server error"),
 		))
 	for i := 0; i < 6; i++ {
-		resp, _ := http.Get(server.URL() + "/example")
+		resp, err := http.Get(server.URL() + "/example")
+		if err != nil {
+			panic(err)
+		}
 		defer resp.Body.Close()
 		body, _ := io.ReadAll(resp.Body)
 		fmt.Printf("%d - %s\n", resp.StatusCode, string(body))
@@ -93,7 +96,10 @@ func ExampleRoundRobinWithMultiple() {
 			RespondWith(http.StatusInternalServerError, "Internal server error"),
 		))
 	for i := 0; i < 6; i++ {
-		resp, _ := http.Get(server.URL() + "/example")
+		resp, err := http.Get(server.URL() + "/example")
+		if err != nil {
+			panic(err)
+		}
 		defer resp.Body.Close()
 		body, _ := io.ReadAll(resp.Body)
 		fmt.Printf("%d - %s\n", resp.StatusCode, string(body))
