@@ -245,10 +245,10 @@ Gomega has support for making *asynchronous* assertions.  There are two function
 `Eventually` checks that an assertion *eventually* passes.  `Eventually` blocks when called and attempts an assertion periodically until it passes or a timeout occurs.  Both the timeout and polling interval are configurable as optional arguments:
 
 ```go
-Eventually(ACTUAL, (TIMEOUT), (POLLING_INTERVAL)).Should(MATCHER)
+Eventually(ACTUAL, (TIMEOUT), (POLLING_INTERVAL), (context.Context).Should(MATCHER)
 ```
 
-The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings (e.g. "100ms") or `float64` (in which case they are interpreted as seconds).
+The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings (e.g. "100ms") or `float64` (in which case they are interpreted as seconds).  You can also provide a `context.Context` which - when cancelled - will instruct `Eventually` to stop and exit with a failure message.
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
 
@@ -257,6 +257,12 @@ Alternatively, the timeout and polling interval can also be specified by chainin
 ```go
 Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).Should(MATCHER)
 Eventually(ACTUAL).Within(TIMEOUT).ProbeEvery(POLLING_INTERVAL).Should(MATCHER)
+```
+
+You can also configure the context in this way:
+
+```go
+Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).WithContext(ctx).Should(MATCHER)
 ```
 
 Eventually works with any Gomega compatible matcher and supports making assertions against three categories of `ACTUAL` value:
@@ -332,7 +338,36 @@ Eventually(FetchFromDB).Should(Equal("got it"))
 
 will pass only if and when the returned error is `nil` *and* the returned string satisfies the matcher.
 
-It is important to note that the function passed into Eventually is invoked **synchronously** when polled.  `Eventually` does not (in fact, it cannot) kill the function if it takes longer to return than `Eventually`'s configured timeout.  You should design your functions with this in mind.
+It is important to note that the function passed into Eventually is invoked **synchronously** when polled.  `Eventually` does not (in fact, it cannot) kill the function if it takes longer to return than `Eventually`'s configured timeout.  This is where using a `context.Context` can be helpful.  Here is an example that leverages Gingko's support for interruptible nodes and spec timeouts:
+
+```go
+It("fetches the correct count", func(ctx SpecContext) {
+    Eventually(func() int {
+        return client.FetchCount(ctx)
+    }, ctx).Should(BeNumerically(">=", 17))
+}, SpecTimeout(time.Second))
+```
+
+now when the spec times out both the `client.FetchCount` function and `Eventually` will be signaled and told to exit.
+
+The use of a context also allows you to specify a single timeout across a collection of `Eventually` assertions:
+
+```go
+It("adds a few books and checks the count", func(ctx SpecContext) {
+    intialCount := client.FetchCount(ctx)
+    client.AddItem(ctx, "foo")
+    client.AddItem(ctx, "bar")
+    Eventually(func() {
+        return client.FetchCount(ctx)
+    }).WithContext(ctx).Should(BeNumerically(">=", 17))
+    Eventually(func() {
+        return client.FetchItems(ctx)
+    }).WithContext(ctx).Should(ContainElement("foo"))
+    Eventually(func() {
+        return client.FetchItems(ctx)
+    }).WithContext(ctx).Should(ContainElement("bar"))
+}, SpecTimeout(time.Second * 5))
+```
 
 #### Category 3: Making assertions _in_ the function passed into `Eventually`
 
@@ -367,7 +402,6 @@ Eventually(func(g Gomega) {
 
 will rerun the function until all assertions pass.
 
-
 ### Consistently
 
 `Consistently` checks that an assertion passes for a period of time.  It does this by polling its argument repeatedly during the period. It fails if the matcher ever fails during that period.
@@ -380,18 +414,18 @@ Consistently(func() []int {
 }).Should(BeNumerically("<", 10))
 ```
 
-`Consistently` will poll the passed in function repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
+`Consistently` will poll the passed in function repeatedly and check the return value against the `GomegaMatcher`.  `Consistently` blocks and only returns when the desired duration has elapsed or if the matcher fails or if an (optional) passed-in context is cancelled.  The default value for the wait-duration is 100 milliseconds.  The default polling interval is 10 milliseconds.  Like `Eventually`, you can change these values by passing them in just after your function:
 
 ```go
-Consistently(ACTUAL, DURATION, POLLING_INTERVAL).Should(MATCHER)
+Consistently(ACTUAL, (DURATION), (POLLING_INTERVAL), (context.Context)).Should(MATCHER)
 ```
 
-As with `Eventually`, these can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
+As with `Eventually`, the duration parameters can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
 
-Also as with `Eventually`, `Consistently` supports chaining `WithTimeout` and `WithPolling` in the form of:
+Also as with `Eventually`, `Consistently` supports chaining `WithTimeout` and `WithPolling` and `WithContext` in the form of:
 
 ```go
-Consistently(ACTUAL).WithTimeout(DURATION).WithPolling(POLLING_INTERVAL).Should(MATCHER)
+Consistently(ACTUAL).WithTimeout(DURATION).WithPolling(POLLING_INTERVAL).WithContext(ctx).Should(MATCHER)
 ```
 
 `Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can assert that:
@@ -403,6 +437,8 @@ Consistently(channel).ShouldNot(Receive())
 To assert that nothing gets sent to a channel.
 
 As with `Eventually`, you can also pass `Consistently` a function.  In fact, `Consistently` works with the three categories of `ACTUAL` value outlined for `Eventually` in the section above.
+
+If `Consistently` is passed a `context.Context` it will exit if the context is cancelled - however it will always register the cancellation of the context as a failure.  That is, the context is not used to control the duration of `Consistently` - that is always done by the `DURATION` parameter; instead, the context is used to allow `Consistently` to bail out early if it's time for the spec to finish up (e.g. a timeout has elapsed, or the user has sent an interrupt signal).
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 

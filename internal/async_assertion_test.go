@@ -8,6 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"golang.org/x/net/context"
 )
 
 var _ = Describe("Asynchronous Assertions", func() {
@@ -154,6 +155,56 @@ var _ = Describe("Asynchronous Assertions", func() {
 			It("calls the optional description if it is a function", func() {
 				ig.G.Eventually(NO_MATCH).WithTimeout(50*time.Millisecond).WithPolling(10*time.Millisecond).Should(SpecMatch(), func() string { return "boop" })
 				Ω(ig.FailureMessage).Should(ContainSubstring("boop"))
+			})
+		})
+
+		Context("when the passed-in context is cancelled", func() {
+			It("stops and returns a failure", func() {
+				ctx, cancel := context.WithCancel(context.Background())
+				counter := 0
+				ig.G.Eventually(func() string {
+					counter++
+					if counter == 2 {
+						cancel()
+					} else if counter == 10 {
+						return MATCH
+					}
+					return NO_MATCH
+				}, time.Hour, ctx).Should(SpecMatch())
+				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
+			})
+
+			It("can also be configured via WithContext()", func() {
+				ctx, cancel := context.WithCancel(context.Background())
+				counter := 0
+				ig.G.Eventually(func() string {
+					counter++
+					if counter == 2 {
+						cancel()
+					} else if counter == 10 {
+						return MATCH
+					}
+					return NO_MATCH
+				}, time.Hour).WithContext(ctx).Should(SpecMatch())
+				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
+			})
+
+			It("counts as a failure for Consistently", func() {
+				ctx, cancel := context.WithCancel(context.Background())
+				counter := 0
+				ig.G.Consistently(func() string {
+					counter++
+					if counter == 2 {
+						cancel()
+					} else if counter == 10 {
+						return NO_MATCH
+					}
+					return MATCH
+				}, time.Hour).WithContext(ctx).Should(SpecMatch())
+				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
 			})
 		})
 	})
@@ -735,7 +786,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 	})
 
 	When("vetting optional description parameters", func() {
-
 		It("panics when Gomega matcher is at the beginning of optional description parameters", func() {
 			ig := NewInstrumentedGomega()
 			for _, expectator := range []string{
@@ -763,7 +813,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 	})
 
 	Context("eventual nil-ism", func() { // issue #555
-
 		It("doesn't panic on nil actual", func() {
 			ig := NewInstrumentedGomega()
 			Expect(func() {
@@ -777,7 +826,5 @@ var _ = Describe("Asynchronous Assertions", func() {
 				ig.G.Eventually(func() error { return nil }).Should(BeNil())
 			}).NotTo(Panic())
 		})
-
 	})
-
 })
