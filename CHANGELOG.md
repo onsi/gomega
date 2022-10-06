@@ -1,3 +1,8 @@
+## v1.21.1
+
+### Features
+- Eventually and Consistently that are passed a SpecContext can provide reports when an interrupt occurs [0d063c9]
+
 ## 1.21.0
 
 ### Features
