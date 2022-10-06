@@ -11,6 +11,16 @@ import (
 	"golang.org/x/net/context"
 )
 
+type FakeGinkgoSpecContext struct {
+	Attached  func() string
+	Cancelled bool
+}
+
+func (f *FakeGinkgoSpecContext) AttachProgressReporter(v func() string) func() {
+	f.Attached = v
+	return func() { f.Cancelled = true }
+}
+
 var _ = Describe("Asynchronous Assertions", func() {
 	var ig *InstrumentedGomega
 	BeforeEach(func() {
@@ -205,6 +215,23 @@ var _ = Describe("Asynchronous Assertions", func() {
 				}, time.Hour).WithContext(ctx).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
+			})
+		})
+
+		Context("when the passed-in context is a Ginkgo SpecContext that can take a progress reporter attachment", func() {
+			It("attaches a progress reporter context that allows it to report on demand", func() {
+				fakeSpecContext := &FakeGinkgoSpecContext{}
+				var message string
+				ctx := context.WithValue(context.Background(), "GINKGO_SPEC_CONTEXT", fakeSpecContext)
+				ig.G.Eventually(func() string {
+					if fakeSpecContext.Attached != nil {
+						message = fakeSpecContext.Attached()
+					}
+					return NO_MATCH
+				}).WithTimeout(time.Millisecond * 20).WithContext(ctx).Should(Equal(MATCH))
+
+				Ω(message).Should(Equal("Expected\n    <string>: no match\nto equal\n    <string>: match"))
+				Ω(fakeSpecContext.Cancelled).Should(BeTrue())
 			})
 		})
 	})

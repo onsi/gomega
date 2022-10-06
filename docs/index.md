@@ -369,6 +369,8 @@ It("adds a few books and checks the count", func(ctx SpecContext) {
 }, SpecTimeout(time.Second * 5))
 ```
 
+In addition, Gingko's `SpecContext` allows Goemga to tell Ginkgo about the status of a currently running `Eventually` whenever a Progress Report is generated.  So, if a spec times out while running an `Eventually` Ginkgo will not only show you which `Eventually` was running when the timeout occured, but will also include the failure the `Eventually` was hitting when the timeout occurred.
+
 #### Category 3: Making assertions _in_ the function passed into `Eventually`
 
 When testing complex systems it can be valuable to assert that a *set* of assertions passes `Eventually`.  `Eventually` supports this by accepting functions that take **a single `Gomega` argument** and **return zero or more values**.
