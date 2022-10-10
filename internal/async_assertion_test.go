@@ -769,21 +769,55 @@ var _ = Describe("Asynchronous Assertions", func() {
 			})
 		})
 
+		Context("when passed a function that takes a context", func() {
+			It("forwards its own configured context", func() {
+				ctx := context.WithValue(context.Background(), "key", "value")
+				Eventually(func(ctx context.Context) string {
+					return ctx.Value("key").(string)
+				}).WithContext(ctx).Should(Equal("value"))
+			})
+
+			It("forwards its own configured context _and_ a Gomega if requested", func() {
+				ctx := context.WithValue(context.Background(), "key", "value")
+				Eventually(func(g Gomega, ctx context.Context) {
+					g.Expect(ctx.Value("key").(string)).To(Equal("schmalue"))
+				}).WithContext(ctx).Should(MatchError(ContainSubstring("Expected\n    <string>: value\nto equal\n    <string>: schmalue")))
+			})
+
+			Context("when the assertion does not have an attached context", func() {
+				It("errors", func() {
+					ig.G.Eventually(func(ctx context.Context) string {
+						return ctx.Value("key").(string)
+					}).Should(Equal("value"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually requested a context.Context, but no context has been provided to func(context.Context) string.  Please pass one in using Eventually().WithContext()."))
+					Ω(ig.FailureSkip).Should(Equal([]int{2}))
+				})
+			})
+		})
+
 		Describe("when passed an invalid function", func() {
-			It("errors immediately", func() {
-				ig.G.Eventually(func() {})
-				Ω(ig.FailureMessage).Should(Equal("The function passed to Gomega's async assertions should either take no arguments and return values, or take a single Gomega interface that it can use to make assertions within the body of the function.  When taking a Gomega interface the function can optionally return values or return nothing.  The function you passed takes 0 arguments and returns 0 values."))
-				Ω(ig.FailureSkip).Should(Equal([]int{4}))
+			It("errors with a failure", func() {
+				ig.G.Eventually(func() {}).Should(Equal("foo"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually had an invalid signature of func()"))
+				Ω(ig.FailureSkip).Should(Equal([]int{2}))
+
+				ig.G.Consistently(func(ctx context.Context) {}).Should(Equal("foo"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Consistently had an invalid signature of func(context.Context)"))
+				Ω(ig.FailureSkip).Should(Equal([]int{2}))
 
 				ig = NewInstrumentedGomega()
-				ig.G.Eventually(func(g Gomega, foo string) {})
-				Ω(ig.FailureMessage).Should(Equal("The function passed to Gomega's async assertions should either take no arguments and return values, or take a single Gomega interface that it can use to make assertions within the body of the function.  When taking a Gomega interface the function can optionally return values or return nothing.  The function you passed takes 2 arguments and returns 0 values."))
-				Ω(ig.FailureSkip).Should(Equal([]int{4}))
+				ig.G.Eventually(func(g Gomega, foo string) {}).Should(Equal("foo"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually had an invalid signature of func(types.Gomega, string)"))
+				Ω(ig.FailureSkip).Should(Equal([]int{2}))
+
+				ig.G.Eventually(func(ctx context.Context, g Gomega) {}).Should(Equal("foo"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually had an invalid signature of func(context.Context, types.Gomega)"))
+				Ω(ig.FailureSkip).Should(Equal([]int{2}))
 
 				ig = NewInstrumentedGomega()
-				ig.G.Eventually(func(foo string) {})
-				Ω(ig.FailureMessage).Should(Equal("The function passed to Gomega's async assertions should either take no arguments and return values, or take a single Gomega interface that it can use to make assertions within the body of the function.  When taking a Gomega interface the function can optionally return values or return nothing.  The function you passed takes 1 arguments and returns 0 values."))
-				Ω(ig.FailureSkip).Should(Equal([]int{4}))
+				ig.G.Eventually(func(foo string) {}).Should(Equal("foo"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually had an invalid signature of func(string)"))
+				Ω(ig.FailureSkip).Should(Equal([]int{2}))
 			})
 		})
 	})
