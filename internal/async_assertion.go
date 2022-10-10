@@ -31,8 +31,9 @@ func (at AsyncAssertionType) String() string {
 type AsyncAssertion struct {
 	asyncType AsyncAssertionType
 
-	actualIsFunc bool
-	actual       interface{}
+	actualIsFunc  bool
+	actual        interface{}
+	argsToForward []interface{}
 
 	timeoutInterval time.Duration
 	pollingInterval time.Duration
@@ -86,6 +87,11 @@ func (assertion *AsyncAssertion) ProbeEvery(interval time.Duration) types.AsyncA
 
 func (assertion *AsyncAssertion) WithContext(ctx context.Context) types.AsyncAssertion {
 	assertion.ctx = ctx
+	return assertion
+}
+
+func (assertion *AsyncAssertion) WithArguments(argsToForward ...interface{}) types.AsyncAssertion {
+	assertion.argsToForward = argsToForward
 	return assertion
 }
 
@@ -145,11 +151,22 @@ You can learn more at https://onsi.github.io/gomega/#eventually
 `, assertion.asyncType, t, assertion.asyncType)
 }
 
-func (assertion *AsyncAssertion) noConfiguredContextForFunctionError(t reflect.Type) error {
-	return fmt.Errorf(`The function passed to %s requested a context.Context, but no context has been provided to %s.  Please pass one in using %s().WithContext().
+func (assertion *AsyncAssertion) noConfiguredContextForFunctionError() error {
+	return fmt.Errorf(`The function passed to %s requested a context.Context, but no context has been provided.  Please pass one in using %s().WithContext().
 
 You can learn more at https://onsi.github.io/gomega/#eventually
-`, assertion.asyncType, t, assertion.asyncType)
+`, assertion.asyncType, assertion.asyncType)
+}
+
+func (assertion *AsyncAssertion) argumentMismatchError(t reflect.Type, numProvided int) error {
+	have := "have"
+	if numProvided == 1 {
+		have = "has"
+	}
+	return fmt.Errorf(`The function passed to %s has signature %s takes %d arguments but %d %s been provided.  Please use %s().WithArguments() to pass the corect set of arguments.
+
+You can learn more at https://onsi.github.io/gomega/#eventually
+`, assertion.asyncType, t, t.NumIn(), numProvided, have, assertion.asyncType)
 }
 
 func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error), error) {
@@ -158,7 +175,7 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 	}
 	actualValue := reflect.ValueOf(assertion.actual)
 	actualType := reflect.TypeOf(assertion.actual)
-	numIn, numOut := actualType.NumIn(), actualType.NumOut()
+	numIn, numOut, isVariadic := actualType.NumIn(), actualType.NumOut(), actualType.IsVariadic()
 
 	if numIn == 0 && numOut == 0 {
 		return nil, assertion.invalidFunctionError(actualType)
@@ -169,21 +186,14 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 	if takesGomega && numIn > 1 && actualType.In(1).Implements(contextType) {
 		takesContext = true
 	}
+	if takesContext && len(assertion.argsToForward) > 0 && reflect.TypeOf(assertion.argsToForward[0]).Implements(contextType) {
+		takesContext = false
+	}
 	if !takesGomega && numOut == 0 {
 		return nil, assertion.invalidFunctionError(actualType)
 	}
 	if takesContext && assertion.ctx == nil {
-		return nil, assertion.noConfiguredContextForFunctionError(actualType)
-	}
-	remainingIn := numIn
-	if takesGomega {
-		remainingIn -= 1
-	}
-	if takesContext {
-		remainingIn -= 1
-	}
-	if remainingIn > 0 {
-		return nil, assertion.invalidFunctionError(actualType)
+		return nil, assertion.noConfiguredContextForFunctionError()
 	}
 
 	var assertionFailure error
@@ -201,6 +211,15 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 	}
 	if takesContext {
 		inValues = append(inValues, reflect.ValueOf(assertion.ctx))
+	}
+	for _, arg := range assertion.argsToForward {
+		inValues = append(inValues, reflect.ValueOf(arg))
+	}
+
+	if !isVariadic && numIn != len(inValues) {
+		return nil, assertion.argumentMismatchError(actualType, len(inValues))
+	} else if isVariadic && len(inValues) < numIn-1 {
+		return nil, assertion.argumentMismatchError(actualType, len(inValues))
 	}
 
 	return func() (actual interface{}, err error) {

@@ -308,7 +308,7 @@ In both cases you should always pass `Eventually` a function that, when polled, 
 
 #### Category 2: Making `Eventually` assertions on functions
 
-`Eventually` can be passed functions that **take no arguments** and **return at least one value**.  When configured this way, `Eventually` will poll the function repeatedly and pass the first returned value to the matcher.
+`Eventually` can be passed functions that **return at least one value**.  When configured this way, `Eventually` will poll the function repeatedly and pass the first returned value to the matcher.
 
 For example:
 
@@ -322,7 +322,7 @@ will repeatedly poll `client.FetchCount` until the `BeNumerically` matcher is sa
 
 > Note that this example could have been written as `Eventually(client.FetchCount).Should(BeNumerically(">=", 17))`
 
-If multple values are returned by the function, `Eventually` will pass the first value to the matcher and require that all others are zero-valued.  This allows you to pass `Eventually` a function that returns a value and an error - a common pattern in Go.
+If multiple values are returned by the function, `Eventually` will pass the first value to the matcher and require that all others are zero-valued.  This allows you to pass `Eventually` a function that returns a value and an error - a common pattern in Go.
 
 For example, consider a method that returns a value and an error:
 
@@ -338,38 +338,58 @@ Eventually(FetchFromDB).Should(Equal("got it"))
 
 will pass only if and when the returned error is `nil` *and* the returned string satisfies the matcher.
 
+
+Eventually can also accept functions that take arguments, however you must provide those arguments using `Eventually().WithArguments()`.  For example, consider a function that takes a user-id and makes a network request to fetch a full name:
+
+```go
+func FetchFullName(userId int) (string, error)
+```
+
+You can poll this function like so:
+
+```go
+Eventually(FetchFullName).WithArguments(1138).Should(Equal("Wookie"))
+```
+
+`WithArguments()` supports multiple arugments as well as variadic arguments.
+
 It is important to note that the function passed into Eventually is invoked **synchronously** when polled.  `Eventually` does not (in fact, it cannot) kill the function if it takes longer to return than `Eventually`'s configured timeout.  This is where using a `context.Context` can be helpful.  Here is an example that leverages Gingko's support for interruptible nodes and spec timeouts:
 
 ```go
 It("fetches the correct count", func(ctx SpecContext) {
     Eventually(func() int {
-        return client.FetchCount(ctx)
+        return client.FetchCount(ctx, "/users")
     }, ctx).Should(BeNumerically(">=", 17))
 }, SpecTimeout(time.Second))
 ```
 
-now when the spec times out both the `client.FetchCount` function and `Eventually` will be signaled and told to exit.
+now when the spec times out both the `client.FetchCount` function and `Eventually` will be signaled and told to exit. you an also use `Eventually().WithContext(ctx)` to provide the context.
+
+
+Since functions that take a context.Context as a first-argument are common in Go, `Eventually` supports automatically injecting the provided context into the function.  This plays nicely with `WithArguments()` as well.  You can rewrite the above example as:
+
+```go
+It("fetches the correct count", func(ctx SpecContext) {
+    Eventually(client.FetchCount).WithContext(ctx).WithArguments("/users").Should(BeNumerically(">=", 17))
+}, SpecTimeout(time.Second))
+```
+
+now the `ctx` `SpecContext` is used both by `Eventually` and `client.FetchCount` and the `"/users"` argument is passed in after the `ctx` argument.
 
 The use of a context also allows you to specify a single timeout across a collection of `Eventually` assertions:
 
 ```go
 It("adds a few books and checks the count", func(ctx SpecContext) {
-    intialCount := client.FetchCount(ctx)
+    intialCount := client.FetchCount(ctx, "/items")
     client.AddItem(ctx, "foo")
     client.AddItem(ctx, "bar")
-    Eventually(func() {
-        return client.FetchCount(ctx)
-    }).WithContext(ctx).Should(BeNumerically(">=", 17))
-    Eventually(func() {
-        return client.FetchItems(ctx)
-    }).WithContext(ctx).Should(ContainElement("foo"))
-    Eventually(func() {
-        return client.FetchItems(ctx)
-    }).WithContext(ctx).Should(ContainElement("bar"))
+    Eventually(client.FetchCount).WithContext(ctx).WithArguments("/items").Should(BeNumerically("==", initialCount + 2))
+    Eventually(client.FetchItems).WithContext(ctx).Should(ContainElement("foo"))
+    Eventually(client.FetchItems).WithContext(ctx).Should(ContainElement("foo"))
 }, SpecTimeout(time.Second * 5))
 ```
 
-In addition, Gingko's `SpecContext` allows Goemga to tell Ginkgo about the status of a currently running `Eventually` whenever a Progress Report is generated.  So, if a spec times out while running an `Eventually` Ginkgo will not only show you which `Eventually` was running when the timeout occured, but will also include the failure the `Eventually` was hitting when the timeout occurred.
+In addition, Gingko's `SpecContext` allows Gomega to tell Ginkgo about the status of a currently running `Eventually` whenever a Progress Report is generated.  So, if a spec times out while running an `Eventually` Ginkgo will not only show you which `Eventually` was running when the timeout occured, but will also include the failure the `Eventually` was hitting when the timeout occurred.
 
 #### Category 3: Making assertions _in_ the function passed into `Eventually`
 
@@ -404,6 +424,19 @@ Eventually(func(g Gomega) {
 
 will rerun the function until all assertions pass.
 
+You can also pass additional arugments to functions that take a Gomega.  The only rule is that the Gomega argument must be first.  If you also want to pass the context attached to `Eventually` you must ensure that is the second argument.  For example:
+
+```go
+Eventually(func(g Gomega, ctx context.Context, path string, expected ...string){
+    tok, err := client.GetToken(ctx)
+    g.Expect(err).NotTo(HaveOccurred())
+
+    elements, err := client.Fetch(ctx, tok, path)
+    g.Expect(err).NotTo(HaveOccurred())
+    g.Expect(elements).To(ConsistOf(expected))
+}).WithContext(ctx).WithArguments("/names", "Joe", "Jane", "Sam").Should(Succeed())
+```
+
 ### Consistently
 
 `Consistently` checks that an assertion passes for a period of time.  It does this by polling its argument repeatedly during the period. It fails if the matcher ever fails during that period.
@@ -424,10 +457,10 @@ Consistently(ACTUAL, (DURATION), (POLLING_INTERVAL), (context.Context)).Should(M
 
 As with `Eventually`, the duration parameters can be `time.Duration`s, string representations of a `time.Duration` (e.g. `"200ms"`) or `float64`s that are interpreted as seconds.
 
-Also as with `Eventually`, `Consistently` supports chaining `WithTimeout` and `WithPolling` and `WithContext` in the form of:
+Also as with `Eventually`, `Consistently` supports chaining `WithTimeout`, `WithPolling`, `WithContext` and `WithArguments` in the form of:
 
 ```go
-Consistently(ACTUAL).WithTimeout(DURATION).WithPolling(POLLING_INTERVAL).WithContext(ctx).Should(MATCHER)
+Consistently(ACTUAL).WithTimeout(DURATION).WithPolling(POLLING_INTERVAL).WithContext(ctx).WithArguments(...).Should(MATCHER)
 ```
 
 `Consistently` tries to capture the notion that something "does not eventually" happen.  A common use-case is to assert that no goroutine writes to a channel for a period of time.  If you pass `Consistently` an argument that is not a function, it simply passes that argument to the matcher.  So we can assert that:
