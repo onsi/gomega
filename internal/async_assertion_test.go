@@ -987,6 +987,23 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end - after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <string>: C\nto equal\n    <string>: D"))
 				})
+
+				It("works even if the error is wrapped", func() {
+					possibilities := []string{"A", "B", "C"}
+					i := 0
+					ig.G.Eventually(func() (string, error) {
+						possibility := possibilities[i]
+						i += 1
+						if i == len(possibilities) {
+							return possibility, fmt.Errorf("Wrapped error: %w", StopTrying("Reached the end"))
+						} else {
+							return possibility, nil
+						}
+					}).Should(Equal("D"))
+					Ω(i).Should(Equal(3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <string>: C\nto equal\n    <string>: D"))
+				})
 			})
 
 			Context("when StopTrying().Now() is called", func() {

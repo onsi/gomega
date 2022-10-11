@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"sync"
 	"time"
+	"errors"
 
 	"github.com/onsi/gomega/types"
 )
@@ -15,6 +16,23 @@ type StopTryingError interface {
 	error
 	Now()
 	wasViaPanic() bool
+}
+
+
+func asStopTryingError(actual interface{}) (StopTryingError, bool) {
+	if actual == nil {
+		return nil, false
+	}
+	if actualErr, ok := actual.(error); ok {
+		var target *stopTryingError
+		if errors.As(actualErr, &target) {
+			return target, true
+		} else {
+			return nil, false
+		}
+	}
+
+	return nil, false
 }
 
 type stopTryingError struct {
@@ -34,8 +52,6 @@ func (s *stopTryingError) Now() {
 func (s *stopTryingError) wasViaPanic() bool {
 	return s.viaPanic
 }
-
-var stopTryingErrorType = reflect.TypeOf(&stopTryingError{})
 
 var StopTrying = func(message string) StopTryingError {
 	return &stopTryingError{message: message}
@@ -157,20 +173,19 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 		return nil, fmt.Errorf("No values were returned by the function passed to Gomega"), stopTrying
 	}
 	actual := values[0].Interface()
-	if actual != nil && reflect.TypeOf(actual) == stopTryingErrorType {
-		stopTrying = actual.(StopTryingError)
+	if stopTryingErr, ok := asStopTryingError(actual); ok{
+		stopTrying = stopTryingErr
 	}
 	for i, extraValue := range values[1:] {
 		extra := extraValue.Interface()
 		if extra == nil {
 			continue
 		}
-		extraType := reflect.TypeOf(extra)
-		if extraType == stopTryingErrorType {
-			stopTrying = extra.(StopTryingError)
+		if stopTryingErr, ok := asStopTryingError(extra); ok{
+			stopTrying = stopTryingErr
 			continue
 		}
-		zero := reflect.Zero(extraType).Interface()
+		zero := reflect.Zero(reflect.TypeOf(extra)).Interface()
 		if reflect.DeepEqual(extra, zero) {
 			continue
 		}
@@ -226,8 +241,8 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 		return func() (actual interface{}, err error, stopTrying StopTryingError) {
 			defer func() {
 				if e := recover(); e != nil {
-					if reflect.TypeOf(e) == stopTryingErrorType {
-						stopTrying = e.(StopTryingError)
+					if stopTryingErr, ok := asStopTryingError(e); ok {
+						stopTrying = stopTryingErr
 					} else {
 						panic(e)
 					}
@@ -291,8 +306,8 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 				}
 			}
 			if e := recover(); e != nil {
-				if reflect.TypeOf(e) == stopTryingErrorType {
-					stopTrying = e.(StopTryingError)
+				if stopTryingErr, ok := asStopTryingError(e); ok {
+					stopTrying = stopTryingErr
 				} else if assertionFailure == nil {
 					panic(e)
 				}
