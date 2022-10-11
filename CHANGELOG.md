@@ -1,3 +1,12 @@
+## 1.22.1
+
+## Fixes
+- When passed a context and no explicit timeout, Eventually will only timeout when the context is cancelled [e5105cf]
+- Allow StopTrying() to be wrapped [bf3cba9]
+
+## Maintenance
+- bump to ginkgo v2.3.0 [c5d5c39]
+
 ## 1.22.0
 
 ### Features
