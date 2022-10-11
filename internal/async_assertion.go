@@ -2,12 +2,12 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
 	"sync"
 	"time"
-	"errors"
 
 	"github.com/onsi/gomega/types"
 )
@@ -17,7 +17,6 @@ type StopTryingError interface {
 	Now()
 	wasViaPanic() bool
 }
-
 
 func asStopTryingError(actual interface{}) (StopTryingError, bool) {
 	if actual == nil {
@@ -173,7 +172,7 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 		return nil, fmt.Errorf("No values were returned by the function passed to Gomega"), stopTrying
 	}
 	actual := values[0].Interface()
-	if stopTryingErr, ok := asStopTryingError(actual); ok{
+	if stopTryingErr, ok := asStopTryingError(actual); ok {
 		stopTrying = stopTryingErr
 	}
 	for i, extraValue := range values[1:] {
@@ -181,7 +180,7 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 		if extra == nil {
 			continue
 		}
-		if stopTryingErr, ok := asStopTryingError(extra); ok{
+		if stopTryingErr, ok := asStopTryingError(extra); ok {
 			stopTrying = stopTryingErr
 			continue
 		}
@@ -325,13 +324,40 @@ func (assertion *AsyncAssertion) matcherSaysStopTrying(matcher types.GomegaMatch
 	return StopTrying("No future change is possible.  Bailing out early")
 }
 
+func (assertion *AsyncAssertion) afterTimeout() <-chan time.Time {
+	if assertion.timeoutInterval >= 0 {
+		return time.After(assertion.timeoutInterval)
+	}
+
+	if assertion.asyncType == AsyncAssertionTypeConsistently {
+		return time.After(assertion.g.DurationBundle.ConsistentlyDuration)
+	} else {
+		if assertion.ctx == nil {
+			return time.After(assertion.g.DurationBundle.EventuallyTimeout)
+		} else {
+			return nil
+		}
+	}
+}
+
+func (assertion *AsyncAssertion) afterPolling() <-chan time.Time {
+	if assertion.pollingInterval >= 0 {
+		return time.After(assertion.pollingInterval)
+	}
+	if assertion.asyncType == AsyncAssertionTypeConsistently {
+		return time.After(assertion.g.DurationBundle.ConsistentlyPollingInterval)
+	} else {
+		return time.After(assertion.g.DurationBundle.EventuallyPollingInterval)
+	}
+}
+
 type contextWithAttachProgressReporter interface {
 	AttachProgressReporter(func() string) func()
 }
 
 func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch bool, optionalDescription ...interface{}) bool {
 	timer := time.Now()
-	timeout := time.After(assertion.timeoutInterval)
+	timeout := assertion.afterTimeout()
 	lock := sync.Mutex{}
 
 	var matches bool
@@ -398,7 +424,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 			}
 
 			select {
-			case <-time.After(assertion.pollingInterval):
+			case <-assertion.afterPolling():
 				v, e, st := pollActual()
 				if st != nil && st.wasViaPanic() {
 					// we were told to stop trying via panic - which means we dont' have reasonable new values
@@ -438,7 +464,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 			}
 
 			select {
-			case <-time.After(assertion.pollingInterval):
+			case <-assertion.afterPolling():
 				v, e, st := pollActual()
 				if st != nil && st.wasViaPanic() {
 					// we were told to stop trying via panic - which means we made it this far and should return successfully

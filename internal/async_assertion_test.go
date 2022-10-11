@@ -170,70 +170,108 @@ var _ = Describe("Asynchronous Assertions", func() {
 			})
 		})
 
-		Context("when the passed-in context is cancelled", func() {
-			It("stops and returns a failure", func() {
-				ctx, cancel := context.WithCancel(context.Background())
-				counter := 0
-				ig.G.Eventually(func() string {
-					counter++
-					if counter == 2 {
-						cancel()
-					} else if counter == 10 {
-						return MATCH
-					}
-					return NO_MATCH
-				}, time.Hour, ctx).Should(SpecMatch())
-				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
-			})
-
-			It("can also be configured via WithContext()", func() {
-				ctx, cancel := context.WithCancel(context.Background())
-				counter := 0
-				ig.G.Eventually(func() string {
-					counter++
-					if counter == 2 {
-						cancel()
-					} else if counter == 10 {
-						return MATCH
-					}
-					return NO_MATCH
-				}, time.Hour).WithContext(ctx).Should(SpecMatch())
-				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
-			})
-
-			It("counts as a failure for Consistently", func() {
-				ctx, cancel := context.WithCancel(context.Background())
-				counter := 0
-				ig.G.Consistently(func() string {
-					counter++
-					if counter == 2 {
-						cancel()
-					} else if counter == 10 {
+		Context("with a passed-in context", func() {
+			Context("when the passed-in context is cancelled", func() {
+				It("stops and returns a failure", func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					counter := 0
+					ig.G.Eventually(func() string {
+						counter++
+						if counter == 2 {
+							cancel()
+						} else if counter == 10 {
+							return MATCH
+						}
 						return NO_MATCH
-					}
-					return MATCH
-				}, time.Hour).WithContext(ctx).Should(SpecMatch())
-				Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
+					}, time.Hour, ctx).Should(SpecMatch())
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
+				})
+
+				It("can also be configured via WithContext()", func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					counter := 0
+					ig.G.Eventually(func() string {
+						counter++
+						if counter == 2 {
+							cancel()
+						} else if counter == 10 {
+							return MATCH
+						}
+						return NO_MATCH
+					}, time.Hour).WithContext(ctx).Should(SpecMatch())
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
+				})
+
+				It("counts as a failure for Consistently", func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					counter := 0
+					ig.G.Consistently(func() string {
+						counter++
+						if counter == 2 {
+							cancel()
+						} else if counter == 10 {
+							return NO_MATCH
+						}
+						return MATCH
+					}, time.Hour).WithContext(ctx).Should(SpecMatch())
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
+				})
 			})
-		})
 
-		Context("when the passed-in context is a Ginkgo SpecContext that can take a progress reporter attachment", func() {
-			It("attaches a progress reporter context that allows it to report on demand", func() {
-				fakeSpecContext := &FakeGinkgoSpecContext{}
-				var message string
-				ctx := context.WithValue(context.Background(), "GINKGO_SPEC_CONTEXT", fakeSpecContext)
-				ig.G.Eventually(func() string {
-					if fakeSpecContext.Attached != nil {
-						message = fakeSpecContext.Attached()
-					}
-					return NO_MATCH
-				}).WithTimeout(time.Millisecond * 20).WithContext(ctx).Should(Equal(MATCH))
+			Context("when the passed-in context is a Ginkgo SpecContext that can take a progress reporter attachment", func() {
+				It("attaches a progress reporter context that allows it to report on demand", func() {
+					fakeSpecContext := &FakeGinkgoSpecContext{}
+					var message string
+					ctx := context.WithValue(context.Background(), "GINKGO_SPEC_CONTEXT", fakeSpecContext)
+					ig.G.Eventually(func() string {
+						if fakeSpecContext.Attached != nil {
+							message = fakeSpecContext.Attached()
+						}
+						return NO_MATCH
+					}).WithTimeout(time.Millisecond * 20).WithContext(ctx).Should(Equal(MATCH))
 
-				Ω(message).Should(Equal("Expected\n    <string>: no match\nto equal\n    <string>: match"))
-				Ω(fakeSpecContext.Cancelled).Should(BeTrue())
+					Ω(message).Should(Equal("Expected\n    <string>: no match\nto equal\n    <string>: match"))
+					Ω(fakeSpecContext.Cancelled).Should(BeTrue())
+				})
+			})
+
+			Describe("the interaction between the context and the timeout", func() {
+				It("only relies on context cancellation when no explicit timeout is specified", func() {
+					ig.G.SetDefaultEventuallyTimeout(time.Millisecond * 10)
+					ig.G.SetDefaultEventuallyPollingInterval(time.Millisecond * 40)
+					t := time.Now()
+					ctx, cancel := context.WithCancel(context.Background())
+					iterations := 0
+					ig.G.Eventually(func() string {
+						iterations += 1
+						if time.Since(t) > time.Millisecond*200 {
+							cancel()
+						}
+						return "A"
+					}).WithContext(ctx).Should(Equal("B"))
+					Ω(time.Since(t)).Should(BeNumerically("~", time.Millisecond*200, time.Millisecond*100))
+					Ω(iterations).Should(BeNumerically("~", 200/40, 2))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+				})
+
+				It("uses the explicit timeout when it is provided", func() {
+					t := time.Now()
+					ctx, cancel := context.WithCancel(context.Background())
+					iterations := 0
+					ig.G.Eventually(func() string {
+						iterations += 1
+						if time.Since(t) > time.Millisecond*200 {
+							cancel()
+						}
+						return "A"
+					}).WithContext(ctx).WithTimeout(time.Millisecond * 80).ProbeEvery(time.Millisecond * 40).Should(Equal("B"))
+					Ω(time.Since(t)).Should(BeNumerically("~", time.Millisecond*80, time.Millisecond*40))
+					Ω(iterations).Should(BeNumerically("~", 80/40, 2))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
+				})
 			})
 		})
 	})
@@ -350,6 +388,44 @@ var _ = Describe("Asynchronous Assertions", func() {
 			It("calls the optional description if it is a function", func() {
 				ig.G.Consistently(NO_MATCH).Should(SpecMatch(), func() string { return "boop" })
 				Ω(ig.FailureMessage).Should(ContainSubstring("boop"))
+			})
+		})
+
+		Context("with a passed-in context", func() {
+			Context("when the passed-in context is cancelled", func() {
+				It("counts as a failure for Consistently", func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					counter := 0
+					ig.G.Consistently(func() string {
+						counter++
+						if counter == 2 {
+							cancel()
+						} else if counter == 10 {
+							return NO_MATCH
+						}
+						return MATCH
+					}, time.Hour).WithContext(ctx).Should(SpecMatch())
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
+				})
+			})
+
+			Describe("the interaction between the context and the timeout", func() {
+				It("only always uses the default interval even if not explicit duration is provided", func() {
+					ig.G.SetDefaultConsistentlyDuration(time.Millisecond * 200)
+					ig.G.SetDefaultConsistentlyPollingInterval(time.Millisecond * 40)
+					t := time.Now()
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					iterations := 0
+					ig.G.Consistently(func() string {
+						iterations += 1
+						return "A"
+					}).WithContext(ctx).Should(Equal("A"))
+					Ω(time.Since(t)).Should(BeNumerically("~", time.Millisecond*200, time.Millisecond*100))
+					Ω(iterations).Should(BeNumerically("~", 200/40, 2))
+					Ω(ig.FailureMessage).Should(BeZero())
+				})
 			})
 		})
 	})

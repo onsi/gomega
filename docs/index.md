@@ -265,6 +265,8 @@ You can also configure the context in this way:
 Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).WithContext(ctx).Should(MATCHER)
 ```
 
+When no explicit timeout is provided, `Eventually` will use the default timeout.  However if no explicit timeout is provided _and_ a context is provided, `Eventually` will not apply a timeout but will instead keep trying until the context is cancelled.  If both a context and a timeout are provided, `Eventually` will keep trying until either the context is cancelled or time runs out, whichever comes first.
+
 Eventually works with any Gomega compatible matcher and supports making assertions against three categories of `ACTUAL` value:
 
 #### Category 1: Making `Eventually` assertions on values
@@ -474,6 +476,8 @@ To assert that nothing gets sent to a channel.
 As with `Eventually`, you can also pass `Consistently` a function.  In fact, `Consistently` works with the three categories of `ACTUAL` value outlined for `Eventually` in the section above.
 
 If `Consistently` is passed a `context.Context` it will exit if the context is cancelled - however it will always register the cancellation of the context as a failure.  That is, the context is not used to control the duration of `Consistently` - that is always done by the `DURATION` parameter; instead, the context is used to allow `Consistently` to bail out early if it's time for the spec to finish up (e.g. a timeout has elapsed, or the user has sent an interrupt signal).
+
+When no explicit duration is provided, `Consistently` will use the default duration.  Unlike `Eventually`, this behavior holds whether or not a context is provided.
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
