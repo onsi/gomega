@@ -1015,7 +1015,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 				}()
 				Eventually(func() string {
 					panic("welp")
-					return "A"
 				}).Should(Equal("A"))
 			})
 
