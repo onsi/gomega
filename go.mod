@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.8
-	github.com/onsi/ginkgo/v2 v2.1.6
+	github.com/onsi/ginkgo/v2 v2.3.0
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 	gopkg.in/yaml.v3 v3.0.1
 )
