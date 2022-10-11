@@ -477,6 +477,55 @@ If `Consistently` is passed a `context.Context` it will exit if the context is c
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
+### Bailing Out Early
+
+There are cases where you need to signal to `Eventually` and `Consistently` that they should stop trying.  Gomega provides`StopTrying(MESSAGE)` to allow you to send that signal.  There are two ways to use `StopTrying`.
+
+First, you can return `StopTrying(MESSAGE)` as an error. Consider, for example, the case where `Eventually` is searching through a set of possible queries with a server:
+
+```go
+playerIndex, numPlayers := 0, 11
+Eventually(func() (string, error) {
+    name := client.FetchPlayer(playerIndex)
+    playerIndex += 1
+    if playerIndex == numPlayers {
+        return name, StopTrying("No more players left")
+    } else {
+        return name, nil
+    }
+}).Should(Equal("Patrick Mahomes"))
+```
+
+Here we return a `StopTrying(MESSAGE)` error to tell `Eventually` that we've looked through all possible players and that it should stop.  Note that `Eventually` will check last name returned by this function and succeed if that name is the desired name.
+
+You can also call `StopTrying(MESSAGE).Now()` to immediately end execution of the function. Consider, for example, the case of a client communicating with a server that experiences an irrevocable error:
+
+```go
+Eventually(func() []string {
+    names, err := client.FetchAllPlayers()
+    if err == client.IRRECOVERABLE_ERROR {
+        StopTrying("An irrecoverable error occurred").Now()
+    }
+    return names
+}).Should(ContainElement("Patrick Mahomes"))
+```
+
+calling `.Now()` will trigger a panic that will signal to `Eventually` that the it should stop trying.
+
+You can also use both verison of `StopTrying()` with `Consistently`.  Since `Consistently` is validating that something is _true_ consitently for the entire requested duration sending a `StopTrying()` signal is interpreted as success.  Here's a somewhat contrived example:
+
+```go
+go client.DoSomethingComplicated()
+Consistently(func() int {
+    if client.Status() == client.DoneStatus {
+        StopTrying("Client finished").Now()
+    }
+    return client.NumErrors()
+}).Should(Equal(0))
+```
+
+here we succeed because no errors were identified while the client was working.
+
 ### Modifying Default Intervals
 
 By default, `Eventually` will poll every 10 milliseconds for up to 1 second and `Consistently` will monitor every 10 milliseconds for up to 100 milliseconds.  You can modify these defaults across your test suite with:

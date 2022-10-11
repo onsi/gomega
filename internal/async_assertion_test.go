@@ -907,27 +907,135 @@ var _ = Describe("Asynchronous Assertions", func() {
 		})
 	})
 
-	Describe("when using OracleMatchers", func() {
-		It("stops and gives up with an appropriate failure message if the OracleMatcher says things can't change", func() {
-			c := make(chan bool)
-			close(c)
+	Describe("Stopping Early", func() {
+		Describe("when using OracleMatchers", func() {
+			It("stops and gives up with an appropriate failure message if the OracleMatcher says things can't change", func() {
+				c := make(chan bool)
+				close(c)
 
-			t := time.Now()
-			ig.G.Eventually(c).WithTimeout(100*time.Millisecond).WithPolling(10*time.Millisecond).Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
-			Ω(time.Since(t)).Should(BeNumerically("<", 90*time.Millisecond))
-			Ω(ig.FailureMessage).Should(ContainSubstring("No future change is possible."))
-			Ω(ig.FailureMessage).Should(ContainSubstring("The channel is closed."))
+				t := time.Now()
+				ig.G.Eventually(c).WithTimeout(100*time.Millisecond).WithPolling(10*time.Millisecond).Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
+				Ω(time.Since(t)).Should(BeNumerically("<", 90*time.Millisecond))
+				Ω(ig.FailureMessage).Should(ContainSubstring("No future change is possible."))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The channel is closed."))
+			})
+
+			It("never gives up if actual is a function", func() {
+				c := make(chan bool)
+				close(c)
+
+				t := time.Now()
+				ig.G.Eventually(func() chan bool { return c }).WithTimeout(100*time.Millisecond).WithPolling(10*time.Millisecond).Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
+				Ω(time.Since(t)).Should(BeNumerically(">=", 90*time.Millisecond))
+				Ω(ig.FailureMessage).ShouldNot(ContainSubstring("No future change is possible."))
+				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
+			})
 		})
 
-		It("never gives up if actual is a function", func() {
-			c := make(chan bool)
-			close(c)
+		Describe("The StopTrying signal", func() {
+			Context("when success occurs on the last iteration", func() {
+				It("succeeds and stops when the signal is returned", func() {
+					possibilities := []string{"A", "B", "C"}
+					i := 0
+					Eventually(func() (string, error) {
+						possibility := possibilities[i]
+						i += 1
+						if i == len(possibilities) {
+							return possibility, StopTrying("Reached the end")
+						} else {
+							return possibility, nil
+						}
+					}).Should(Equal("C"))
+					Ω(i).Should(Equal(3))
+				})
 
-			t := time.Now()
-			ig.G.Eventually(func() chan bool { return c }).WithTimeout(100*time.Millisecond).WithPolling(10*time.Millisecond).Should(Receive(), "Receive is an OracleMatcher that gives up if the channel is closed")
-			Ω(time.Since(t)).Should(BeNumerically(">=", 90*time.Millisecond))
-			Ω(ig.FailureMessage).ShouldNot(ContainSubstring("No future change is possible."))
-			Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
+				It("counts as success for consistently", func() {
+					i := 0
+					Consistently(func() (int, error) {
+						i += 1
+						if i >= 10 {
+							return i, StopTrying("Reached the end")
+						}
+						return i, nil
+					}).Should(BeNumerically("<=", 10))
+
+					i = 0
+					Consistently(func() int {
+						i += 1
+						if i >= 10 {
+							StopTrying("Reached the end").Now()
+						}
+						return i
+					}).Should(BeNumerically("<=", 10))
+				})
+			})
+
+			Context("when success does not occur", func() {
+				It("fails and stops trying early", func() {
+					possibilities := []string{"A", "B", "C"}
+					i := 0
+					ig.G.Eventually(func() (string, error) {
+						possibility := possibilities[i]
+						i += 1
+						if i == len(possibilities) {
+							return possibility, StopTrying("Reached the end")
+						} else {
+							return possibility, nil
+						}
+					}).Should(Equal("D"))
+					Ω(i).Should(Equal(3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <string>: C\nto equal\n    <string>: D"))
+				})
+			})
+
+			Context("when StopTrying().Now() is called", func() {
+				It("halts execution, stops trying, and emits the last failure", func() {
+					possibilities := []string{"A", "B", "C"}
+					i := -1
+					ig.G.Eventually(func() string {
+						i += 1
+						if i < len(possibilities) {
+							return possibilities[i]
+						} else {
+							StopTrying("Out of tries").Now()
+							panic("welp")
+						}
+					}).Should(Equal("D"))
+					Ω(i).Should(Equal(3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Out of tries - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <string>: C\nto equal\n    <string>: D"))
+				})
+			})
+
+			It("still allows regular panics to get through", func() {
+				defer func() {
+					e := recover()
+					Ω(e).Should(Equal("welp"))
+				}()
+				Eventually(func() string {
+					panic("welp")
+					return "A"
+				}).Should(Equal("A"))
+			})
+
+			Context("when used in conjunction wihth a Gomega and/or Context", func() {
+				It("correctly catches the StopTrying signal", func() {
+					i := 0
+					ctx := context.WithValue(context.Background(), "key", "A")
+					ig.G.Eventually(func(g Gomega, ctx context.Context, expected string) {
+						i += 1
+						if i >= 3 {
+							StopTrying("Out of tries").Now()
+						}
+						g.Expect(ctx.Value("key")).To(Equal(expected))
+					}).WithContext(ctx).WithArguments("B").Should(Succeed())
+					Ω(i).Should(Equal(3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Out of tries - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Assertion in callback at"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("<string>: A"))
+				})
+			})
 		})
 	})
 
