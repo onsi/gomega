@@ -64,6 +64,23 @@ type SecretiveStruct struct {
 	interfaceValue interface{}
 }
 
+type CustomFormatted struct {
+	Data  string
+	Count int
+}
+type NotCustomFormatted struct {
+	Data  string
+	Count int
+}
+
+func customFormatter(obj interface{}) (string, bool) {
+	cf, ok := obj.(CustomFormatted)
+	if !ok {
+		return "", false
+	}
+	return fmt.Sprintf("%s (%d)", cf.Data, cf.Count), true
+}
+
 type GoStringer struct {
 }
 
@@ -704,6 +721,23 @@ var _ = Describe("Format", func() {
 				Expect(Object(gomegaStringerLong{}, 1)).Should(Equal("    <format_test.gomegaStringerLong>: " + strings.Repeat("s", MaxLength*2)))
 				UseStringerRepresentation = false
 				Expect(Object(gomegaStringerLong{}, 1)).Should(Equal("    <format_test.gomegaStringerLong>: " + strings.Repeat("s", MaxLength*2)))
+			})
+		})
+
+		Describe("when used with a registered CustomFormatter", func() {
+			It("pases objects through the custom formatter and uses the returned format, if handled", func() {
+				cf := CustomFormatted{"bob", 17}
+				ncf := NotCustomFormatted{"bob", 17}
+				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: bob, Count: 17}"))
+				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
+				
+				key := RegisterCustomFormatter(customFormatter)
+				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: bob (17)"))
+				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
+
+				UnregisterCustomFormatter(key)
+				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: bob, Count: 17}"))
+				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
 			})
 		})
 	})

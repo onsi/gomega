@@ -222,7 +222,6 @@ These recursive object renditions are performed by the `format` subpackage.  `fo
 - Implementing `format.GomegaStringer`: If `GomegaStringer` interface is implemented on an object, Gomega will call `GomegaString` for an object's string representation. This is regardless of the `format.UseStringerRepresentation` value. Best practice to implement this interface is to implement it in a helper test file (e.g. `helper_test.go`) to avoid leaking it to your package's exported API.
 - `format.UseStringerRepresentation = false`: Gomega does *not* call `String` or `GoString` on objects that satisfy the `Stringer` and `GoStringer` interfaces.  Oftentimes such representations, while more human readable, do not contain all the relevant information associated with an object thereby making it harder to understand why a test might be failing.  If you'd rather see the output of `String` or `GoString` set this property to `true`.
 
-
 > For a tricky example of why `format.UseStringerRepresentation = false` is your friend, check out issue [#37](https://github.com/onsi/gomega/issues/37).
 
 - `format.PrintContextObjects = false`: Gomega by default will not print the content of objects satisfying the context.Context interface, due to too much output. If you want to enable displaying that content, set this property to `true`.
@@ -235,6 +234,16 @@ fmt.Println(format.Object(theThingYouWantToPrint, 1))
 
 - `format.TruncatedDiff = true`: Gomega will truncate long strings and only show where they differ. You can set this to `false` if
 you want to see the full strings.
+
+You can also register your own custom formatter using `format.RegisterCustomFormatter(f)`.  Custom formatters must be of type `type CustomFormatter func(value interface{}) (string, bool)`.  Gomega will pass in any objects to be formatted to each registered custom formatter.  A custom formatter signals that it will handle the passed-in object by returning a formatted string and `true`.  If it does not handle the object it should return `"", false`.  Strings returned by custom formatters will _not_ be truncated (though they may be truncated if the object being formatted is within another struct).  Custom formatters take precedence of `GomegaStringer` and `format.UseStringerRepresentation`.
+
+`format.RegisterCustomFormatter` returns a key that can be used to unregister the custom formatter:
+
+```go
+key := format.RegisterCustomFormatter(myFormatter)
+...
+format.UnregisterCustomFormatter(key)
+```
 
 ## Making Asynchronous Assertions
 

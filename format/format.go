@@ -66,6 +66,52 @@ type GomegaStringer interface {
 }
 
 /*
+CustomFormatters can be registered with Gomega via RegisterCustomFormatter()
+Any value to be rendered by Gomega is passed to each registered CustomFormatters.
+The CustomFormatter signals that it will handle formatting the value by returning (formatted-string, true)
+If the CustomFormatter does not want to handle the object it should return ("", false)
+
+Strings returned by CustomFormatters are not truncated
+*/
+type CustomFormatter func(value interface{}) (string, bool)
+type CustomFormatterKey uint
+
+var customFormatterKey CustomFormatterKey = 1
+
+type customFormatterKeyPair struct {
+	CustomFormatter
+	CustomFormatterKey
+}
+
+/*
+RegisterCustomFormatter registers a CustomFormatter and returns a CustomFormatterKey
+
+You can call UnregisterCustomFormatter with the returned key to unregister the associated CustomFormatter
+*/
+func RegisterCustomFormatter(customFormatter CustomFormatter) CustomFormatterKey {
+	key := customFormatterKey
+	customFormatterKey += 1
+	customFormatters = append(customFormatters, customFormatterKeyPair{customFormatter, key})
+	return key
+}
+
+/*
+UnregisterCustomFormatter unregisters a previously registered CustomFormatter.  You should pass in the key returned by RegisterCustomFormatter
+*/
+func UnregisterCustomFormatter(key CustomFormatterKey) {
+	formatters := []customFormatterKeyPair{}
+	for _, f := range customFormatters {
+		if f.CustomFormatterKey == key {
+			continue
+		}
+		formatters = append(formatters, f)
+	}
+	customFormatters = formatters
+}
+
+var customFormatters = []customFormatterKeyPair{}
+
+/*
 Generates a formatted matcher success/failure message of the form:
 
 	Expected
@@ -261,9 +307,18 @@ func formatValue(value reflect.Value, indentation uint) string {
 	if value.CanInterface() {
 		obj := value.Interface()
 
+		// if a CustomFormatter handles this values, we'll go with that
+		for _, customFormatter := range customFormatters {
+			formatted, handled := customFormatter.CustomFormatter(obj)
+			// do not truncate a user-provided CustomFormatter()
+			if handled {
+				return formatted
+			}
+		}
+
 		// GomegaStringer will take precedence to other representations and disregards UseStringerRepresentation
 		if x, ok := obj.(GomegaStringer); ok {
-			// do not truncate a user-defined GoMegaString() value
+			// do not truncate a user-defined GomegaString() value
 			return x.GomegaString()
 		}
 
