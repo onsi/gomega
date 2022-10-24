@@ -265,17 +265,24 @@ func Object(object interface{}, indentation uint) string {
 IndentString takes a string and indents each line by the specified amount.
 */
 func IndentString(s string, indentation uint) string {
+	return indentString(s, indentation, true)
+}
+
+func indentString(s string, indentation uint, indentFirstLine bool) string {
+	result := &strings.Builder{}
 	components := strings.Split(s, "\n")
-	result := ""
 	indent := strings.Repeat(Indent, int(indentation))
 	for i, component := range components {
-		result += indent + component
+		if i > 0 || indentFirstLine {
+			result.WriteString(indent)
+		}
+		result.WriteString(component)
 		if i < len(components)-1 {
-			result += "\n"
+			result.WriteString("\n")
 		}
 	}
 
-	return result
+	return result.String()
 }
 
 func formatType(v reflect.Value) string {
@@ -312,22 +319,22 @@ func formatValue(value reflect.Value, indentation uint) string {
 			formatted, handled := customFormatter.CustomFormatter(obj)
 			// do not truncate a user-provided CustomFormatter()
 			if handled {
-				return formatted
+				return indentString(formatted, indentation+1, false)
 			}
 		}
 
 		// GomegaStringer will take precedence to other representations and disregards UseStringerRepresentation
 		if x, ok := obj.(GomegaStringer); ok {
 			// do not truncate a user-defined GomegaString() value
-			return x.GomegaString()
+			return indentString(x.GomegaString(), indentation+1, false)
 		}
 
 		if UseStringerRepresentation {
 			switch x := obj.(type) {
 			case fmt.GoStringer:
-				return truncateLongStrings(x.GoString())
+				return indentString(truncateLongStrings(x.GoString()), indentation+1, false)
 			case fmt.Stringer:
-				return truncateLongStrings(x.String())
+				return indentString(truncateLongStrings(x.String()), indentation+1, false)
 			}
 		}
 	}

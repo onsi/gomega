@@ -113,6 +113,13 @@ func (g gomegaStringerLong) GomegaString() string {
 	return strings.Repeat("s", MaxLength*2)
 }
 
+type gomegaStringerMultiline struct {
+}
+
+func (g gomegaStringerMultiline) GomegaString() string {
+	return "A\nB\nC"
+}
+
 var _ = Describe("Format", func() {
 	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
@@ -722,6 +729,10 @@ var _ = Describe("Format", func() {
 				UseStringerRepresentation = false
 				Expect(Object(gomegaStringerLong{}, 1)).Should(Equal("    <format_test.gomegaStringerLong>: " + strings.Repeat("s", MaxLength*2)))
 			})
+
+			It("should indent what the GomegaString() returns", func() {
+				Expect(Object(gomegaStringerMultiline{}, 1)).Should(Equal("    <format_test.gomegaStringerMultiline>: A\n        B\n        C"))
+			})
 		})
 
 		Describe("when used with a registered CustomFormatter", func() {
@@ -730,7 +741,7 @@ var _ = Describe("Format", func() {
 				ncf := NotCustomFormatted{"bob", 17}
 				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: bob, Count: 17}"))
 				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
-				
+
 				key := RegisterCustomFormatter(customFormatter)
 				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: bob (17)"))
 				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
@@ -739,11 +750,34 @@ var _ = Describe("Format", func() {
 				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: bob, Count: 17}"))
 				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
 			})
+
+			It("indents CustomFormatter output correctly", func() {
+				cf := CustomFormatted{"hey\nbob", 17}
+				DeferCleanup(UnregisterCustomFormatter, RegisterCustomFormatter(func(value interface{}) (string, bool) {
+					cf, ok := value.(CustomFormatted)
+					if !ok {
+						return "", false
+					}
+					return fmt.Sprintf("The Data:\n%s\nThe Count:%d", cf.Data, cf.Count), true
+				}))
+
+				Ω(Object(cf, 1)).Should(Equal("    <format_test.CustomFormatted>: The Data:\n        hey\n        bob\n        The Count:17"))
+
+				type Wrapped struct {
+					MyObject   CustomFormatted
+					OuterCount int
+				}
+				wrapped := Wrapped{
+					MyObject:   cf,
+					OuterCount: 10,
+				}
+				Ω(Object(wrapped, 1)).Should(Equal("    <format_test.Wrapped>: {\n        MyObject: The Data:\n            hey\n            bob\n            The Count:17,\n        OuterCount: 10,\n    }"))
+
+			})
 		})
 	})
 
 	Describe("Printing a context.Context field", func() {
-
 		type structWithContext struct {
 			Context context.Context
 			Value   string
