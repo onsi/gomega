@@ -508,8 +508,15 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Eventually(func() (int, string, Foo, error) {
 						return 1, "", Foo{Bar: "hi"}, nil
 					}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
-					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero argument at index 2:"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero return value at index 2:"))
 					Ω(ig.FailureMessage).Should(ContainSubstring(`Foo{Bar:"hi"}`))
+				})
+
+				It("has a meaningful message if all the return values are zero except the final return value, and it is an error", func() {
+					ig.G.Eventually(func() (int, string, Foo, error) {
+						return 1, "", Foo{}, errors.New("welp!")
+					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: function returned error: welp!"))
 				})
 
 				Context("when making a ShouldNot assertion", func() {
@@ -554,7 +561,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						}
 						return counter, s, f, err
 					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
-					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero argument at index 2:"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero return value at index 2:"))
 					Ω(ig.FailureMessage).Should(ContainSubstring(`Foo{Bar:"welp"}`))
 					Ω(counter).Should(Equal(3))
 				})
@@ -581,7 +588,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							}
 							return counter, s, f, err
 						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(BeNumerically(">", 100))
-						Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero argument at index 1:"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("Error: Unexpected non-nil/non-zero return value at index 1:"))
 						Ω(ig.FailureMessage).Should(ContainSubstring(`<string>: "welp"`))
 						Ω(counter).Should(Equal(3))
 					})

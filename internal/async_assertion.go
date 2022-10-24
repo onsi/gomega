@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
 )
 
@@ -164,6 +165,8 @@ func (assertion *AsyncAssertion) buildDescription(optionalDescription ...interfa
 	return fmt.Sprintf(optionalDescription[0].(string), optionalDescription[1:]...) + "\n"
 }
 
+var errInterface = reflect.TypeOf((*error)(nil)).Elem()
+
 func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (interface{}, error, StopTryingError) {
 	var err error
 	var stopTrying StopTryingError
@@ -184,12 +187,17 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 			stopTrying = stopTryingErr
 			continue
 		}
-		zero := reflect.Zero(reflect.TypeOf(extra)).Interface()
+		extraType := reflect.TypeOf(extra)
+		zero := reflect.Zero(extraType).Interface()
 		if reflect.DeepEqual(extra, zero) {
 			continue
 		}
+		if i == len(values)-2 && extraType.Implements(errInterface) {
+			err = fmt.Errorf("function returned error: %s\n%s", extra, format.Object(extra, 1))
+			continue
+		}
 		if err == nil {
-			err = fmt.Errorf("Unexpected non-nil/non-zero argument at index %d:\n\t<%T>: %#v", i+1, extra, extra)
+			err = fmt.Errorf("Unexpected non-nil/non-zero return value at index %d:\n\t<%T>: %#v", i+1, extra, extra)
 		}
 	}
 	return actual, err, stopTrying
