@@ -13,48 +13,12 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-type StopTryingError interface {
-	error
-	Now()
-	wasViaPanic() bool
-}
+var errInterface = reflect.TypeOf((*error)(nil)).Elem()
+var gomegaType = reflect.TypeOf((*types.Gomega)(nil)).Elem()
+var contextType = reflect.TypeOf(new(context.Context)).Elem()
 
-func asStopTryingError(actual interface{}) (StopTryingError, bool) {
-	if actual == nil {
-		return nil, false
-	}
-	if actualErr, ok := actual.(error); ok {
-		var target *stopTryingError
-		if errors.As(actualErr, &target) {
-			return target, true
-		} else {
-			return nil, false
-		}
-	}
-
-	return nil, false
-}
-
-type stopTryingError struct {
-	message  string
-	viaPanic bool
-}
-
-func (s *stopTryingError) Error() string {
-	return s.message
-}
-
-func (s *stopTryingError) Now() {
-	s.viaPanic = true
-	panic(s)
-}
-
-func (s *stopTryingError) wasViaPanic() bool {
-	return s.viaPanic
-}
-
-var StopTrying = func(message string) StopTryingError {
-	return &stopTryingError{message: message}
+type contextWithAttachProgressReporter interface {
+	AttachProgressReporter(func() string) func()
 }
 
 type AsyncAssertionType uint
@@ -165,26 +129,24 @@ func (assertion *AsyncAssertion) buildDescription(optionalDescription ...interfa
 	return fmt.Sprintf(optionalDescription[0].(string), optionalDescription[1:]...) + "\n"
 }
 
-var errInterface = reflect.TypeOf((*error)(nil)).Elem()
-
-func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (interface{}, error, StopTryingError) {
+func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (interface{}, error, *AsyncSignalError) {
 	var err error
-	var stopTrying StopTryingError
+	var asyncSignal *AsyncSignalError = nil
 
 	if len(values) == 0 {
-		return nil, fmt.Errorf("No values were returned by the function passed to Gomega"), stopTrying
+		return nil, fmt.Errorf("No values were returned by the function passed to Gomega"), asyncSignal
 	}
 	actual := values[0].Interface()
-	if stopTryingErr, ok := asStopTryingError(actual); ok {
-		stopTrying = stopTryingErr
+	if asyncSignalErr, ok := AsAsyncSignalError(actual); ok {
+		asyncSignal = asyncSignalErr
 	}
 	for i, extraValue := range values[1:] {
 		extra := extraValue.Interface()
 		if extra == nil {
 			continue
 		}
-		if stopTryingErr, ok := asStopTryingError(extra); ok {
-			stopTrying = stopTryingErr
+		if asyncSignalErr, ok := AsAsyncSignalError(extra); ok {
+			asyncSignal = asyncSignalErr
 			continue
 		}
 		extraType := reflect.TypeOf(extra)
@@ -200,11 +162,12 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 			err = fmt.Errorf("Unexpected non-nil/non-zero return value at index %d:\n\t<%T>: %#v", i+1, extra, extra)
 		}
 	}
-	return actual, err, stopTrying
-}
+	if err == nil {
+		err = errors.Unwrap(asyncSignal)
+	}
 
-var gomegaType = reflect.TypeOf((*types.Gomega)(nil)).Elem()
-var contextType = reflect.TypeOf(new(context.Context)).Elem()
+	return actual, err, asyncSignal
+}
 
 func (assertion *AsyncAssertion) invalidFunctionError(t reflect.Type) error {
 	return fmt.Errorf(`The function passed to %s had an invalid signature of %s.  Functions passed to %s must either:
@@ -234,9 +197,9 @@ You can learn more at https://onsi.github.io/gomega/#eventually
 `, assertion.asyncType, t, t.NumIn(), numProvided, have, assertion.asyncType)
 }
 
-func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error, StopTryingError), error) {
+func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error, *AsyncSignalError), error) {
 	if !assertion.actualIsFunc {
-		return func() (interface{}, error, StopTryingError) { return assertion.actual, nil, nil }, nil
+		return func() (interface{}, error, *AsyncSignalError) { return assertion.actual, nil, nil }, nil
 	}
 	actualValue := reflect.ValueOf(assertion.actual)
 	actualType := reflect.TypeOf(assertion.actual)
@@ -244,23 +207,11 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 
 	if numIn == 0 && numOut == 0 {
 		return nil, assertion.invalidFunctionError(actualType)
-	} else if numIn == 0 {
-		return func() (actual interface{}, err error, stopTrying StopTryingError) {
-			defer func() {
-				if e := recover(); e != nil {
-					if stopTryingErr, ok := asStopTryingError(e); ok {
-						stopTrying = stopTryingErr
-					} else {
-						panic(e)
-					}
-				}
-			}()
-
-			actual, err, stopTrying = assertion.processReturnValues(actualValue.Call([]reflect.Value{}))
-			return
-		}, nil
 	}
-	takesGomega, takesContext := actualType.In(0).Implements(gomegaType), actualType.In(0).Implements(contextType)
+	takesGomega, takesContext := false, false
+	if numIn > 0 {
+		takesGomega, takesContext = actualType.In(0).Implements(gomegaType), actualType.In(0).Implements(contextType)
+	}
 	if takesGomega && numIn > 1 && actualType.In(1).Implements(contextType) {
 		takesContext = true
 	}
@@ -300,21 +251,24 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 		return nil, assertion.argumentMismatchError(actualType, len(inValues))
 	}
 
-	return func() (actual interface{}, err error, stopTrying StopTryingError) {
+	return func() (actual interface{}, err error, asyncSignal *AsyncSignalError) {
 		var values []reflect.Value
 		assertionFailure = nil
 		defer func() {
-			if numOut == 0 {
+			if numOut == 0 && takesGomega {
 				actual = assertionFailure
 			} else {
-				actual, err, stopTrying = assertion.processReturnValues(values)
+				actual, err, asyncSignal = assertion.processReturnValues(values)
 				if assertionFailure != nil {
 					err = assertionFailure
 				}
 			}
 			if e := recover(); e != nil {
-				if stopTryingErr, ok := asStopTryingError(e); ok {
-					stopTrying = stopTryingErr
+				if asyncSignalErr, ok := AsAsyncSignalError(e); ok {
+					asyncSignal = asyncSignalErr
+					if err == nil {
+						err = errors.Unwrap(asyncSignal)
+					}
 				} else if assertionFailure == nil {
 					panic(e)
 				}
@@ -323,13 +277,6 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 		values = actualValue.Call(inValues)
 		return
 	}, nil
-}
-
-func (assertion *AsyncAssertion) matcherSaysStopTrying(matcher types.GomegaMatcher, value interface{}) StopTryingError {
-	if assertion.actualIsFunc || types.MatchMayChangeInTheFuture(matcher, value) {
-		return nil
-	}
-	return StopTrying("No future change is possible.  Bailing out early")
 }
 
 func (assertion *AsyncAssertion) afterTimeout() <-chan time.Time {
@@ -359,8 +306,43 @@ func (assertion *AsyncAssertion) afterPolling() <-chan time.Time {
 	}
 }
 
-type contextWithAttachProgressReporter interface {
-	AttachProgressReporter(func() string) func()
+func (assertion *AsyncAssertion) matcherSaysStopTrying(matcher types.GomegaMatcher, value interface{}) *AsyncSignalError {
+	if assertion.actualIsFunc || types.MatchMayChangeInTheFuture(matcher, value) {
+		return nil
+	}
+	return StopTrying("No future change is possible.  Bailing out early").(*AsyncSignalError)
+}
+
+func (assertion *AsyncAssertion) pollMatcher(matcher types.GomegaMatcher, value interface{}, currentAsyncSignal *AsyncSignalError) (matches bool, err error, asyncSignal *AsyncSignalError) {
+	// we pass through the current StopTrying error and only overwrite it with what the matcher says if it is nil
+	asyncSignal = currentAsyncSignal
+
+	if currentAsyncSignal == nil || !currentAsyncSignal.StopTrying() {
+		asyncSignal = assertion.matcherSaysStopTrying(matcher, value)
+	}
+
+	defer func() {
+		if e := recover(); e != nil {
+			if asyncSignalErr, ok := AsAsyncSignalError(e); ok {
+				if asyncSignal == nil {
+					asyncSignal = asyncSignalErr
+				}
+				err = asyncSignalErr
+			} else {
+				panic(e)
+			}
+		}
+	}()
+
+	matches, err = matcher.Match(value)
+	if asyncSignalErr, ok := AsAsyncSignalError(err); ok {
+		err = errors.Unwrap(asyncSignalErr)
+		if asyncSignal == nil {
+			asyncSignal = asyncSignalErr
+		}
+	}
+
+	return
 }
 
 func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch bool, optionalDescription ...interface{}) bool {
@@ -379,12 +361,10 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 		return false
 	}
 
-	value, err, stopTrying := pollActual()
+	value, err, asyncSignal := pollActual()
+
 	if err == nil {
-		if stopTrying == nil {
-			stopTrying = assertion.matcherSaysStopTrying(matcher, value)
-		}
-		matches, err = matcher.Match(value)
+		matches, err, asyncSignal = assertion.pollMatcher(matcher, value, asyncSignal)
 	}
 
 	messageGenerator := func() string {
@@ -426,30 +406,27 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 				return true
 			}
 
-			if stopTrying != nil {
-				fail(stopTrying.Error() + " -")
+			if asyncSignal != nil && asyncSignal.StopTrying() {
+				fail(asyncSignal.Error() + " -")
 				return false
 			}
 
 			select {
 			case <-assertion.afterPolling():
-				v, e, st := pollActual()
-				if st != nil && st.wasViaPanic() {
+				v, e, as := pollActual()
+				if as != nil && as.WasViaPanic() && as.StopTrying() {
 					// we were told to stop trying via panic - which means we dont' have reasonable new values
 					// we should simply use the old values and exit now
-					fail(st.Error() + " -")
+					fail(as.Error() + " -")
 					return false
 				}
 				lock.Lock()
-				value, err, stopTrying = v, e, st
+				value, err, asyncSignal = v, e, as
 				lock.Unlock()
 				if err == nil {
-					if stopTrying == nil {
-						stopTrying = assertion.matcherSaysStopTrying(matcher, value)
-					}
-					matches, e = matcher.Match(value)
+					m, e, as := assertion.pollMatcher(matcher, value, asyncSignal)
 					lock.Lock()
-					err = e
+					matches, err, asyncSignal = m, e, as
 					lock.Unlock()
 				}
 			case <-contextDone:
@@ -467,27 +444,24 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 				return false
 			}
 
-			if stopTrying != nil {
+			if asyncSignal != nil && asyncSignal.StopTrying() {
 				return true
 			}
 
 			select {
 			case <-assertion.afterPolling():
-				v, e, st := pollActual()
-				if st != nil && st.wasViaPanic() {
+				v, e, as := pollActual()
+				if as != nil && as.WasViaPanic() && as.StopTrying() {
 					// we were told to stop trying via panic - which means we made it this far and should return successfully
 					return true
 				}
 				lock.Lock()
-				value, err, stopTrying = v, e, st
+				value, err, asyncSignal = v, e, as
 				lock.Unlock()
 				if err == nil {
-					if stopTrying == nil {
-						stopTrying = assertion.matcherSaysStopTrying(matcher, value)
-					}
-					matches, e = matcher.Match(value)
+					m, e, as := assertion.pollMatcher(matcher, value, asyncSignal)
 					lock.Lock()
-					err = e
+					matches, err, asyncSignal = m, e, as
 					lock.Unlock()
 				}
 			case <-contextDone:

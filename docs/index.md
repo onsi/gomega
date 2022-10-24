@@ -490,11 +490,11 @@ When no explicit duration is provided, `Consistently` will use the default durat
 
 > Developers often try to use `runtime.Gosched()` to nudge background goroutines to run.  This can lead to flaky tests as it is not deterministic that a given goroutine will run during the `Gosched`.  `Consistently` is particularly handy in these cases: it polls for 100ms which is typically more than enough time for all your Goroutines to run.  Yes, this is basically like putting a time.Sleep() in your tests... Sometimes, when making negative assertions in a concurrent world, that's the best you can do!
 
-### Bailing Out Early
+### Bailing Out Early - Polling Functions
 
-There are cases where you need to signal to `Eventually` and `Consistently` that they should stop trying.  Gomega provides`StopTrying(MESSAGE)` to allow you to send that signal.  There are two ways to use `StopTrying`.
+There are cases where you need to signal to `Eventually` and `Consistently` that they should stop trying.  Gomega provides`StopTrying(format string, args ...any)` to allow you to send that signal.  There are two ways to use `StopTrying`.
 
-First, you can return `StopTrying(MESSAGE)` as an error. Consider, for example, the case where `Eventually` is searching through a set of possible queries with a server:
+First, you can return `StopTrying` as an error. Consider, for example, the case where `Eventually` is searching through a set of possible queries with a server:
 
 ```go
 playerIndex, numPlayers := 0, 11
@@ -509,9 +509,9 @@ Eventually(func() (string, error) {
 }).Should(Equal("Patrick Mahomes"))
 ```
 
-Here we return a `StopTrying(MESSAGE)` error to tell `Eventually` that we've looked through all possible players and that it should stop.  Note that `Eventually` will check last name returned by this function and succeed if that name is the desired name.
+Here we return a `StopTrying` error to tell `Eventually` that we've looked through all possible players and that it should stop.  Note that `Eventually` will check last name returned by this function and succeed if that name is the desired name.
 
-You can also call `StopTrying(MESSAGE).Now()` to immediately end execution of the function. Consider, for example, the case of a client communicating with a server that experiences an irrevocable error:
+You can also call `StopTrying(...).Now()` to immediately end execution of the function. Consider, for example, the case of a client communicating with a server that experiences an irrevocable error:
 
 ```go
 Eventually(func() []string {
@@ -538,6 +538,32 @@ Consistently(func() int {
 ```
 
 here we succeed because no errors were identified while the client was working.
+
+`StopTrying` also allows you wrap an error using the `%w` verb.  For example:
+
+```go
+Eventually(func() []string {
+    names, err := client.FetchAllPlayers()
+    if err == client.TOKEN_EXPIRED || err == client.SEVER_GONE {
+        StopTrying("An irrecoverable error occurred: %w", err).Now()
+    }
+    return names
+}).Should(ContainElement("Patrick Mahomes"))
+```
+
+Wrapping an error in this way allows you to simultaneously signal that `Eventually` should stop trying _and_ that the assertion should count as a failure regardless of the state of the match when `StopTrying` is returned/thrown.
+
+### Bailing Out Early - Matchers
+
+Just like functions being polled, matchers can also indicate if `Eventually`/`Consistently` should stop polling.  Matchers implement a `Match` method with the following signature:
+
+```go
+Match(actual interface{}) (success bool, err error)
+```
+
+If a matcher returns `StopTrying` for `error`, or calls `StopTrying(...).Now()`, `Eventually` and `Consistently` will stop polling and use the returned value of `success` to determine if the match succeeded or not.  To signal that the `success` values should wrap an error via `StopTrying("<reason>: %w", err)`.
+
+> Note: An older mechanism for doing this is documented in the [custom matchers section below](#aborting-eventuallyconsistently)
 
 ### Modifying Default Intervals
 
@@ -1766,6 +1792,8 @@ var _ = Describe("RepresentJSONified Object", func() {
 This also offers an example of what using the matcher would look like in your tests.  Note that testing the cases when the matcher returns an error involves creating the matcher and invoking `Match` manually (instead of using an `Ω` or `Expect` assertion).
 
 ### Aborting Eventually/Consistently
+
+**Note: This section documents the `MatchMayChangeInTheFuture` method for aborting `Eventually`/`Consistently`.  A more up-to-date approach that uses the `StopTrying` error is documented [earlier](#bailing-out-early--matchers).**
 
 There are sometimes instances where `Eventually` or `Consistently` should stop polling a matcher because the result of the match simply cannot change.
 

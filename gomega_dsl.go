@@ -409,7 +409,9 @@ func ConsistentlyWithOffset(offset int, actual interface{}, args ...interface{})
 StopTrying can be used to signal to Eventually and Consistently that the polled function will not change
 and that they should stop trying.  In the case of Eventually, if a match does not occur in this, final, iteration then a failure will result.  In the case of Consistently, as long as this last iteration satisfies the match, the assertion will be considered successful.
 
-You can send the StopTrying signal by either returning a StopTrying("message") messages as an error from your passed-in function  _or_ by calling StopTrying("message").Now() to trigger a panic and end execution.
+You can send the StopTrying signal by either returning StopTrying("message") as an error from your passed-in function _or_ by calling StopTrying("message").Now() to trigger a panic and end execution.
+
+StopTrying has the same signature as `fmt.Errorf`, and you can use `%w` to wrap StopTrying around another error.  Doing so signals to Gomega that the assertion should (a) stop trying _and_ that (b) an underlying error has occurred.  This, in turn, implies that no match should be attempted as the returned values cannot be trusted.
 
 Here are a couple of examples.  This is how you might use StopTrying() as an error to signal that Eventually should stop:
 

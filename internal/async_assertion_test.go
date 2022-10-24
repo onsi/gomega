@@ -13,6 +13,26 @@ import (
 	"golang.org/x/net/context"
 )
 
+type quickMatcher struct {
+	matchFunc func(actual any) (bool, error)
+}
+
+func (q quickMatcher) Match(actual any) (bool, error) {
+	return q.matchFunc(actual)
+}
+
+func (q quickMatcher) FailureMessage(actual any) (message string) {
+	return "QM failure message"
+}
+
+func (q quickMatcher) NegatedFailureMessage(actual any) (message string) {
+	return "QM negated failure message"
+}
+
+func QuickMatcher(matchFunc func(actual any) (bool, error)) OmegaMatcher {
+	return quickMatcher{matchFunc}
+}
+
 type FakeGinkgoSpecContext struct {
 	Attached  func() string
 	Cancelled bool
@@ -1015,7 +1035,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 			})
 		})
 
-		Describe("The StopTrying signal", func() {
+		Describe("The StopTrying signal - when sent by actual", func() {
 			Context("when success occurs on the last iteration", func() {
 				It("succeeds and stops when the signal is returned", func() {
 					possibilities := []string{"A", "B", "C"}
@@ -1032,24 +1052,63 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(i).Should(Equal(3))
 				})
 
-				It("counts as success for consistently", func() {
+				It("does not count as success if StopTrying wraps an error", func() {
+					possibilities := []string{"A", "B", "C"}
+					i := 0
+					ig.G.Eventually(func() (string, error) {
+						possibility := possibilities[i]
+						i += 1
+						if i == len(possibilities) {
+							return possibility, StopTrying("Reached the end: %w", errors.New("contrived"))
+						} else {
+							return possibility, nil
+						}
+					}).Should(Equal("C"))
+					Ω(i).Should(Equal(3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end:"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: contrived"))
+				})
+
+				It("counts as success for consistently... unless an error is wrapped", func() {
 					i := 0
 					Consistently(func() (int, error) {
 						i += 1
-						if i >= 10 {
+						if i >= 3 {
 							return i, StopTrying("Reached the end")
 						}
 						return i, nil
-					}).Should(BeNumerically("<=", 10))
+					}).Should(BeNumerically("<=", 3))
 
 					i = 0
 					Consistently(func() int {
 						i += 1
-						if i >= 10 {
+						if i >= 3 {
 							StopTrying("Reached the end").Now()
 						}
 						return i
-					}).Should(BeNumerically("<=", 10))
+					}).Should(BeNumerically("<=", 3))
+
+					i = 0
+					ig.G.Consistently(func() (int, error) {
+						i += 1
+						if i >= 3 {
+							return i, StopTrying("Reached the end %w", errors.New("welp"))
+						}
+						return i, nil
+					}).Should(BeNumerically("<=", 3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: welp"))
+
+					i = 0
+					ig.G.Consistently(func() (int, error) {
+						i += 1
+						if i >= 3 {
+							StopTrying("Reached the end %w", errors.New("welp")).Now()
+						}
+						return i, nil
+					}).Should(BeNumerically("<=", 3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: welp"))
 				})
 			})
 
@@ -1087,6 +1146,20 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end - after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <string>: C\nto equal\n    <string>: D"))
 				})
+
+				It("allows the user to wrap an error and see that error", func() {
+					i := 0
+					ig.G.Eventually(func() (string, error) {
+						if i == 0 {
+							i += 1
+							return "C", nil
+						}
+						return "C", StopTrying("Reached the end: %w", fmt.Errorf("END_OF_RANGE"))
+					}).Should(Equal("D"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end: END_OF_RANGE - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: END_OF_RANGE"))
+					Ω(ig.FailureMessage).ShouldNot(ContainSubstring("Expected"), "since we're wrapping an error, Gomega treats this like an actual that returned an error and so the match is not attempted")
+				})
 			})
 
 			Context("when StopTrying().Now() is called", func() {
@@ -1105,6 +1178,18 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(i).Should(Equal(3))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Out of tries - after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <string>: C\nto equal\n    <string>: D"))
+				})
+
+				It("allows the user to wrap an error and see that error", func() {
+					i := 0
+					ig.G.Eventually(func() (string, error) {
+						if i == 1 {
+							StopTrying("Reached the end: %w", fmt.Errorf("END_OF_RANGE")).Now()
+						}
+						i += 1
+						return "C", nil
+					}).Should(Equal("D"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Reached the end: END_OF_RANGE - after"))
 				})
 			})
 
@@ -1134,6 +1219,137 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("Assertion in callback at"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("<string>: A"))
 				})
+			})
+		})
+
+		Describe("The StopTrying signal - when sent by the matcher", func() {
+			Context("when a StopTrying signal is returned", func() {
+				It("stops trying", func() {
+					i := 0
+					ig.G.Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+						i += 1
+						if i < 4 {
+							return false, nil
+						}
+						return false, StopTrying("stopping")
+					}))
+
+					Ω(i).Should(Equal(4))
+					Ω(ig.FailureMessage).Should(ContainSubstring("stopping - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("QM failure message"))
+				})
+
+				Context("when an error is wrapped", func() {
+					It("treats it like a matcher error and ignores the match value", func() {
+						i := 0
+						ig.G.Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+							i += 1
+							if i < 4 {
+								return false, nil
+							}
+							return true, StopTrying("stopping %w", errors.New("bam"))
+						}))
+
+						Ω(i).Should(Equal(4))
+						Ω(ig.FailureMessage).Should(ContainSubstring("stopping bam - after"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("Error: bam"))
+						Ω(ig.FailureMessage).ShouldNot(ContainSubstring("QM failure message"))
+					})
+
+					It("counts as a failure for consistently", func() {
+						i := 0
+						ig.G.Consistently(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+							i += 1
+							if i < 4 {
+								return true, nil
+							}
+							return true, StopTrying("stopping %w", errors.New("bam"))
+						}))
+
+						Ω(i).Should(Equal(4))
+						Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("Error: bam"))
+					})
+				})
+
+				Context("when no error is wrapped", func() {
+					It("uses the match value but no longer keeps trying ", func() {
+						i := 0
+						Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+							i += 1
+							if i < 4 {
+								return false, nil
+							}
+							return true, StopTrying("stopping")
+						}))
+
+						//note that we expect to succeed because that last `true` value is used since no error is wrapped
+						Ω(i).Should(Equal(4))
+					})
+
+					It("counts as success for consistently", func() {
+						i := 0
+						Consistently(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+							i += 1
+							if i < 4 {
+								return true, nil
+							}
+							return true, StopTrying("stopping")
+						}))
+
+						//note that we expect to succeed because that last `true` value is used since no error is wrapped
+						Ω(i).Should(Equal(4))
+					})
+				})
+			})
+
+			Context("when StopTrying.Now() is thrown", func() {
+				It("stops trying and counts as a failure for Eventually", func() {
+					i := 0
+					ig.G.Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+						i += 1
+						if i >= 4 {
+							StopTrying("stopping").Now()
+						}
+						return false, nil
+					}))
+
+					Ω(i).Should(Equal(4))
+					Ω(ig.FailureMessage).Should(ContainSubstring("stopping - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: stopping"))
+
+					ig.G.Eventually(nil).ShouldNot(QuickMatcher(func(_ any) (bool, error) {
+						StopTrying("stopping").Now()
+						return false, nil
+					}))
+					Ω(ig.FailureMessage).Should(ContainSubstring("stopping - after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: stopping"))
+				})
+
+				It("stops trying and counts as failure for Consistently", func() {
+					i := 0
+					ig.G.Consistently(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+						i += 1
+						if i >= 4 {
+							StopTrying("stopping").Now()
+						}
+						return true, nil
+					}))
+
+					Ω(i).Should(Equal(4))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Error: stopping"))
+				})
+			})
+
+			It("forwards any non-signaling panics", func() {
+				defer func() {
+					e := recover()
+					Ω(e).Should(Equal("welp"))
+				}()
+				Eventually(nil).Should(QuickMatcher(func(actual any) (bool, error) {
+					panic("welp")
+					return false, nil
+				}))
 			})
 		})
 	})
