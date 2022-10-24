@@ -1348,7 +1348,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 				}()
 				Eventually(nil).Should(QuickMatcher(func(actual any) (bool, error) {
 					panic("welp")
-					return false, nil
 				}))
 			})
 		})
