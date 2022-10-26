@@ -350,6 +350,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 		defer lock.Unlock()
 		message := ""
 		if err != nil {
+			//TODO - formatting for TryAgainAfter?
 			if asyncSignal, ok := AsAsyncSignalError(err); ok && asyncSignal.IsStopTrying() {
 				message = err.Error()
 				for _, attachment := range asyncSignal.Attachments {
@@ -385,16 +386,25 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 	}
 
 	for {
-		if asyncSignal, ok := AsAsyncSignalError(err); ok && asyncSignal.IsStopTrying() {
-			fail("Told to stop trying")
-			return false
+		var nextPoll <-chan time.Time = nil
+		var isTryAgainAfterError = false
+
+		if asyncSignal, ok := AsAsyncSignalError(err); ok {
+			if asyncSignal.IsStopTrying() {
+				fail("Told to stop trying")
+				return false
+			}
+			if asyncSignal.IsTryAgainAfter() {
+				nextPoll = time.After(asyncSignal.TryAgainDuration())
+				isTryAgainAfterError = true
+			}
 		}
 
 		if err == nil && matches == desiredMatch {
 			if assertion.asyncType == AsyncAssertionTypeEventually {
 				return true
 			}
-		} else {
+		} else if !isTryAgainAfterError {
 			if assertion.asyncType == AsyncAssertionTypeConsistently {
 				fail("Failed")
 				return false
@@ -410,8 +420,12 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 			}
 		}
 
+		if nextPoll == nil {
+			nextPoll = assertion.afterPolling()
+		}
+
 		select {
-		case <-assertion.afterPolling():
+		case <-nextPoll:
 			v, e := pollActual()
 			lock.Lock()
 			value, err = v, e
@@ -431,6 +445,10 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 				fail("Timed out")
 				return false
 			} else {
+				if isTryAgainAfterError {
+					fail("Timed out while waiting on TryAgainAfter")
+					return false
+				}
 				return true
 			}
 		}

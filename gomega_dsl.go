@@ -406,39 +406,42 @@ func ConsistentlyWithOffset(offset int, actual interface{}, args ...interface{})
 }
 
 /*
-StopTrying can be used to signal to Eventually and Consistently that the polled function will not change
-and that they should stop trying.  In the case of Eventually, if a match does not occur in this, final, iteration then a failure will result.  In the case of Consistently, as long as this last iteration satisfies the match, the assertion will be considered successful.
+StopTrying can be used to signal to Eventually and Consistentlythat they should abort and stop trying.  This always results in a failure of the assertion - and the failure message is the content of the StopTrying signal.
 
 You can send the StopTrying signal by either returning StopTrying("message") as an error from your passed-in function _or_ by calling StopTrying("message").Now() to trigger a panic and end execution.
 
-StopTrying has the same signature as `fmt.Errorf`, and you can use `%w` to wrap StopTrying around another error.  Doing so signals to Gomega that the assertion should (a) stop trying _and_ that (b) an underlying error has occurred.  This, in turn, implies that no match should be attempted as the returned values cannot be trusted.
+You can also wrap StopTrying around an error with `StopTrying("message").Wrap(err)` and can attach additional objects via `StopTrying("message").Attach("description", object).  When rendered, the signal will include the wrapped error and any attached objects rendered using Gomega's default formatting.
 
 Here are a couple of examples.  This is how you might use StopTrying() as an error to signal that Eventually should stop:
 
 	playerIndex, numPlayers := 0, 11
 	Eventually(func() (string, error) {
-		name := client.FetchPlayer(playerIndex)
-		playerIndex += 1
-		if playerIndex == numPlayers {
-			return name, StopTrying("No more players left")
-		} else {
-			return name, nil
-		}
+	    if playerIndex == numPlayers {
+	        return "", StopTrying("no more players left")
+	    }
+	    name := client.FetchPlayer(playerIndex)
+	    playerIndex += 1
+	    return name, nil
 	}).Should(Equal("Patrick Mahomes"))
-
-note that the final `name` returned alongside `StopTrying()` will be processed.
 
 And here's an example where `StopTrying().Now()` is called to halt execution immediately:
 
 	Eventually(func() []string {
 		names, err := client.FetchAllPlayers()
 		if err == client.IRRECOVERABLE_ERROR {
-			StopTrying("Irrecoverable error occurred").Now()
+			StopTrying("Irrecoverable error occurred").Wrap(err).Now()
 		}
 		return names
 	}).Should(ContainElement("Patrick Mahomes"))
 */
 var StopTrying = internal.StopTrying
+
+/*
+TryAgainAfter(<duration>) allows you to adjust the polling interval for the _next_ iteration of `Eventually` or `Consistently`.  Like `StopTrying` you can either return `TryAgainAfter` as an error or trigger it immedieately with `.Now()`
+
+When `TryAgainAfter(<duration>` is triggered `Eventually` and `Consistently` will wait for that duration.  If a timeout occurs before the next poll is triggered both `Eventually` and `Consistently` will always fail with the content of the TryAgainAfter message.  As with StopTrying you can `.Wrap()` and error and `.Attach()` additional objects to `TryAgainAfter`.
+*/
+var TryAgainAfter = internal.TryAgainAfter
 
 // SetDefaultEventuallyTimeout sets the default timeout duration for Eventually. Eventually will repeatedly poll your condition until it succeeds, or until this timeout elapses.
 func SetDefaultEventuallyTimeout(t time.Duration) {

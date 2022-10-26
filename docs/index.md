@@ -554,6 +554,14 @@ If a matcher returns `StopTrying` for `error`, or calls `StopTrying(...).Now()`,
 
 > Note: An alternative mechanism for having matchers bail out early is documented in the [custom matchers section below](#aborting-eventuallyconsistently).  This mechanism, which entails implementing a `MatchMayChangeIntheFuture(<actual>) bool` method, allows matchers to signify that no future change is possible out-of-band of the call to the matcher.
 
+### Changing the Polling Interval Dynamically
+
+You typically configure the polling interval for `Eventually` and `Consistently` using the `.WithPolling()` or `.ProbeEvery()` chaining methods.  Sometimes, however, a polled function or matcher might want to signal that a service is unavailable but should be tried again after a certain duration.
+
+You can signal this to both `Eventually` and `Consistently` using `TryAgainAfter(<duration>)`.  This error-signal operates like `StopTrying()`: you can return `TryAgainAfter(<duration>)` as an error or throw a panic via `TryAgainAfter(<duration>).Now()`.  In either case, both `Eventually` and `Consistently` will wait for the specified duration before trying again.
+
+If a timeout occurs after the `TryAgainAfter` signal is sent but _before_ the next poll occurs both `Eventually` _and_ `Consistently` will always fail and print out the content of `TryAgainAfter`.  The default message is `"told to try again after <duration>"` however, as with `StopTrying` you can use `.Wrap()` and `.Attach()` to wrap an error and attach additional objects to include in the message, respectively.
+
 ### Modifying Default Intervals
 
 By default, `Eventually` will poll every 10 milliseconds for up to 1 second and `Consistently` will monitor every 10 milliseconds for up to 100 milliseconds.  You can modify these defaults across your test suite with:

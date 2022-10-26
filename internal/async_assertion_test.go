@@ -1232,7 +1232,6 @@ sprocket:
 
 				})
 			})
-
 		})
 
 		Describe("The StopTrying signal - when sent by the matcher", func() {
@@ -1313,6 +1312,114 @@ sprocket:
 				Eventually(nil).Should(QuickMatcher(func(actual any) (bool, error) {
 					panic("welp")
 				}))
+			})
+		})
+	})
+
+	Describe("dynamically adjusting the polling interval", func() {
+		var i int
+		var times []time.Duration
+		var t time.Time
+
+		BeforeEach(func() {
+			i = 0
+			times = []time.Duration{}
+			t = time.Now()
+		})
+
+		Context("and the assertion eventually succeeds", func() {
+			It("adjusts the timing of the next iteration", func() {
+				Eventually(func() error {
+					times = append(times, time.Since(t))
+					t = time.Now()
+					i += 1
+					if i < 3 {
+						return errors.New("stay on target")
+					}
+					if i == 3 {
+						return TryAgainAfter(time.Millisecond * 200)
+					}
+					if i == 4 {
+						return errors.New("you've switched off your targeting computer")
+					}
+					if i == 5 {
+						TryAgainAfter(time.Millisecond * 100).Now()
+					}
+					if i == 6 {
+						return errors.New("stay on target")
+					}
+					return nil
+				}).ProbeEvery(time.Millisecond * 10).Should(Succeed())
+				Ω(i).Should(Equal(7))
+				Ω(times).Should(HaveLen(7))
+				Ω(times[0]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[1]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[2]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[3]).Should(BeNumerically("~", time.Millisecond*200, time.Millisecond*200))
+				Ω(times[4]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[5]).Should(BeNumerically("~", time.Millisecond*100, time.Millisecond*100))
+				Ω(times[6]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+			})
+		})
+
+		Context("and the assertion timesout while waiting", func() {
+			It("fails with a timeout and emits the try again after error", func() {
+				ig.G.Eventually(func() (int, error) {
+					times = append(times, time.Since(t))
+					t = time.Now()
+					i += 1
+					if i < 3 {
+						return i, nil
+					}
+					if i == 3 {
+						return i, TryAgainAfter(time.Second * 10).Wrap(errors.New("bam"))
+					}
+					return i, nil
+				}).ProbeEvery(time.Millisecond * 10).WithTimeout(time.Millisecond * 300).Should(Equal(4))
+				Ω(i).Should(Equal(3))
+				Ω(times).Should(HaveLen(3))
+				Ω(times[0]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[1]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[2]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+
+				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("Error: told to try again after 10s: bam"))
+			})
+		})
+
+		Context("when used with Consistently", func() {
+			It("doesn't immediately count as a failure and adjusts the timing of the next iteration", func() {
+				Consistently(func() (int, error) {
+					times = append(times, time.Since(t))
+					t = time.Now()
+					i += 1
+					if i == 3 {
+						return i, TryAgainAfter(time.Millisecond * 200)
+					}
+					return i, nil
+				}).ProbeEvery(time.Millisecond * 10).WithTimeout(time.Millisecond * 500).Should(BeNumerically("<", 1000))
+				Ω(times[0]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[1]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[2]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[3]).Should(BeNumerically("~", time.Millisecond*200, time.Millisecond*200))
+				Ω(times[4]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+			})
+
+			It("doesn count as a failure if a timeout occurs during the try again after window", func() {
+				ig.G.Consistently(func() (int, error) {
+					times = append(times, time.Since(t))
+					t = time.Now()
+					i += 1
+					if i == 3 {
+						return i, TryAgainAfter(time.Second * 10).Wrap(errors.New("bam"))
+					}
+					return i, nil
+				}).ProbeEvery(time.Millisecond * 10).WithTimeout(time.Millisecond * 300).Should(BeNumerically("<", 1000))
+				Ω(times[0]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[1]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(times[2]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
+				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out while waiting on TryAgainAfter after"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("Error: told to try again after 10s: bam"))
 			})
 		})
 	})

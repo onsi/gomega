@@ -16,7 +16,7 @@ var _ = Describe("AsyncSignalError", func() {
 				st := StopTrying("I've tried 17 times - give up!")
 				Ω(st.Error()).Should(Equal("I've tried 17 times - give up!"))
 				Ω(errors.Unwrap(st)).Should(BeNil())
-				Ω(st.(*internal.AsyncSignalError).IsStopTrying()).Should(BeTrue())
+				Ω(st.(*internal.AsyncSignalErrorImpl).IsStopTrying()).Should(BeTrue())
 			})
 		})
 
@@ -32,7 +32,7 @@ var _ = Describe("AsyncSignalError", func() {
 
 		Describe("When attaching objects", func() {
 			It("attaches them, with their descriptions", func() {
-				st := StopTrying("Welp!").Attach("Max retries attained", 17).Attach("Got this response", "FLOOP").(*internal.AsyncSignalError)
+				st := StopTrying("Welp!").Attach("Max retries attained", 17).Attach("Got this response", "FLOOP").(*internal.AsyncSignalErrorImpl)
 				Ω(st.Attachments).Should(HaveLen(2))
 				Ω(st.Attachments[0]).Should(Equal(internal.AsyncSignalErrorAttachment{"Max retries attained", 17}))
 				Ω(st.Attachments[1]).Should(Equal(internal.AsyncSignalErrorAttachment{"Got this response", "FLOOP"}))
@@ -41,7 +41,7 @@ var _ = Describe("AsyncSignalError", func() {
 
 		Describe("when invoking Now()", func() {
 			It("should panic with itself", func() {
-				st := StopTrying("bam").(*internal.AsyncSignalError)
+				st := StopTrying("bam").(*internal.AsyncSignalErrorImpl)
 				Ω(st.Now).Should(PanicWith(st))
 			})
 		})
