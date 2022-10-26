@@ -453,6 +453,4 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 			}
 		}
 	}
-
-	return false
 }
