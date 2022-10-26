@@ -1228,8 +1228,17 @@ sprocket:
 widget:
     <string>: bob
 sprocket:
-    <int>: 17`))
+    <int>: 17`))	
 
+				})
+			})
+
+			Context("when a non-PollingSignalError is in play", func() {
+				It("also includes the format.Object representation", func() {
+					ig.G.Eventually(func() (int, error) {
+						return 0, fmt.Errorf("bam")
+					}).WithTimeout(10 * time.Millisecond).Should(Equal(1))
+					Ω(ig.FailureMessage).Should(ContainSubstring("*fmt.wrapError"))
 				})
 			})
 		})

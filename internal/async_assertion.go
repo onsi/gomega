@@ -357,7 +357,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 					message += format.Object(attachment.Object, 1)
 				}
 			} else {
-				message = "Error: " + err.Error()
+				message = "Error: " + err.Error() + "\n" + format.Object(err, 1)
 			}
 		} else {
 			if desiredMatch {
