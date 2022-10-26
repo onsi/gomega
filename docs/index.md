@@ -254,10 +254,10 @@ Gomega has support for making *asynchronous* assertions.  There are two function
 `Eventually` checks that an assertion *eventually* passes.  `Eventually` blocks when called and attempts an assertion periodically until it passes or a timeout occurs.  Both the timeout and polling interval are configurable as optional arguments:
 
 ```go
-Eventually(ACTUAL, (TIMEOUT), (POLLING_INTERVAL), (context.Context).Should(MATCHER)
+Eventually(ACTUAL, (TIMEOUT), (POLLING_INTERVAL), (context.Context)).Should(MATCHER)
 ```
 
-The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings (e.g. "100ms") or `float64` (in which case they are interpreted as seconds).  You can also provide a `context.Context` which - when cancelled - will instruct `Eventually` to stop and exit with a failure message.
+The first optional argument is the timeout (which defaults to 1s), the second is the polling interval (which defaults to 10ms).  Both intervals can be specified as time.Duration, parsable duration strings (e.g. "100ms") or `float64` (in which case they are interpreted as seconds).  You can also provide a `context.Context` which - when cancelled - will instruct `Eventually` to stop and exit with a failure message.  You are also allowed to pass in the `context.Context` _first_ as `Eventually(ctx, ACTUAL)`.
 
 > As with synchronous assertions, you can annotate asynchronous assertions by passing either a format string and optional inputs or a function of type `func() string` after the `GomegaMatcher`.
 
@@ -394,9 +394,10 @@ It("adds a few books and checks the count", func(ctx SpecContext) {
     intialCount := client.FetchCount(ctx, "/items")
     client.AddItem(ctx, "foo")
     client.AddItem(ctx, "bar")
-    Eventually(client.FetchCount).WithContext(ctx).WithArguments("/items").Should(BeNumerically("==", initialCount + 2))
+    //note that there are several supported ways to pass in the context.  All are equivalent:
+    Eventually(ctx, client.FetchCount).WithArguments("/items").Should(BeNumerically("==", initialCount + 2))
     Eventually(client.FetchItems).WithContext(ctx).Should(ContainElement("foo"))
-    Eventually(client.FetchItems).WithContext(ctx).Should(ContainElement("foo"))
+    Eventually(client.FetchItems, ctx).Should(ContainElement("foo"))
 }, SpecTimeout(time.Second * 5))
 ```
 

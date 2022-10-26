@@ -139,16 +139,16 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 			Ω(time.Since(t)).Should(BeNumerically("~", 50*time.Millisecond, 30*time.Millisecond))
 		})
 
-		It("panics when the duration string can't be parsed", func() {
-			Ω(func() {
-				Consistently(true, "fries").Should(BeTrue())
-			}).Should(PanicWith(`"fries" is not a valid parsable duration string.`))
+		It("fails when the duration string can't be parsed", func() {
+			ig := NewInstrumentedGomega()
+			ig.G.Consistently(true, "fries").Should(BeTrue())
+			Ω(ig.FailureMessage).Should(Equal(`"fries" is not a valid parsable duration string: time: invalid duration "fries"`))
 		})
 
-		It("panics if anything else is passed in", func() {
-			Ω(func() {
-				Consistently(true, true).Should(BeTrue())
-			}).Should(PanicWith("true is not a valid interval.  Must be time.Duration, parsable duration string or a number."))
+		It("fails when the duration is the wrong type", func() {
+			ig := NewInstrumentedGomega()
+			ig.G.Consistently(true, true).Should(BeTrue())
+			Ω(ig.FailureMessage).Should(Equal(`true is not a valid interval. Must be a time.Duration, a parsable duration string, or a number.`))
 		})
 	})
 })

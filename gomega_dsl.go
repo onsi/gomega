@@ -295,9 +295,9 @@ You can poll this function like so:
 It is important to note that the function passed into Eventually is invoked *synchronously* when polled.  Eventually does not (in fact, it cannot) kill the function if it takes longer to return than Eventually's configured timeout.  A common practice here is to use a context.  Here's an example that combines Ginkgo's spec timeout support with Eventually:
 
 	It("fetches the correct count", func(ctx SpecContext) {
-		Eventually(func() int {
+		Eventually(ctx, func() int {
 			return client.FetchCount(ctx, "/users")
-		}, ctx).Should(BeNumerically(">=", 17))
+		}).Should(BeNumerically(">=", 17))
 	}, SpecTimeout(time.Second))
 
 you an also use Eventually().WithContext(ctx) to pass in the context.  Passed-in contexts play nicely with paseed-in arguments as long as the context appears first.  You can rewrite the above example as:
@@ -355,9 +355,9 @@ is equivalent to
 
     Eventually(...).WithTimeout(time.Second).WithPolling(2*time.Second).WithContext(ctx).Should(...)
 */
-func Eventually(actual interface{}, args ...interface{}) AsyncAssertion {
+func Eventually(args ...interface{}) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
-	return Default.Eventually(actual, args...)
+	return Default.Eventually(args...)
 }
 
 // EventuallyWithOffset operates like Eventually but takes an additional
@@ -369,9 +369,9 @@ func Eventually(actual interface{}, args ...interface{}) AsyncAssertion {
 // `EventuallyWithOffset` specifying a timeout interval (and an optional polling interval) are
 // the same as `Eventually(...).WithOffset(...).WithTimeout` or
 // `Eventually(...).WithOffset(...).WithTimeout(...).WithPolling`.
-func EventuallyWithOffset(offset int, actual interface{}, args ...interface{}) AsyncAssertion {
+func EventuallyWithOffset(offset int, args ...interface{}) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
-	return Default.EventuallyWithOffset(offset, actual, args...)
+	return Default.EventuallyWithOffset(offset, args...)
 }
 
 /*
@@ -389,9 +389,9 @@ Consistently is useful in cases where you want to assert that something *does no
 
 This will block for 200 milliseconds and repeatedly check the channel and ensure nothing has been received.
 */
-func Consistently(actual interface{}, args ...interface{}) AsyncAssertion {
+func Consistently(args ...interface{}) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
-	return Default.Consistently(actual, args...)
+	return Default.Consistently(args...)
 }
 
 // ConsistentlyWithOffset operates like Consistently but takes an additional
@@ -400,9 +400,9 @@ func Consistently(actual interface{}, args ...interface{}) AsyncAssertion {
 //
 // `ConsistentlyWithOffset` is the same as `Consistently(...).WithOffset` and
 // optional `WithTimeout` and `WithPolling`.
-func ConsistentlyWithOffset(offset int, actual interface{}, args ...interface{}) AsyncAssertion {
+func ConsistentlyWithOffset(offset int, args ...interface{}) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
-	return Default.ConsistentlyWithOffset(offset, actual, args...)
+	return Default.ConsistentlyWithOffset(offset, args...)
 }
 
 /*

@@ -236,6 +236,29 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
 				})
 
+				It("can also be configured with the context up front", func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					counter := 0
+					ig.G.Eventually(ctx, func() string {
+						counter++
+						if counter == 2 {
+							cancel()
+						} else if counter == 10 {
+							return MATCH
+						}
+						return NO_MATCH
+					}, time.Hour).Should(SpecMatch())
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
+				})
+
+				It("treats a leading context as an actual, even if valid durations are passed in", func() {
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					Eventually(ctx).Should(Equal(ctx))
+					Eventually(ctx, 0.1).Should(Equal(ctx))
+				})
+
 				It("counts as a failure for Consistently", func() {
 					ctx, cancel := context.WithCancel(context.Background())
 					counter := 0
@@ -1228,7 +1251,7 @@ sprocket:
 widget:
     <string>: bob
 sprocket:
-    <int>: 17`))	
+    <int>: 17`))
 
 				})
 			})
