@@ -134,7 +134,7 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 	}
 
 	actual := values[0].Interface()
-	if _, ok := AsAsyncSignalError(actual); ok {
+	if _, ok := AsPollingSignalError(actual); ok {
 		return actual, actual.(error)
 	}
 
@@ -144,7 +144,7 @@ func (assertion *AsyncAssertion) processReturnValues(values []reflect.Value) (in
 		if extra == nil {
 			continue
 		}
-		if _, ok := AsAsyncSignalError(extra); ok {
+		if _, ok := AsPollingSignalError(extra); ok {
 			return actual, extra.(error)
 		}
 		extraType := reflect.TypeOf(extra)
@@ -253,13 +253,13 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 				actual = assertionFailure
 			} else {
 				actual, err = assertion.processReturnValues(values)
-				_, isAsyncError := AsAsyncSignalError(err)
+				_, isAsyncError := AsPollingSignalError(err)
 				if assertionFailure != nil && !isAsyncError {
 					err = assertionFailure
 				}
 			}
 			if e := recover(); e != nil {
-				if _, isAsyncError := AsAsyncSignalError(e); isAsyncError {
+				if _, isAsyncError := AsPollingSignalError(e); isAsyncError {
 					err = e.(error)
 				} else if assertionFailure == nil {
 					panic(e)
@@ -308,7 +308,7 @@ func (assertion *AsyncAssertion) matcherSaysStopTrying(matcher types.GomegaMatch
 func (assertion *AsyncAssertion) pollMatcher(matcher types.GomegaMatcher, value interface{}) (matches bool, err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			if _, isAsyncError := AsAsyncSignalError(e); isAsyncError {
+			if _, isAsyncError := AsPollingSignalError(e); isAsyncError {
 				err = e.(error)
 			} else {
 				panic(e)
@@ -350,10 +350,9 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 		defer lock.Unlock()
 		message := ""
 		if err != nil {
-			//TODO - formatting for TryAgainAfter?
-			if asyncSignal, ok := AsAsyncSignalError(err); ok && asyncSignal.IsStopTrying() {
+			if pollingSignalErr, ok := AsPollingSignalError(err); ok && pollingSignalErr.IsStopTrying() {
 				message = err.Error()
-				for _, attachment := range asyncSignal.Attachments {
+				for _, attachment := range pollingSignalErr.Attachments {
 					message += fmt.Sprintf("\n%s:\n", attachment.Description)
 					message += format.Object(attachment.Object, 1)
 				}
@@ -389,13 +388,13 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 		var nextPoll <-chan time.Time = nil
 		var isTryAgainAfterError = false
 
-		if asyncSignal, ok := AsAsyncSignalError(err); ok {
-			if asyncSignal.IsStopTrying() {
+		if pollingSignalErr, ok := AsPollingSignalError(err); ok {
+			if pollingSignalErr.IsStopTrying() {
 				fail("Told to stop trying")
 				return false
 			}
-			if asyncSignal.IsTryAgainAfter() {
-				nextPoll = time.After(asyncSignal.TryAgainDuration())
+			if pollingSignalErr.IsTryAgainAfter() {
+				nextPoll = time.After(pollingSignalErr.TryAgainDuration())
 				isTryAgainAfterError = true
 			}
 		}

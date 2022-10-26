@@ -443,6 +443,11 @@ When `TryAgainAfter(<duration>` is triggered `Eventually` and `Consistently` wil
 */
 var TryAgainAfter = internal.TryAgainAfter
 
+/*
+PollingSignalError is the error returned by StopTrying() and TryAgainAfter()
+*/
+type PollingSignalError = internal.PollingSignalError
+
 // SetDefaultEventuallyTimeout sets the default timeout duration for Eventually. Eventually will repeatedly poll your condition until it succeeds, or until this timeout elapses.
 func SetDefaultEventuallyTimeout(t time.Duration) {
 	Default.SetDefaultEventuallyTimeout(t)

@@ -9,14 +9,14 @@ import (
 	"github.com/onsi/gomega/internal"
 )
 
-var _ = Describe("AsyncSignalError", func() {
+var _ = Describe("PollingSignalError", func() {
 	Describe("StopTrying", func() {
 		Describe("building StopTrying errors", func() {
 			It("returns a correctly configured StopTrying error", func() {
 				st := StopTrying("I've tried 17 times - give up!")
 				Ω(st.Error()).Should(Equal("I've tried 17 times - give up!"))
 				Ω(errors.Unwrap(st)).Should(BeNil())
-				Ω(st.(*internal.AsyncSignalErrorImpl).IsStopTrying()).Should(BeTrue())
+				Ω(st.(*internal.PollingSignalErrorImpl).IsStopTrying()).Should(BeTrue())
 			})
 		})
 
@@ -32,35 +32,35 @@ var _ = Describe("AsyncSignalError", func() {
 
 		Describe("When attaching objects", func() {
 			It("attaches them, with their descriptions", func() {
-				st := StopTrying("Welp!").Attach("Max retries attained", 17).Attach("Got this response", "FLOOP").(*internal.AsyncSignalErrorImpl)
+				st := StopTrying("Welp!").Attach("Max retries attained", 17).Attach("Got this response", "FLOOP").(*internal.PollingSignalErrorImpl)
 				Ω(st.Attachments).Should(HaveLen(2))
-				Ω(st.Attachments[0]).Should(Equal(internal.AsyncSignalErrorAttachment{"Max retries attained", 17}))
-				Ω(st.Attachments[1]).Should(Equal(internal.AsyncSignalErrorAttachment{"Got this response", "FLOOP"}))
+				Ω(st.Attachments[0]).Should(Equal(internal.PollingSignalErrorAttachment{"Max retries attained", 17}))
+				Ω(st.Attachments[1]).Should(Equal(internal.PollingSignalErrorAttachment{"Got this response", "FLOOP"}))
 			})
 		})
 
 		Describe("when invoking Now()", func() {
 			It("should panic with itself", func() {
-				st := StopTrying("bam").(*internal.AsyncSignalErrorImpl)
+				st := StopTrying("bam").(*internal.PollingSignalErrorImpl)
 				Ω(st.Now).Should(PanicWith(st))
 			})
 		})
 
-		Describe("AsAsyncSignalError", func() {
+		Describe("AsPollingSignalError", func() {
 			It("should return false for nils", func() {
-				st, ok := internal.AsAsyncSignalError(nil)
+				st, ok := internal.AsPollingSignalError(nil)
 				Ω(st).Should(BeNil())
 				Ω(ok).Should(BeFalse())
 			})
 
 			It("should work when passed a StopTrying error", func() {
-				st, ok := internal.AsAsyncSignalError(StopTrying("bam"))
+				st, ok := internal.AsPollingSignalError(StopTrying("bam"))
 				Ω(st).Should(Equal(StopTrying("bam")))
 				Ω(ok).Should(BeTrue())
 			})
 
 			It("should work when passed a wrapped error", func() {
-				st, ok := internal.AsAsyncSignalError(fmt.Errorf("STOP TRYING %w", StopTrying("bam")))
+				st, ok := internal.AsPollingSignalError(fmt.Errorf("STOP TRYING %w", StopTrying("bam")))
 				Ω(st).Should(Equal(StopTrying("bam")))
 				Ω(ok).Should(BeTrue())
 			})

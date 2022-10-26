@@ -1448,7 +1448,6 @@ sprocket:
 				ig.G.Eventually(42).Should(HaveLen(1), "foo", ContainElement(42))
 			}).NotTo(Panic())
 		})
-
 	})
 
 	Context("eventual nil-ism", func() { // issue #555
