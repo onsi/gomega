@@ -492,24 +492,23 @@ When no explicit duration is provided, `Consistently` will use the default durat
 
 ### Bailing Out Early - Polling Functions
 
-There are cases where you need to signal to `Eventually` and `Consistently` that they should stop trying.  Gomega provides`StopTrying(format string, args ...any)` to allow you to send that signal.  There are two ways to use `StopTrying`.
+There are cases where you need to signal to `Eventually` and `Consistently` that they should stop trying.  Gomega provides`StopTrying(message string)` to allow you to send that signal.  There are two ways to use `StopTrying`.
 
 First, you can return `StopTrying` as an error. Consider, for example, the case where `Eventually` is searching through a set of possible queries with a server:
 
 ```go
 playerIndex, numPlayers := 0, 11
 Eventually(func() (string, error) {
+    if playerIndex == numPlayers {
+        return "", StopTrying("no more players left")
+    }
     name := client.FetchPlayer(playerIndex)
     playerIndex += 1
-    if playerIndex == numPlayers {
-        return name, StopTrying("No more players left")
-    } else {
-        return name, nil
-    }
+    return name, nil
 }).Should(Equal("Patrick Mahomes"))
 ```
 
-Here we return a `StopTrying` error to tell `Eventually` that we've looked through all possible players and that it should stop.  Note that `Eventually` will check last name returned by this function and succeed if that name is the desired name.
+Here we return a `StopTrying` error to tell `Eventually` that we've looked through all possible players and that it should stop.
 
 You can also call `StopTrying(...).Now()` to immediately end execution of the function. Consider, for example, the case of a client communicating with a server that experiences an irrevocable error:
 
@@ -523,35 +522,25 @@ Eventually(func() []string {
 }).Should(ContainElement("Patrick Mahomes"))
 ```
 
-calling `.Now()` will trigger a panic that will signal to `Eventually` that the it should stop trying.
+calling `.Now()` will trigger a panic that will signal to `Eventually` that it should stop trying.
 
-You can also use both verison of `StopTrying()` with `Consistently`.  Since `Consistently` is validating that something is _true_ consitently for the entire requested duration sending a `StopTrying()` signal is interpreted as success.  Here's a somewhat contrived example:
+You can also return `StopTrying()` errors and use `StopTrying().Now()` with `Consistently`.
 
-```go
-go client.DoSomethingComplicated()
-Consistently(func() int {
-    if client.Status() == client.DoneStatus {
-        StopTrying("Client finished").Now()
-    }
-    return client.NumErrors()
-}).Should(Equal(0))
+Both `Eventually` and `Consistently` always treat the `StopTrying()` signal as a failure.   The failure message will include the message passed in to `StopTrying()`.
+
+You can add additional information to this failure message in a few ways.  You can wrap an error via `StopTrying(message).Wrap(wrappedErr)` - now the output will read `<message>: <wrappedErr.Error()>`.
+
+You can also attach arbitrary objects to `StopTrying()` via `StopTrying(message).Attach(description string, object any)`.  Gomega will run the object through Gomega's standard formatting library to build a consistent representation for end users.  You can attach multiple objects in this way and the output will look like:
+
 ```
+Told to stop trying after <X>
 
-here we succeed because no errors were identified while the client was working.
-
-`StopTrying` also allows you wrap an error using the `%w` verb.  For example:
-
-```go
-Eventually(func() []string {
-    names, err := client.FetchAllPlayers()
-    if err == client.TOKEN_EXPIRED || err == client.SEVER_GONE {
-        StopTrying("An irrecoverable error occurred: %w", err).Now()
-    }
-    return names
-}).Should(ContainElement("Patrick Mahomes"))
+<message>: <wrappedErr.Error()>
+    <description>:
+        <formatted-object>
+    <description>:
+        <formatted-object>
 ```
-
-Wrapping an error in this way allows you to simultaneously signal that `Eventually` should stop trying _and_ that the assertion should count as a failure regardless of the state of the match when `StopTrying` is returned/thrown.
 
 ### Bailing Out Early - Matchers
 
@@ -561,9 +550,9 @@ Just like functions being polled, matchers can also indicate if `Eventually`/`Co
 Match(actual interface{}) (success bool, err error)
 ```
 
-If a matcher returns `StopTrying` for `error`, or calls `StopTrying(...).Now()`, `Eventually` and `Consistently` will stop polling and use the returned value of `success` to determine if the match succeeded or not.  To signal that the `success` values should wrap an error via `StopTrying("<reason>: %w", err)`.
+If a matcher returns `StopTrying` for `error`, or calls `StopTrying(...).Now()`, `Eventually` and `Consistently` will stop polling and fail: `StopTrying` **always** signifies a failure.
 
-> Note: An older mechanism for doing this is documented in the [custom matchers section below](#aborting-eventuallyconsistently)
+> Note: An alternative mechanism for having matchers bail out early is documented in the [custom matchers section below](#aborting-eventuallyconsistently).  This mechanism, which entails implementing a `MatchMayChangeIntheFuture(<actual>) bool` method, allows matchers to signify that no future change is possible out-of-band of the call to the matcher.
 
 ### Modifying Default Intervals
 
