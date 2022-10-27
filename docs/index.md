@@ -1617,11 +1617,11 @@ type GomegaMatcher interface {
 }
 ```
 
-For the simplest cases, new matchers can be [created by composition](#composing-matchers).  In addition to this chapter, please take a look at the [Building Custom Matchers](https://onsi.github.io/ginkgo/#building-custom-matchers) section of the Ginkgo and Gomega patterns chapter in the Ginkgo docs.  Gomega's building blocks have evolved since the Gomega docs were written and while this section remains valid - the [Building Custom Matchers](https://onsi.github.io/ginkgo/#building-custom-matchers) docs present a modern way to more quickly construct custom matchers.
+For the simplest cases, new matchers can be [created by composition](#composing-matchers).  Please also take a look at the [Building Custom Matchers](https://onsi.github.io/ginkgo/#building-custom-matchers) section of the Ginkgo and Gomega patterns chapter in the Ginkgo docs for additional examples.
 
-But writing domain-specific custom matchers is also trivial and highly encouraged.  Let's work through an example.
+In addition to composition, however, it is fairly straightforward to build domain-specific custom matchers.  You can create new types that satisfy the `GomegaMatcher` interace *or* you can use the `gcustom` package to build matchers out of simple functions.
 
-> The `GomegaMatcher` interface is defined in the `types` subpackage.
+Let's work through an example and illustrate both approaches.
 
 ### A Custom Matcher: RepresentJSONifiedObject(EXPECTED interface{})
 
@@ -1689,7 +1689,49 @@ Let's break this down:
     - It is guaranteed that `FailureMessage` and `NegatedFailureMessage` will only be called *after* `Match`, so you can save off any state you need to compute the messages in `Match`.
 - Finally, it is common for matchers to make extensive use of the `reflect` library to interpret the generic inputs they receive.  In this case, the `representJSONMatcher` goes through some `reflect` gymnastics to create a pointer to a new object with the same type as the `expected` object, read and decode JSON from `actual` into that pointer, and then deference the pointer and compare the result to the `expected` object.
 
-You might test drive this matcher while writing it using Ginkgo.  Your test might look like:
+### gcustom: A convenient mechanism for buildling custom matchers
+
+[`gcustom`](https://github.com/onsi/gomega/tree/master/gcustom) is a package that makes building custom matchers easy.  Rather than define new types, you can simply provide `gcustom.MakeMatcher` with a function.  The [godocs](https://pkg.go.dev/github.com/onsi/gomega/gcustom) for `gcustom` have all the details but here's how `RepresentJSONifiedObject` could be implemented with `gcustom`:
+
+
+```go
+package json_response_matcher
+
+import (
+    "github.com/onsi/gomega/types"
+    "github.com/onsi/gomega/gcustom"
+
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "reflect"
+)
+
+func RepresentJSONifiedObject(expected interface{}) types.GomegaMatcher {
+    return gcustom.MakeMatcher(func(response *http.Response) (bool, err) {
+        pointerToObjectOfExpectedType := reflect.New(reflect.TypeOf(matcher.expected)).Interface()
+        err = json.NewDecoder(response.Body).Decode(pointerToObjectOfExpectedType)
+        if err != nil {
+            return false, fmt.Errorf("Failed to decode JSON: %w", err.Error())
+        }
+
+        decodedObject := reflect.ValueOf(pointerToObjectOfExpectedType).Elem().Interface()
+        return reflect.DeepEqual(decodedObject, matcher.expected), nil        
+    }).WithTemplate("Expected:\n{{.FormattedActual}}\n{{.To}} contain the JSON representation of\n{{format .Data 1}}").WithTemplateData(expected)
+}
+```
+
+The [`gcustom` godocs](https://pkg.go.dev/github.com/onsi/gomega/gcustom) go into much more detail but we can point out a few of the convenient features of `gcustom` here:
+
+- `gcustom` can take a matcher function that accepts a concrete type.  In our case `func(response *https.Response) (bool, err)` - when this is done, the matcher built by `gcustom` takes care of all the type-checking for you and will only call your match function if an object of the correct type is asserted against.  If you want to do your own type-checking (or want to build a matcher that works with multiple types) you can use `func(actual any) (bool, err)` instead.
+- Rather than implement different functions for the two different failure messages you can provide a single template.  `gcustom` provides template variables to help you render the failure messages depending on positive failures vs negative failures.  For example, the variable `{{.To}}` will render "to" for positive failures and "not to" for negative failures.
+- You can pass additional data to your template with `WithTemplateData(<data>)` - in this case we pass in the expected object so that the template can include it in the output.  We do this with the expression `{{format .Data 1}}`.  gcustom provides the `format` template function to render objects using Ginkgo's object formatting system (the `1` here denotes the level of indentation).
+
+`gcustom` also supports a simpler mechanism for generating messages: `.WithMessage()` simply takes a string and builds a canned message out of that string.  You can also provide precompiled templates if you want to avoid the cost of compiling a template every time the matcher is called.
+
+### Testing CUstom Matchers
+
+Whether you create a new `representJSONMatcher` type, or use `gcustom` you might test drive this matcher while writing it using Ginkgo.  Your test might look like:
 
 ```go
 package json_response_matcher_test
