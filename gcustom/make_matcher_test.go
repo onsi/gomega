@@ -2,17 +2,74 @@ package gcustom_test
 
 import (
 	"errors"
+	"runtime"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gcustom"
+	"github.com/onsi/gomega/internal"
 )
+
+// InstrumentedGomega
+type InstrumentedGomega struct {
+	G                 *internal.Gomega
+	FailureMessage    string
+	FailureSkip       []int
+	RegisteredHelpers []string
+}
+
+func NewInstrumentedGomega() *InstrumentedGomega {
+	out := &InstrumentedGomega{}
+
+	out.G = internal.NewGomega(internal.FetchDefaultDurationBundle())
+	out.G.Fail = func(message string, skip ...int) {
+		out.FailureMessage = message
+		out.FailureSkip = skip
+	}
+	out.G.THelper = func() {
+		pc, _, _, _ := runtime.Caller(1)
+		f := runtime.FuncForPC(pc)
+		funcName := strings.TrimPrefix(f.Name(), "github.com/onsi/gomega/internal.")
+		out.RegisteredHelpers = append(out.RegisteredHelpers, funcName)
+	}
+
+	return out
+}
 
 type someType struct {
 	Name string
 }
 
 var _ = Describe("MakeMatcher", func() {
+	It("generatees a custom matcher that satisfies the GomegaMatcher interface and renders correct failure messages", func() {
+		m := gcustom.MakeMatcher(func(a int) (bool, error) {
+			if a == 0 {
+				return true, nil
+			}
+			if a == 1 {
+				return false, nil
+			}
+			return false, errors.New("bam")
+		}).WithMessage("match")
+
+		Ω(0).Should(m)
+		Ω(1).ShouldNot(m)
+
+		ig := NewInstrumentedGomega()
+		ig.G.Ω(1).Should(m)
+		Ω(ig.FailureMessage).Should(Equal("Expected:\n    <int>: 1\nto match"))
+
+		ig.G.Ω(0).ShouldNot(m)
+		Ω(ig.FailureMessage).Should(Equal("Expected:\n    <int>: 0\nnot to match"))
+
+		ig.G.Ω(2).Should(m)
+		Ω(ig.FailureMessage).Should(Equal("bam"))
+
+		ig.G.Ω(2).ShouldNot(m)
+		Ω(ig.FailureMessage).Should(Equal("bam"))
+	})
+
 	Describe("validating and wrapping the MatchFunc", func() {
 		DescribeTable("it panics when passed an invalid function", func(f any) {
 			Expect(func() {
