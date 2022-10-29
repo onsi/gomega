@@ -659,6 +659,14 @@ When both `ACTUAL` and `EXPECTED` are a very long strings, it will attempt to pr
 
 > For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher.
 
+#### BeComparableTo(expected interface{}, options ...cmp.Option)
+
+```go
+Ω(ACTUAL).Should(BeComparableTo(EXPECTED, options ...cmp.Option))
+```
+
+uses [`gocmp.Equal`](http://github.com/google/go-cmp) from `github.com/google/go-cmp` to compare `ACTUAL` with `EXPECTED`.  This performs a deep object comparison like `reflect.DeepEqual` but offers a few additional configuration options.  Learn more at the [go-cmp godocs](https://pkg.go.dev/github.com/google/go-cmp).
+
 #### BeEquivalentTo(expected interface{})
 
 ```go
