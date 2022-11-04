@@ -1737,7 +1737,7 @@ The [`gcustom` godocs](https://pkg.go.dev/github.com/onsi/gomega/gcustom) go int
 
 `gcustom` also supports a simpler mechanism for generating messages: `.WithMessage()` simply takes a string and builds a canned message out of that string.  You can also provide precompiled templates if you want to avoid the cost of compiling a template every time the matcher is called.
 
-### Testing CUstom Matchers
+### Testing Custom Matchers
 
 Whether you create a new `representJSONMatcher` type, or use `gcustom` you might test drive this matcher while writing it using Ginkgo.  Your test might look like:
 
