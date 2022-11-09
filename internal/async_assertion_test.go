@@ -14,19 +14,19 @@ import (
 )
 
 type quickMatcher struct {
-	matchFunc  func(actual any) (bool, error)
-	oracleFunc func(actual any) bool
+	matchFunc  func(actual interface{}) (bool, error)
+	oracleFunc func(actual interface{}) bool
 }
 
-func (q quickMatcher) Match(actual any) (bool, error) {
+func (q quickMatcher) Match(actual interface{}) (bool, error) {
 	return q.matchFunc(actual)
 }
 
-func (q quickMatcher) FailureMessage(actual any) (message string) {
+func (q quickMatcher) FailureMessage(actual interface{}) (message string) {
 	return "QM failure message"
 }
 
-func (q quickMatcher) NegatedFailureMessage(actual any) (message string) {
+func (q quickMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return "QM negated failure message"
 }
 
@@ -37,11 +37,11 @@ func (q quickMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
 	return q.oracleFunc(actual)
 }
 
-func QuickMatcher(matchFunc func(actual any) (bool, error)) OmegaMatcher {
+func QuickMatcher(matchFunc func(actual interface{}) (bool, error)) OmegaMatcher {
 	return quickMatcher{matchFunc, nil}
 }
 
-func QuickMatcherWithOracle(matchFunc func(actual any) (bool, error), oracleFunc func(actual any) bool) OmegaMatcher {
+func QuickMatcherWithOracle(matchFunc func(actual interface{}) (bool, error), oracleFunc func(actual interface{}) bool) OmegaMatcher {
 	return quickMatcher{matchFunc, oracleFunc}
 }
 
@@ -1073,7 +1073,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				i := 0
 				order := []string{}
 				Consistently(nil).Should(QuickMatcherWithOracle(
-					func(_ any) (bool, error) {
+					func(_ interface{}) (bool, error) {
 						order = append(order, fmt.Sprintf("match %d", i))
 						i += 1
 						if i > 4 {
@@ -1081,7 +1081,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						}
 						return true, nil
 					},
-					func(_ any) bool {
+					func(_ interface{}) bool {
 						order = append(order, fmt.Sprintf("oracle %d", i))
 						if i == 3 {
 							return false
@@ -1274,7 +1274,7 @@ sprocket:
 
 			Context("when returned as the error", func() {
 				It("stops retrying", func() {
-					ig.G.Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+					ig.G.Eventually(nil).Should(QuickMatcher(func(_ interface{}) (bool, error) {
 						i += 1
 						if i < 3 {
 							return false, nil
@@ -1288,7 +1288,7 @@ sprocket:
 				})
 
 				It("fails regardless of the matchers value", func() {
-					ig.G.Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+					ig.G.Eventually(nil).Should(QuickMatcher(func(_ interface{}) (bool, error) {
 						i += 1
 						if i < 3 {
 							return false, nil
@@ -1304,7 +1304,7 @@ sprocket:
 
 			Context("when thrown with .Now()", func() {
 				It("stops retrying", func() {
-					ig.G.Eventually(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+					ig.G.Eventually(nil).Should(QuickMatcher(func(_ interface{}) (bool, error) {
 						i += 1
 						if i < 3 {
 							return false, nil
@@ -1321,7 +1321,7 @@ sprocket:
 
 			Context("when used with consistently", func() {
 				It("always signifies a failure", func() {
-					ig.G.Consistently(nil).Should(QuickMatcher(func(_ any) (bool, error) {
+					ig.G.Consistently(nil).Should(QuickMatcher(func(_ interface{}) (bool, error) {
 						i += 1
 						if i < 3 {
 							return true, nil
@@ -1341,7 +1341,7 @@ sprocket:
 					e := recover()
 					Ω(e).Should(Equal("welp"))
 				}()
-				Eventually(nil).Should(QuickMatcher(func(actual any) (bool, error) {
+				Eventually(nil).Should(QuickMatcher(func(actual interface{}) (bool, error) {
 					panic("welp")
 				}))
 			})

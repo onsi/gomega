@@ -16,7 +16,7 @@ const (
 type PollingSignalError interface {
 	error
 	Wrap(err error) PollingSignalError
-	Attach(description string, obj any) PollingSignalError
+	Attach(description string, obj interface{}) PollingSignalError
 	Now()
 }
 
@@ -37,7 +37,7 @@ var TryAgainAfter = func(duration time.Duration) PollingSignalError {
 
 type PollingSignalErrorAttachment struct {
 	Description string
-	Object      any
+	Object      interface{}
 }
 
 type PollingSignalErrorImpl struct {
@@ -53,7 +53,7 @@ func (s *PollingSignalErrorImpl) Wrap(err error) PollingSignalError {
 	return s
 }
 
-func (s *PollingSignalErrorImpl) Attach(description string, obj any) PollingSignalError {
+func (s *PollingSignalErrorImpl) Attach(description string, obj interface{}) PollingSignalError {
 	s.Attachments = append(s.Attachments, PollingSignalErrorAttachment{description, obj})
 	return s
 }

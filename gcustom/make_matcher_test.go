@@ -71,7 +71,7 @@ var _ = Describe("MakeMatcher", func() {
 	})
 
 	Describe("validating and wrapping the MatchFunc", func() {
-		DescribeTable("it panics when passed an invalid function", func(f any) {
+		DescribeTable("it panics when passed an invalid function", func(f interface{}) {
 			Expect(func() {
 				gcustom.MakeMatcher(f)
 			}).To(PanicWith("MakeMatcher must be passed a function that takes one argument and returns (bool, error)"))
@@ -80,18 +80,18 @@ var _ = Describe("MakeMatcher", func() {
 			Entry("a non-function", 1),
 			Entry("a function with no input", func() (bool, error) { return false, nil }),
 			Entry("a function with too many inputs", func(a int, b string) (bool, error) { return false, nil }),
-			Entry("a function with no outputs", func(a any) {}),
-			Entry("a function with insufficient outputs", func(a any) bool { return false }),
-			Entry("a function with insufficient outputs", func(a any) error { return nil }),
-			Entry("a function with too many outputs", func(a any) (bool, error, string) { return false, nil, "" }),
-			Entry("a function with the wrong types of outputs", func(a any) (int, error) { return 1, nil }),
-			Entry("a function with the wrong types of outputs", func(a any) (bool, int) { return false, 1 }),
+			Entry("a function with no outputs", func(a interface{}) {}),
+			Entry("a function with insufficient outputs", func(a interface{}) bool { return false }),
+			Entry("a function with insufficient outputs", func(a interface{}) error { return nil }),
+			Entry("a function with too many outputs", func(a interface{}) (bool, error, string) { return false, nil, "" }),
+			Entry("a function with the wrong types of outputs", func(a interface{}) (int, error) { return 1, nil }),
+			Entry("a function with the wrong types of outputs", func(a interface{}) (bool, int) { return false, 1 }),
 		)
 
 		Context("when the match func accepts any actual", func() {
 			It("always passes in the actual, regardless of type", func() {
-				var passedIn any
-				m := gcustom.MakeMatcher(func(a any) (bool, error) {
+				var passedIn interface{}
+				m := gcustom.MakeMatcher(func(a interface{}) (bool, error) {
 					passedIn = a
 					return true, nil
 				})
@@ -113,7 +113,7 @@ var _ = Describe("MakeMatcher", func() {
 
 		Context("when the match func accepts a specific type", func() {
 			It("ensure the type matches before calling func", func() {
-				var passedIn any
+				var passedIn interface{}
 				m := gcustom.MakeMatcher(func(a int) (bool, error) {
 					passedIn = a
 					return true, nil
@@ -171,7 +171,7 @@ var _ = Describe("MakeMatcher", func() {
 	Describe("rendering messages", func() {
 		var m gcustom.CustomGomegaMatcher
 		BeforeEach(func() {
-			m = gcustom.MakeMatcher(func(a any) (bool, error) { return false, nil })
+			m = gcustom.MakeMatcher(func(a interface{}) (bool, error) { return false, nil })
 		})
 
 		Context("when no message is configured", func() {
@@ -187,7 +187,7 @@ var _ = Describe("MakeMatcher", func() {
 				Ω(m.FailureMessage(3)).Should(Equal("Expected:\n    <int>: 3\nto have been confabulated"))
 				Ω(m.NegatedFailureMessage(3)).Should(Equal("Expected:\n    <int>: 3\nnot to have been confabulated"))
 
-				m = gcustom.MakeMatcher(func(a any) (bool, error) { return false, nil }, "have been confabulated")
+				m = gcustom.MakeMatcher(func(a interface{}) (bool, error) { return false, nil }, "have been confabulated")
 				Ω(m.FailureMessage(3)).Should(Equal("Expected:\n    <int>: 3\nto have been confabulated"))
 				Ω(m.NegatedFailureMessage(3)).Should(Equal("Expected:\n    <int>: 3\nnot to have been confabulated"))
 
@@ -238,7 +238,7 @@ var _ = Describe("MakeMatcher", func() {
 			It("can also take a template as an argument upon construction", func() {
 				templ, err := gcustom.ParseTemplate("{{.To}} {{format .Data}}")
 				Ω(err).ShouldNot(HaveOccurred())
-				m = gcustom.MakeMatcher(func(a any) (bool, error) { return false, nil }, templ)
+				m = gcustom.MakeMatcher(func(a interface{}) (bool, error) { return false, nil }, templ)
 
 				Ω(m.FailureMessage(0)).Should(Equal("to <nil>: nil"))
 				Ω(m.NegatedFailureMessage(0)).Should(Equal("not to <nil>: nil"))
