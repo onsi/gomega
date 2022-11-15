@@ -374,7 +374,7 @@ It("fetches the correct count", func(ctx SpecContext) {
 }, SpecTimeout(time.Second))
 ```
 
-now when the spec times out both the `client.FetchCount` function and `Eventually` will be signaled and told to exit. you an also use `Eventually().WithContext(ctx)` to provide the context.
+now when the spec times out both the `client.FetchCount` function and `Eventually` will be signaled and told to exit. you can also use `Eventually().WithContext(ctx)` to provide the context.
 
 
 Since functions that take a context.Context as a first-argument are common in Go, `Eventually` supports automatically injecting the provided context into the function.  This plays nicely with `WithArguments()` as well.  You can rewrite the above example as:
