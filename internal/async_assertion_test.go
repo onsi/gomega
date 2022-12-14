@@ -696,6 +696,21 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(BeEmpty())
 				})
 
+				It("correctly handles the case (in concert with Ginkgo) when an assertion fails in a goroutine", func() {
+					count := 0
+					ig.G.Eventually(func(g Gomega) {
+						c := make(chan interface{})
+						go func() {
+							defer GinkgoRecover()
+							defer close(c)
+							count += 1
+							g.Expect(count).To(Equal(3)) //panics!
+						}()
+						<-c
+					}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Succeed())
+					Ω(count).Should(Equal(3))
+				})
+
 				Context("when making a ShouldNot assertion", func() {
 					It("doesn't succeed until all extra values are zero, there are no failed assertions, and the matcher is (not) satisfied", func() {
 						counter, s, f, err := 0, "hi", Foo{Bar: "hi"}, errors.New("hi")
