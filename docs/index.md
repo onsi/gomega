@@ -148,7 +148,7 @@ Or you can write:
 Assertions about errors on functions with multiple return values can be made as follows (and in a lazy way when not asserting that all other return values are zero values):
 
 ```go
-_, _, _, err := MUltipleReturnValuesFunc()
+_, _, _, err := MultipleReturnValuesFunc()
 Ω(err).Should(HaveOccurred())
 ```
 
