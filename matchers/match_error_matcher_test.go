@@ -16,6 +16,14 @@ func (c CustomError) Error() string {
 	return "an error"
 }
 
+type ComplexError struct {
+	Key string
+}
+
+func (t *ComplexError) Error() string {
+	return fmt.Sprintf("err: %s", t.Key)
+}
+
 var _ = Describe("MatchErrorMatcher", func() {
 	Context("When asserting against an error", func() {
 		When("passed an error", func() {
@@ -36,6 +44,12 @@ var _ = Describe("MatchErrorMatcher", func() {
 				outerErr := fmt.Errorf("outer error wrapping: %w", innerErr)
 
 				Expect(outerErr).Should(MatchError(innerErr))
+			})
+
+			It("uses deep equality with unwrapped errors", func() {
+				innerErr := &ComplexError{Key: "abc"}
+				outerErr := fmt.Errorf("outer error wrapping: %w", &ComplexError{Key: "abc"})
+				Expect(outerErr).To(MatchError(innerErr))
 			})
 		})
 
@@ -130,6 +144,7 @@ var _ = Describe("MatchErrorMatcher", func() {
 		})
 		Expect(failuresMessages[0]).To(ContainSubstring("{s: \"foo\"}\nnot to match error\n    <string>: foo"))
 	})
+
 })
 
 type mockErr string
