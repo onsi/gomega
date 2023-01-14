@@ -794,7 +794,9 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` mu
 
 - A string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.
 - A matcher, in which case `ACTUAL.Error()` is tested against the matcher.
-- An error, in which case `ACTUAL` and `EXPECTED` are compared via `reflect.DeepEqual()`. If they are not deeply equal, they are tested by `errors.Is(ACTUAL, EXPECTED)`. (The latter allows to test whether `ACTUAL` wraps an `EXPECTED` error.)
+- An error, in which case the following is satisfied:
+    - `errors.Is(ACTUAL, EXPECTED)` returns `true`
+    - `ACTUAL` or any of the errors it wraps (directly or indirectly) equals `EXPECTED` in terms of `reflect.DeepEqual()`.
 
 Any other type for `EXPECTED` is an error.
 
