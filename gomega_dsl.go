@@ -360,6 +360,16 @@ You can also pass additional arugments to functions that take a Gomega.  The onl
 		g.Expect(elements).To(ConsistOf(expected))
 	}).WithContext(ctx).WithArguments("/names", "Joe", "Jane", "Sam").Should(Succeed())
 
+You can ensure that you get a number of consecutive successful tries before succeeding using `MustPassRepeatedly(int)`. For Example:
+
+	int count := 0
+	Eventually(func() bool {
+		count++
+		return count > 2
+	}).MustPassRepeatedly(2).Should(BeTrue())
+	// Because we had to wait for 2 calls that returned true
+	Expect(count).To(Equal(3))
+
 Finally, in addition to passing timeouts and a context to Eventually you can be more explicit with Eventually's chaining configuration methods:
 
 	Eventually(..., "1s", "2s", ctx).Should(...)
