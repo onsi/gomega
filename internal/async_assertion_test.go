@@ -1452,7 +1452,7 @@ sprocket:
 				Ω(times[4]).Should(BeNumerically("~", time.Millisecond*10, time.Millisecond*10))
 			})
 
-			It("doesn count as a failure if a timeout occurs during the try again after window", func() {
+			It("doesn't count as a failure if a timeout occurs during the try again after window", func() {
 				ig.G.Consistently(func() (int, error) {
 					times = append(times, time.Since(t))
 					t = time.Now()
@@ -1511,5 +1511,52 @@ sprocket:
 				ig.G.Eventually(func() error { return nil }).Should(BeNil())
 			}).NotTo(Panic())
 		})
+	})
+
+	When("using MustPassRepeatedly", func() {
+		It("errors when using on Consistently", func() {
+			ig.G.Consistently(func(g Gomega) {}).MustPassRepeatedly(2).Should(Succeed())
+			Ω(ig.FailureMessage).Should(ContainSubstring("Invalid use of MustPassRepeatedly with Consistently it can only be used with Eventually"))
+			Ω(ig.FailureSkip).Should(Equal([]int{2}))
+		})
+		It("errors when using with 0", func() {
+			ig.G.Eventually(func(g Gomega) {}).MustPassRepeatedly(0).Should(Succeed())
+			Ω(ig.FailureMessage).Should(ContainSubstring("Invalid use of MustPassRepeatedly with Eventually parameter can't be < 1"))
+			Ω(ig.FailureSkip).Should(Equal([]int{2}))
+		})
+
+		It("should wait 2 success before success", func() {
+			counter := 0
+			ig.G.Eventually(func() bool {
+				counter++
+				return counter > 5
+			}).MustPassRepeatedly(2).Should(BeTrue())
+			Ω(counter).Should(Equal(7))
+			Ω(ig.FailureMessage).Should(BeZero())
+		})
+
+		It("should fail if it never succeeds twice in a row", func() {
+			counter := 0
+			ig.G.Eventually(func() int {
+				counter++
+				return counter % 2
+			}).WithTimeout(200 * time.Millisecond).WithPolling(20 * time.Millisecond).MustPassRepeatedly(2).Should(Equal(1))
+			Ω(counter).Should(Equal(10))
+			Ω(ig.FailureMessage).ShouldNot(BeZero())
+		})
+
+		It("TryAgainAfter doesn't restore count", func() {
+			counter := 0
+			ig.G.Eventually(func() (bool, error) {
+				counter++
+				if counter == 5 {
+					return false, TryAgainAfter(time.Millisecond * 200)
+				}
+				return counter >= 4, nil
+			}).MustPassRepeatedly(3).Should(BeTrue())
+			Ω(counter).Should(Equal(7))
+			Ω(ig.FailureMessage).Should(BeZero())
+		})
+
 	})
 })

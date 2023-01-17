@@ -276,6 +276,12 @@ Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).WithContex
 
 When no explicit timeout is provided, `Eventually` will use the default timeout.  However if no explicit timeout is provided _and_ a context is provided, `Eventually` will not apply a timeout but will instead keep trying until the context is cancelled.  If both a context and a timeout are provided, `Eventually` will keep trying until either the context is cancelled or time runs out, whichever comes first.
 
+You can also ensure a number of consecutive pass before continuing with `MustPassRepeatedly`:
+
+```go
+Eventually(ACTUAL).MustPassRepeatedly(NUMBER).Should(MATCHER)
+```
+
 Eventually works with any Gomega compatible matcher and supports making assertions against three categories of `ACTUAL` value:
 
 #### Category 1: Making `Eventually` assertions on values
