@@ -158,7 +158,7 @@ Alternatively, such error assertions on multi return value functions can be simp
 Ω(MultipleReturnValuesFunc()).Error().Should(HaveOccurred())
 ```
 
-Similar, asserting that no error occured is supported, too (where the other return values are allowed to take on any value):
+Similar, asserting that no error occurred is supported, too (where the other return values are allowed to take on any value):
 
 ```go
 Ω(MultipleReturnValuesFunc()).Error().ShouldNot(HaveOccured())
@@ -296,7 +296,7 @@ Eventually(c, "50ms").Should(BeClosed())
 
 will poll the channel repeatedly until it is closed.  In this example `Eventually` will block until either the specified timeout of 50ms has elapsed or the channel is closed, whichever comes first.
 
-Several Gomega libraries allow you to use Eventually in this way.  For example, the `gomega/gexec` package allows you to block until a `*gexec.Session` exits successfuly via:
+Several Gomega libraries allow you to use Eventually in this way.  For example, the `gomega/gexec` package allows you to block until a `*gexec.Session` exits successfully via:
 
 ```go
 Eventually(session).Should(gexec.Exit(0))
@@ -368,7 +368,7 @@ You can poll this function like so:
 Eventually(FetchFullName).WithArguments(1138).Should(Equal("Wookie"))
 ```
 
-`WithArguments()` supports multiple arugments as well as variadic arguments.
+`WithArguments()` supports multiple arguments as well as variadic arguments.
 
 It is important to note that the function passed into Eventually is invoked **synchronously** when polled.  `Eventually` does not (in fact, it cannot) kill the function if it takes longer to return than `Eventually`'s configured timeout.  This is where using a `context.Context` can be helpful.  Here is an example that leverages Gingko's support for interruptible nodes and spec timeouts:
 
@@ -407,13 +407,13 @@ It("adds a few books and checks the count", func(ctx SpecContext) {
 }, SpecTimeout(time.Second * 5))
 ```
 
-In addition, Gingko's `SpecContext` allows Gomega to tell Ginkgo about the status of a currently running `Eventually` whenever a Progress Report is generated.  So, if a spec times out while running an `Eventually` Ginkgo will not only show you which `Eventually` was running when the timeout occured, but will also include the failure the `Eventually` was hitting when the timeout occurred.
+In addition, Gingko's `SpecContext` allows Gomega to tell Ginkgo about the status of a currently running `Eventually` whenever a Progress Report is generated.  So, if a spec times out while running an `Eventually` Ginkgo will not only show you which `Eventually` was running when the timeout occurred, but will also include the failure the `Eventually` was hitting when the timeout occurred.
 
 #### Category 3: Making assertions _in_ the function passed into `Eventually`
 
 When testing complex systems it can be valuable to assert that a *set* of assertions passes `Eventually`.  `Eventually` supports this by accepting functions that take **a single `Gomega` argument** and **return zero or more values**.
 
-Here's an example that makes some asssertions and returns a value and error:
+Here's an example that makes some assertions and returns a value and error:
 
 ```go
 Eventually(func(g Gomega) (Widget, error) {
@@ -442,7 +442,7 @@ Eventually(func(g Gomega) {
 
 will rerun the function until all assertions pass.
 
-You can also pass additional arugments to functions that take a Gomega.  The only rule is that the Gomega argument must be first.  If you also want to pass the context attached to `Eventually` you must ensure that is the second argument.  For example:
+You can also pass additional arguments to functions that take a Gomega.  The only rule is that the Gomega argument must be first.  If you also want to pass the context attached to `Eventually` you must ensure that is the second argument.  For example:
 
 ```go
 Eventually(func(g Gomega, ctx context.Context, path string, expected ...string){
@@ -800,7 +800,7 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` mu
 
 - A string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.
 - A matcher, in which case `ACTUAL.Error()` is tested against the matcher.
-- An error, in which case anyo of the following is satisfied:
+- An error, in which case any of the following is satisfied:
     - `errors.Is(ACTUAL, EXPECTED)` returns `true`
     - `ACTUAL` or any of the errors it wraps (directly or indirectly) equals `EXPECTED` in terms of `reflect.DeepEqual()`.
 
@@ -1641,7 +1641,7 @@ type GomegaMatcher interface {
 
 For the simplest cases, new matchers can be [created by composition](#composing-matchers).  Please also take a look at the [Building Custom Matchers](https://onsi.github.io/ginkgo/#building-custom-matchers) section of the Ginkgo and Gomega patterns chapter in the Ginkgo docs for additional examples.
 
-In addition to composition, however, it is fairly straightforward to build domain-specific custom matchers.  You can create new types that satisfy the `GomegaMatcher` interace *or* you can use the `gcustom` package to build matchers out of simple functions.
+In addition to composition, however, it is fairly straightforward to build domain-specific custom matchers.  You can create new types that satisfy the `GomegaMatcher` interface *or* you can use the `gcustom` package to build matchers out of simple functions.
 
 Let's work through an example and illustrate both approaches.
 
@@ -1711,7 +1711,7 @@ Let's break this down:
     - It is guaranteed that `FailureMessage` and `NegatedFailureMessage` will only be called *after* `Match`, so you can save off any state you need to compute the messages in `Match`.
 - Finally, it is common for matchers to make extensive use of the `reflect` library to interpret the generic inputs they receive.  In this case, the `representJSONMatcher` goes through some `reflect` gymnastics to create a pointer to a new object with the same type as the `expected` object, read and decode JSON from `actual` into that pointer, and then deference the pointer and compare the result to the `expected` object.
 
-### gcustom: A convenient mechanism for buildling custom matchers
+### gcustom: A convenient mechanism for building custom matchers
 
 [`gcustom`](https://github.com/onsi/gomega/tree/master/gcustom) is a package that makes building custom matchers easy.  Rather than define new types, you can simply provide `gcustom.MakeMatcher` with a function.  The [godocs](https://pkg.go.dev/github.com/onsi/gomega/gcustom) for `gcustom` have all the details but here's how `RepresentJSONifiedObject` could be implemented with `gcustom`:
 
@@ -1903,7 +1903,7 @@ type inner interface {
 }
 ```
 
-The `Inner()` method must return the actual `gomega.Default`. For Gomega to function properly your wrapper methods must call the same method on the real `gomega.Default`  This allows you to wrap every Goemga method call (e.g. `Expect()`) with your own code across your test suite.  You can use this to add random delays, additional logging, or just for tracking the number of `Expect()` calls made.
+The `Inner()` method must return the actual `gomega.Default`. For Gomega to function properly your wrapper methods must call the same method on the real `gomega.Default`  This allows you to wrap every Gomega method call (e.g. `Expect()`) with your own code across your test suite.  You can use this to add random delays, additional logging, or just for tracking the number of `Expect()` calls made.
 
 ```go
 func init() {
@@ -2467,7 +2467,7 @@ AfterSuite(func() {
 })
 ```
 
-> By default, `gexec.Build` uses the GOPATH specified in your environment.  You can also use `gexec.BuildIn(gopath string, packagePath string)` to specify a custom GOPATH for the build command.  This is useful to, for example, build a binary against its vendored Godeps.
+> By default, `gexec.Build` uses the GOPATH specified in your environment.  You can also use `gexec.BuildIn(gopath string, packagePath string)` to specify a custom GOPATH for the build command.  This is useful to, for example, build a binary against its vendored Go dependencies.
 
 > You can specify arbitrary environment variables for the build command – such as GOOS and GOARCH for building on other platforms – using `gexec.BuildWithEnvironment(packagePath string, envs []string)`.
 
@@ -2515,7 +2515,7 @@ session.Wait(5 * time.Second)
 > Under the hood `session.Wait` simply uses `Eventually`.
 
 
-Since the signalling methods return the session you can chain calls together:
+Since the signaling methods return the session you can chain calls together:
 
 ```go
 session.Terminate().Wait()
@@ -2819,7 +2819,7 @@ Expect(actual).To(MatchAllFields(Fields{
 
 ## `gmeasure`: Benchmarking Code
 
-`gmeasure` provides support for measuring and recording benchmarks of your code and tests.  It can be used as a simple standalone benchmarking framework, or as part of your code's test suite.  `gmeasure` integrates cleanly with Ginkgo V2 to enable rich benchmarking of code alognside your tests.
+`gmeasure` provides support for measuring and recording benchmarks of your code and tests.  It can be used as a simple standalone benchmarking framework, or as part of your code's test suite.  `gmeasure` integrates cleanly with Ginkgo V2 to enable rich benchmarking of code alongside your tests.
 
 ### A Mental Model for `gmeasure`
 
@@ -3158,7 +3158,7 @@ This simple connection point ensures that the output is appropriately formatted 
 
 ### Caching Experiments 
 
-`gmeasure` supports caching experiments to local disk.  Experiments can be stored and retreived from the cache by name and version number.  Caching allows you to skip rerunning expensive experiments and versioned caching allows you to bust the cache by incrementing the version number.  Under the hood, the cache is simply a set of files in a directory.  Each file contains a JSON encoded header with the experiment's name and version number followed by the JSON-encoded experiment.  The various cache methods are documented over at [pkg.go.dev](https://pkg.go.dev/github.com/onsi/gomega/gmeasure#ExperimentCache).
+`gmeasure` supports caching experiments to local disk.  Experiments can be stored and retrieved from the cache by name and version number.  Caching allows you to skip rerunning expensive experiments and versioned caching allows you to bust the cache by incrementing the version number.  Under the hood, the cache is simply a set of files in a directory.  Each file contains a JSON encoded header with the experiment's name and version number followed by the JSON-encoded experiment.  The various cache methods are documented over at [pkg.go.dev](https://pkg.go.dev/github.com/onsi/gomega/gmeasure#ExperimentCache).
 
 Using an `ExperimentCache` with Ginkgo takes a little bit of wiring.  Here's an example:
 
@@ -3358,7 +3358,7 @@ results in one or more goroutines. The ordering of the goroutines does not
 matter.
 
 `HaveLeaked` always takes the built-in list of well-known good goroutines into
-consideration and this list can neither be overriden nor disabled. Additional
+consideration and this list can neither be overridden nor disabled. Additional
 known non-leaky goroutines `NONLEAKY1`, ...  can be passed to `HaveLeaks` either
 in form of `GomegaMatcher`s or in shorthand notation:
 
@@ -3435,11 +3435,11 @@ goroutine(s) as non-leaky. `IgnoringGoroutines` compares goroutines by their
 Eventually(Goroutines).ShouldNot(HaveLeaked(IgnoringInBacktrace(FNAME)))
 ```
 
-`IgnoringInBacktrace` succeeds if `ACTUAL` contains a groutine where `FNAME` is
+`IgnoringInBacktrace` succeeds if `ACTUAL` contains a goroutine where `FNAME` is
 contained anywhere within its call stack (backtrace), causing `HaveLeaked` to
 filter out the matched goroutine as non-leaky. Please note that
 `IgnoringInBacktrace` uses a (somewhat lazy) `strings.Contains` to check for any
-occurence of `FNAME` in backtraces.
+occurrence of `FNAME` in backtraces.
 
 `ACTUAL` must be an array or slice of `Goroutine`s.
 
@@ -3450,7 +3450,7 @@ Eventually(Goroutines).ShouldNot(HaveLeaked(IgnoringCreator(CREATORNAME)))
 ```
 
 In its most basic form, `IgnoringCreator` succeeds if `ACTUAL` contains a
-groutine where the name of the function creating the goroutine matches
+goroutine where the name of the function creating the goroutine matches
 `CREATORNAME`, causing `HaveLeaked` to filter out the matched goroutine(s) as
 non-leaky. `IgnoringCreator` uses `==` for comparing the creator function name.
 
@@ -3497,7 +3497,7 @@ names of the topmost functions on their stacks (backtraces):
   - `testing.RunTests [chan receive]`,
   - `testing.(*T).Run [chan receive]`,
   - and `testing.(*T).Parallel [chan receive]`.
-- the [Ginko testing framework](https://onsi.github.io/ginkgo/):
+- the [Ginkgo testing framework](https://onsi.github.io/ginkgo/):
   - `github.com/onsi/ginkgo/v2/internal.(*Suite).runNode` (including anonymous
   inner functions),
   - the anonymous inner functions of
