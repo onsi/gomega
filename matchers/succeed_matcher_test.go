@@ -3,6 +3,8 @@ package matchers_test
 import (
 	"errors"
 	"regexp"
+	"runtime"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,6 +23,18 @@ type AnyType struct{}
 
 func Invalid() *AnyType {
 	return nil
+}
+
+type formattedGomegaError struct {
+	message string
+}
+
+func (e formattedGomegaError) Error() string {
+	return "NOT THIS ERROR"
+}
+
+func (e formattedGomegaError) FormattedGomegaError() string {
+	return e.message
 }
 
 var _ = Describe("Succeed", func() {
@@ -64,6 +78,22 @@ var _ = Describe("Succeed", func() {
 		actual := Succeed().FailureMessage(errors.New("oops"))
 		actual = regexp.MustCompile(" 0x.*>").ReplaceAllString(actual, " 0x00000000>")
 		Expect(actual).To(Equal("Expected success, but got an error:\n    <*errors.errorString | 0x00000000>: {s: \"oops\"}\n    oops"))
+	})
+
+	It("simply returns .Error() for the failure message if the error is an AsyncPolledActualError", func() {
+		actual := Succeed().FailureMessage(formattedGomegaError{message: "this is already formatted appropriately"})
+		Expect(actual).To(Equal("this is already formatted appropriately"))
+	})
+
+	It("operates correctly when paired with an Eventually that receives a Gomega", func() {
+		_, file, line, _ := runtime.Caller(0)
+		failureMessage := InterceptGomegaFailure(func() {
+			Eventually(func(g Gomega) {
+				g.Expect(true).To(BeFalse())
+			}).WithTimeout(time.Millisecond * 10).Should(Succeed())
+		}).Error()
+		Ω(failureMessage).Should(HavePrefix("Timed out after"))
+		Ω(failureMessage).Should(HaveSuffix("The function passed to Eventually failed at %s:%d with:\nExpected\n    <bool>: true\nto be false", file, line+3))
 	})
 
 	It("builds negated failure message", func() {
