@@ -446,7 +446,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 				message += renderError(fmt.Sprintf("The function passed to %s returned the following error:", assertion.asyncType), actualErr)
 			}
 			if hasLastValidActual {
-				message += fmt.Sprintf("\nAt one point, however, the function did return successfully.  But %s failed because", assertion.asyncType)
+				message += fmt.Sprintf("\nAt one point, however, the function did return successfully.\nYet, %s failed because", assertion.asyncType)
 				_, e := matcher.Match(lastValidActual)
 				if e != nil {
 					message += renderError(" the matcher returned the following error:", e)

@@ -756,7 +756,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					}).WithTimeout(100 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Equal(10))
 					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually failed at %s:%d with:\nExpected\n    <int>: ", file, line+3))
 					Ω(ig.FailureMessage).Should(ContainSubstring("to be <\n    <int>: 3"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.  But Eventually failed because the matcher was not satisfied:\nExpected\n    <int>: 2\nto equal\n    <int>: 10"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher was not satisfied:\nExpected\n    <int>: 2\nto equal\n    <int>: 10"))
 				})
 			})
 
@@ -1445,7 +1445,7 @@ sprocket:
 
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("told to try again after 10s: bam"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.  But Eventually failed because the matcher was not satisfied:\nExpected\n    <int>: 2\nto equal\n    <int>: 4"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher was not satisfied:\nExpected\n    <int>: 2\nto equal\n    <int>: 4"))
 			})
 		})
 
@@ -1592,7 +1592,7 @@ sprocket:
 							return false, nil
 						}), "My Description")
 						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\nactual-err\n    <*errors.errorString"))
-						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.  But Eventually failed because the matcher returned the following error:\nmatcher-err"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher returned the following error:\nmatcher-err"))
 					})
 				})
 
@@ -1611,7 +1611,7 @@ sprocket:
 							return actualInt > 3, nil
 						}), "My Description")
 						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\nactual-err\n    <*errors.errorString"))
-						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.  But Eventually failed because the matcher was not satisfied:\nQM failure message: 3"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher was not satisfied:\nQM failure message: 3"))
 
 					})
 				})
