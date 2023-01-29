@@ -27,7 +27,7 @@ Cached Experiments are stored as separate files in the cache directory - the fil
 func NewExperimentCache(path string) (ExperimentCache, error) {
 	stat, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		err := os.MkdirAll(path, 0777)
+		err := os.MkdirAll(path, 0o777)
 		if err != nil {
 			return ExperimentCache{}, err
 		}
@@ -114,42 +114,42 @@ If no experiment is found, or the cached version is smaller than the passed-in v
 
 When paired with Ginkgo you can cache experiments and prevent potentially expensive recomputation with this pattern:
 
-	const EXPERIMENT_VERSION = 1 //bump this to bust the cache and recompute _all_ experiments
+		const EXPERIMENT_VERSION = 1 //bump this to bust the cache and recompute _all_ experiments
 
-    Describe("some experiments", func() {
-    	var cache gmeasure.ExperimentCache
-    	var experiment *gmeasure.Experiment
+	    Describe("some experiments", func() {
+	    	var cache gmeasure.ExperimentCache
+	    	var experiment *gmeasure.Experiment
 
-    	BeforeEach(func() {
-    		cache = gmeasure.NewExperimentCache("./gmeasure-cache")
-    		name := CurrentSpecReport().LeafNodeText
-    		experiment = cache.Load(name, EXPERIMENT_VERSION)
-    		if experiment != nil {
-    			AddReportEntry(experiment)
-    			Skip("cached")
-    		}
-    		experiment = gmeasure.NewExperiment(name)
-			AddReportEntry(experiment)
-    	})
+	    	BeforeEach(func() {
+	    		cache = gmeasure.NewExperimentCache("./gmeasure-cache")
+	    		name := CurrentSpecReport().LeafNodeText
+	    		experiment = cache.Load(name, EXPERIMENT_VERSION)
+	    		if experiment != nil {
+	    			AddReportEntry(experiment)
+	    			Skip("cached")
+	    		}
+	    		experiment = gmeasure.NewExperiment(name)
+				AddReportEntry(experiment)
+	    	})
 
-    	It("foo runtime", func() {
-    		experiment.SampleDuration("runtime", func() {
-    			//do stuff
-    		}, gmeasure.SamplingConfig{N:100})
-    	})
+	    	It("foo runtime", func() {
+	    		experiment.SampleDuration("runtime", func() {
+	    			//do stuff
+	    		}, gmeasure.SamplingConfig{N:100})
+	    	})
 
-    	It("bar runtime", func() {
-    		experiment.SampleDuration("runtime", func() {
-    			//do stuff
-    		}, gmeasure.SamplingConfig{N:100})
-    	})
+	    	It("bar runtime", func() {
+	    		experiment.SampleDuration("runtime", func() {
+	    			//do stuff
+	    		}, gmeasure.SamplingConfig{N:100})
+	    	})
 
-    	AfterEach(func() {
-    		if !CurrentSpecReport().State.Is(types.SpecStateSkipped) {
-	    		cache.Save(experiment.Name, EXPERIMENT_VERSION, experiment)
-	    	}
-    	})
-    })
+	    	AfterEach(func() {
+	    		if !CurrentSpecReport().State.Is(types.SpecStateSkipped) {
+		    		cache.Save(experiment.Name, EXPERIMENT_VERSION, experiment)
+		    	}
+	    	})
+	    })
 */
 func (cache ExperimentCache) Load(name string, version int) *Experiment {
 	path := filepath.Join(cache.Path, cache.hashOf(name)+CACHE_EXT)

@@ -7,7 +7,6 @@ Subsequent matches against the buffer will only operate against data that appear
 
 The read cursor is an opaque implementation detail that you cannot access.  You should use the Say matcher to sift through the buffer.  You can always
 access the entire buffer's contents with Contents().
-
 */
 package gbytes
 
@@ -167,12 +166,18 @@ You could do something like:
 
 select {
 case <-buffer.Detect("You are not logged in"):
+
 	//log in
+
 case <-buffer.Detect("Success"):
+
 	//carry on
+
 case <-time.After(time.Second):
-	//welp
-}
+
+		//welp
+	}
+
 buffer.CancelDetects()
 
 You should always call CancelDetects after using Detect.  This will close any channels that have not detected and clean up the goroutines that were spawned to support them.

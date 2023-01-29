@@ -10,7 +10,6 @@ import (
 
 var _ = Describe("Gomega", func() {
 	It("is mostly tested in assertion_test and async_assertion_test", func() {
-
 	})
 	Describe("when initialized", func() {
 		var g *internal.Gomega

@@ -49,10 +49,12 @@ var TruncateThreshold uint = 50
 // after the first diff location in a truncated string assertion error message.
 var CharactersAroundMismatchToInclude uint = 5
 
-var contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
-var timeType = reflect.TypeOf(time.Time{})
+var (
+	contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
+	timeType    = reflect.TypeOf(time.Time{})
+)
 
-//The default indentation string emitted by the format package
+// The default indentation string emitted by the format package
 var Indent = "    "
 
 var longFormThreshold = 20
@@ -73,8 +75,10 @@ If the CustomFormatter does not want to handle the object it should return ("", 
 
 Strings returned by CustomFormatters are not truncated
 */
-type CustomFormatter func(value interface{}) (string, bool)
-type CustomFormatterKey uint
+type (
+	CustomFormatter    func(value interface{}) (string, bool)
+	CustomFormatterKey uint
+)
 
 var customFormatterKey CustomFormatterKey = 1
 
@@ -298,7 +302,7 @@ func formatType(v reflect.Value) string {
 	case reflect.Map:
 		return fmt.Sprintf("%s | len:%d", v.Type(), v.Len())
 	default:
-		return fmt.Sprintf("%s", v.Type())
+		return v.Type().String()
 	}
 }
 

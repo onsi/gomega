@@ -136,7 +136,6 @@ var _ = Describe("Gomega DSL", func() {
 					"Expected\n    <string>: hi\nto equal\n    <string>: bye",
 					"Expected\n    <int>: 3\nto equal\n    <int>: 2",
 				}))
-
 			})
 		})
 	})

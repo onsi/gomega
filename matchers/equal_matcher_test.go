@@ -72,6 +72,7 @@ Expected
 to equal
     <string>: eric
 `)
+
 var expectedLongStringFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaaabaaaaa..."

@@ -6,7 +6,6 @@ import (
 )
 
 var _ = Describe("IgnoringGoroutines matcher", func() {
-
 	It("returns an error for an invalid actual", func() {
 		m := IgnoringGoroutines(Goroutines())
 		Expect(m.Match(nil)).Error().To(MatchError(
@@ -29,5 +28,4 @@ var _ = Describe("IgnoringGoroutines matcher", func() {
 		Expect(m.NegatedFailureMessage(Goroutine{})).To(MatchRegexp(
 			`Expected\n    <goroutine.Goroutine>: {ID: 0, State: "", TopFunction: "", CreatorFunction: "", BornAt: ""}\nnot to be contained in the list of expected goroutine IDs\n    <\[\]uint64 | len:\d+, cap:\d+>: [.*]`))
 	})
-
 })

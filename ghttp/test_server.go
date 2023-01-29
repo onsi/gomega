@@ -160,22 +160,22 @@ func NewTLSServer() *Server {
 }
 
 type Server struct {
-	//The underlying httptest server
+	// The underlying httptest server
 	HTTPTestServer *httptest.Server
 
-	//Defaults to false.  If set to true, the Server will allow more requests than there are registered handlers.
-	//Direct use of this property is deprecated and is likely to be removed, use GetAllowUnhandledRequests and SetAllowUnhandledRequests instead.
+	// Defaults to false.  If set to true, the Server will allow more requests than there are registered handlers.
+	// Direct use of this property is deprecated and is likely to be removed, use GetAllowUnhandledRequests and SetAllowUnhandledRequests instead.
 	AllowUnhandledRequests bool
 
-	//The status code returned when receiving an unhandled request.
-	//Defaults to http.StatusInternalServerError.
-	//Only applies if AllowUnhandledRequests is true
-	//Direct use of this property is deprecated and is likely to be removed, use GetUnhandledRequestStatusCode and SetUnhandledRequestStatusCode instead.
+	// The status code returned when receiving an unhandled request.
+	// Defaults to http.StatusInternalServerError.
+	// Only applies if AllowUnhandledRequests is true
+	// Direct use of this property is deprecated and is likely to be removed, use GetUnhandledRequestStatusCode and SetUnhandledRequestStatusCode instead.
 	UnhandledRequestStatusCode int
 
-	//If provided, ghttp will log about each request received to the provided io.Writer
-	//Defaults to nil
-	//If you're using Ginkgo, set this to GinkgoWriter to get improved output during failures
+	// If provided, ghttp will log about each request received to the provided io.Writer
+	// Defaults to nil
+	// If you're using Ginkgo, set this to GinkgoWriter to get improved output during failures
 	Writer io.Writer
 
 	receivedRequests []*http.Request
@@ -186,26 +186,26 @@ type Server struct {
 	calls   int
 }
 
-//Start() starts an unstarted ghttp server.  It is a catastrophic error to call Start more than once (thanks, httptest).
+// Start() starts an unstarted ghttp server.  It is a catastrophic error to call Start more than once (thanks, httptest).
 func (s *Server) Start() {
 	s.HTTPTestServer.Start()
 }
 
-//URL() returns a url that will hit the server
+// URL() returns a url that will hit the server
 func (s *Server) URL() string {
 	s.rwMutex.RLock()
 	defer s.rwMutex.RUnlock()
 	return s.HTTPTestServer.URL
 }
 
-//Addr() returns the address on which the server is listening.
+// Addr() returns the address on which the server is listening.
 func (s *Server) Addr() string {
 	s.rwMutex.RLock()
 	defer s.rwMutex.RUnlock()
 	return s.HTTPTestServer.Listener.Addr().String()
 }
 
-//Close() should be called at the end of each test.  It spins down and cleans up the test server.
+// Close() should be called at the end of each test.  It spins down and cleans up the test server.
 func (s *Server) Close() {
 	s.rwMutex.Lock()
 	server := s.HTTPTestServer
@@ -217,14 +217,14 @@ func (s *Server) Close() {
 	}
 }
 
-//ServeHTTP() makes Server an http.Handler
-//When the server receives a request it handles the request in the following order:
+// ServeHTTP() makes Server an http.Handler
+// When the server receives a request it handles the request in the following order:
 //
-//1. If the request matches a handler registered with RouteToHandler, that handler is called.
-//2. Otherwise, if there are handlers registered via AppendHandlers, those handlers are called in order.
-//3. If all registered handlers have been called then:
-//   a) If AllowUnhandledRequests is set to true, the request will be handled with response code of UnhandledRequestStatusCode
-//   b) If AllowUnhandledRequests is false, the request will not be handled and the current test will be marked as failed.
+//  1. If the request matches a handler registered with RouteToHandler, that handler is called.
+//  2. Otherwise, if there are handlers registered via AppendHandlers, those handlers are called in order.
+//  3. If all registered handlers have been called then:
+//     a) If AllowUnhandledRequests is set to true, the request will be handled with response code of UnhandledRequestStatusCode
+//     b) If AllowUnhandledRequests is false, the request will not be handled and the current test will be marked as failed.
 func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	s.rwMutex.Lock()
 	defer func() {
@@ -233,20 +233,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
-		//If the handler panics GHTTP will silently succeed.  This is bad™.
-		//To catch this case we need to fail the test if the handler has panicked.
-		//However, if the handler is panicking because Ginkgo's causing it to panic (i.e. an assertion failed)
-		//then we shouldn't double-report the error as this will confuse people.
+		// If the handler panics GHTTP will silently succeed.  This is bad™.
+		// To catch this case we need to fail the test if the handler has panicked.
+		// However, if the handler is panicking because Ginkgo's causing it to panic (i.e. an assertion failed)
+		// then we shouldn't double-report the error as this will confuse people.
 
-		//So: step 1, if this is a Ginkgo panic - do nothing, Ginkgo's aware of the failure
+		// So: step 1, if this is a Ginkgo panic - do nothing, Ginkgo's aware of the failure
 		eAsString, ok := e.(string)
 		if ok && strings.Contains(eAsString, "defer GinkgoRecover()") {
 			return
 		}
 
-		//If we're here, we have to do step 2: assert that the error is nil.  This assertion will
-		//allow us to fail the test suite (note: we can't call Fail since Gomega is not allowed to import Ginkgo).
-		//Since a failed assertion throws a panic, and we are likely in a goroutine, we need to defer within our defer!
+		// If we're here, we have to do step 2: assert that the error is nil.  This assertion will
+		// allow us to fail the test suite (note: we can't call Fail since Gomega is not allowed to import Ginkgo).
+		// Since a failed assertion throws a panic, and we are likely in a goroutine, we need to defer within our defer!
 		defer func() {
 			recover()
 		}()
@@ -280,7 +280,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-//ReceivedRequests is an array containing all requests received by the server (both handled and unhandled requests)
+// ReceivedRequests is an array containing all requests received by the server (both handled and unhandled requests)
 func (s *Server) ReceivedRequests() []*http.Request {
 	s.rwMutex.RLock()
 	defer s.rwMutex.RUnlock()
@@ -288,10 +288,10 @@ func (s *Server) ReceivedRequests() []*http.Request {
 	return s.receivedRequests
 }
 
-//RouteToHandler can be used to register handlers that will always handle requests that match
-//the passed in method and path.
+// RouteToHandler can be used to register handlers that will always handle requests that match
+// the passed in method and path.
 //
-//The path may be either a string object or a *regexp.Regexp.
+// The path may be either a string object or a *regexp.Regexp.
 func (s *Server) RouteToHandler(method string, path interface{}, handler http.HandlerFunc) {
 	s.rwMutex.Lock()
 	defer s.rwMutex.Unlock()
@@ -337,7 +337,7 @@ func (s *Server) handlerForRoute(method string, path string) (http.HandlerFunc, 
 	return nil, false
 }
 
-//AppendHandlers will appends http.HandlerFuncs to the server's list of registered handlers.  The first incoming request is handled by the first handler, the second by the second, etc...
+// AppendHandlers will appends http.HandlerFuncs to the server's list of registered handlers.  The first incoming request is handled by the first handler, the second by the second, etc...
 func (s *Server) AppendHandlers(handlers ...http.HandlerFunc) {
 	s.rwMutex.Lock()
 	defer s.rwMutex.Unlock()
@@ -345,9 +345,9 @@ func (s *Server) AppendHandlers(handlers ...http.HandlerFunc) {
 	s.requestHandlers = append(s.requestHandlers, handlers...)
 }
 
-//SetHandler overrides the registered handler at the passed in index with the passed in handler
-//This is useful, for example, when a server has been set up in a shared context, but must be tweaked
-//for a particular test.
+// SetHandler overrides the registered handler at the passed in index with the passed in handler
+// This is useful, for example, when a server has been set up in a shared context, but must be tweaked
+// for a particular test.
 func (s *Server) SetHandler(index int, handler http.HandlerFunc) {
 	s.rwMutex.Lock()
 	defer s.rwMutex.Unlock()
@@ -355,7 +355,7 @@ func (s *Server) SetHandler(index int, handler http.HandlerFunc) {
 	s.requestHandlers[index] = handler
 }
 
-//GetHandler returns the handler registered at the passed in index.
+// GetHandler returns the handler registered at the passed in index.
 func (s *Server) GetHandler(index int) http.HandlerFunc {
 	s.rwMutex.RLock()
 	defer s.rwMutex.RUnlock()
@@ -374,12 +374,12 @@ func (s *Server) Reset() {
 	s.routedHandlers = nil
 }
 
-//WrapHandler combines the passed in handler with the handler registered at the passed in index.
-//This is useful, for example, when a server has been set up in a shared context but must be tweaked
-//for a particular test.
+// WrapHandler combines the passed in handler with the handler registered at the passed in index.
+// This is useful, for example, when a server has been set up in a shared context but must be tweaked
+// for a particular test.
 //
-//If the currently registered handler is A, and the new passed in handler is B then
-//WrapHandler will generate a new handler that first calls A, then calls B, and assign it to index
+// If the currently registered handler is A, and the new passed in handler is B then
+// WrapHandler will generate a new handler that first calls A, then calls B, and assign it to index
 func (s *Server) WrapHandler(index int, handler http.HandlerFunc) {
 	existingHandler := s.GetHandler(index)
 	s.SetHandler(index, CombineHandlers(existingHandler, handler))
@@ -392,7 +392,7 @@ func (s *Server) CloseClientConnections() {
 	s.HTTPTestServer.CloseClientConnections()
 }
 
-//SetAllowUnhandledRequests enables the server to accept unhandled requests.
+// SetAllowUnhandledRequests enables the server to accept unhandled requests.
 func (s *Server) SetAllowUnhandledRequests(allowUnhandledRequests bool) {
 	s.rwMutex.Lock()
 	defer s.rwMutex.Unlock()
@@ -400,7 +400,7 @@ func (s *Server) SetAllowUnhandledRequests(allowUnhandledRequests bool) {
 	s.AllowUnhandledRequests = allowUnhandledRequests
 }
 
-//GetAllowUnhandledRequests returns true if the server accepts unhandled requests.
+// GetAllowUnhandledRequests returns true if the server accepts unhandled requests.
 func (s *Server) GetAllowUnhandledRequests() bool {
 	s.rwMutex.RLock()
 	defer s.rwMutex.RUnlock()
@@ -408,7 +408,7 @@ func (s *Server) GetAllowUnhandledRequests() bool {
 	return s.AllowUnhandledRequests
 }
 
-//SetUnhandledRequestStatusCode status code to be returned when the server receives unhandled requests
+// SetUnhandledRequestStatusCode status code to be returned when the server receives unhandled requests
 func (s *Server) SetUnhandledRequestStatusCode(statusCode int) {
 	s.rwMutex.Lock()
 	defer s.rwMutex.Unlock()
@@ -416,7 +416,7 @@ func (s *Server) SetUnhandledRequestStatusCode(statusCode int) {
 	s.UnhandledRequestStatusCode = statusCode
 }
 
-//GetUnhandledRequestStatusCode returns the current status code being returned for unhandled requests
+// GetUnhandledRequestStatusCode returns the current status code being returned for unhandled requests
 func (s *Server) GetUnhandledRequestStatusCode() int {
 	s.rwMutex.RLock()
 	defer s.rwMutex.RUnlock()

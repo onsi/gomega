@@ -20,16 +20,16 @@ import (
 const INVALID_EXIT_CODE = 254
 
 type Session struct {
-	//The wrapped command
+	// The wrapped command
 	Command *exec.Cmd
 
-	//A *gbytes.Buffer connected to the command's stdout
+	// A *gbytes.Buffer connected to the command's stdout
 	Out *gbytes.Buffer
 
-	//A *gbytes.Buffer connected to the command's stderr
+	// A *gbytes.Buffer connected to the command's stderr
 	Err *gbytes.Buffer
 
-	//A channel that will close when the command exits
+	// A channel that will close when the command exits
 	Exited <-chan struct{}
 
 	lock     *sync.Mutex
@@ -216,8 +216,10 @@ func (s *Session) processIsAlive() bool {
 	return s.ExitCode() == -1 && s.Command.Process != nil
 }
 
-var trackedSessions = []*Session{}
-var trackedSessionsMutex = &sync.Mutex{}
+var (
+	trackedSessions      = []*Session{}
+	trackedSessionsMutex = &sync.Mutex{}
+)
 
 /*
 Kill sends a SIGKILL signal to all the processes started by Run, and waits for them to exit.

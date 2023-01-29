@@ -44,10 +44,12 @@ func NewInstrumentedGomega() *InstrumentedGomega {
 }
 
 // TestMatcher
-var MATCH = "match"
-var NO_MATCH = "no match"
-var ERR_MATCH = "err match"
-var TEST_MATCHER_ERR = errors.New("spec matcher error")
+var (
+	MATCH            = "match"
+	NO_MATCH         = "no match"
+	ERR_MATCH        = "err match"
+	TEST_MATCHER_ERR = errors.New("spec matcher error")
+)
 
 type SpecMatcher struct{}
 
@@ -75,7 +77,7 @@ func SpecMatch() SpecMatcher {
 	return SpecMatcher{}
 }
 
-//FakeGomegaTestingT
+// FakeGomegaTestingT
 type FakeGomegaTestingT struct {
 	CalledHelper bool
 	CalledFatalf string

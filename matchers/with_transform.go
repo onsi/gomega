@@ -49,12 +49,10 @@ func (m *WithTransformMatcher) Match(actual interface{}) (bool, error) {
 	if actual != nil && reflect.TypeOf(actual).AssignableTo(m.transformArgType) {
 		// The dynamic type of actual is compatible with the transform argument.
 		param = reflect.ValueOf(actual)
-
 	} else if actual == nil && m.transformArgType.Kind() == reflect.Interface {
 		// The dynamic type of actual is unknown, so there's no way to make its
 		// reflect.Value. Create a nil of the transform argument, which is known.
 		param = reflect.Zero(m.transformArgType)
-
 	} else {
 		return false, fmt.Errorf("Transform function expects '%s' but we have '%T'", m.transformArgType, actual)
 	}

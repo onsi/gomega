@@ -98,10 +98,7 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 			counter = 0
 			ig.G.Eventually(func() bool {
 				counter += 1
-				if counter >= 6 {
-					return true
-				}
-				return false
+				return counter >= 6
 			}).Should(BeTrue())
 			dt = time.Since(t)
 			Ω(dt).Should(BeNumerically("~", 120*time.Millisecond, 20*time.Millisecond))

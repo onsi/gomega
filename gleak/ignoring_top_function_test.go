@@ -6,7 +6,6 @@ import (
 )
 
 var _ = Describe("IgnoringTopFunction matcher", func() {
-
 	It("returns an error for an invalid actual", func() {
 		m := IgnoringTopFunction("foo.bar")
 		Expect(m.Match(nil)).Error().To(MatchError("IgnoringTopFunction matcher expects a Goroutine or *Goroutine.  Got:\n    <nil>: nil"))
@@ -62,5 +61,4 @@ var _ = Describe("IgnoringTopFunction matcher", func() {
 		Expect(m.FailureMessage(Goroutine{ID: 42, TopFunction: "foo"})).To(Equal(
 			"Expected\n    <goroutine.Goroutine>: {ID: 42, State: \"\", TopFunction: \"foo\", CreatorFunction: \"\", BornAt: \"\"}\nto have the prefix \"foo.\" for its topmost function"))
 	})
-
 })

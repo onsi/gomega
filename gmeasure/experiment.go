@@ -66,8 +66,8 @@ type SamplingConfig struct {
 
 // The Units decorator allows you to specify units (an arbitrary string) when recording values.  It is ignored when recording durations.
 //
-//     e := gmeasure.NewExperiment("My Experiment")
-//     e.RecordValue("length", 3.141, gmeasure.Units("inches"))
+//	e := gmeasure.NewExperiment("My Experiment")
+//	e.RecordValue("length", 3.141, gmeasure.Units("inches"))
 //
 // Units are only set the first time a value of a given name is recorded.  In the example above any subsequent calls to e.RecordValue("length", X) will maintain the "inches" units even if a new set of Units("UNIT") are passed in later.
 type Units string
@@ -76,9 +76,9 @@ type Units string
 //
 // For example:
 //
-//     e := gmeasure.NewExperiment("My Experiment")
-//     e.RecordValue("length", 3.141, gmeasure.Annotation("bob"))
-//     e.RecordValue("length", 2.71, gmeasure.Annotation("jane"))
+//	e := gmeasure.NewExperiment("My Experiment")
+//	e.RecordValue("length", 3.141, gmeasure.Annotation("bob"))
+//	e.RecordValue("length", 2.71, gmeasure.Annotation("jane"))
 //
 // ...will result in a Measurement named "length" that records two values )[3.141, 2.71]) annotation with (["bob", "jane"])
 type Annotation string
@@ -88,11 +88,11 @@ type Annotation string
 //
 // For example:
 //
-//     e := gmeasure.NewExperiment("My Experiment")
-//     e.RecordValue("length", 3.141, gmeasure.Style("{{blue}}{{bold}}"))
-//     e.RecordValue("length", 2.71)
-//     e.RecordDuration("cooking time", 3 * time.Second, gmeasure.Style("{{red}}{{underline}}"))
-//     e.RecordDuration("cooking time", 2 * time.Second)
+//	e := gmeasure.NewExperiment("My Experiment")
+//	e.RecordValue("length", 3.141, gmeasure.Style("{{blue}}{{bold}}"))
+//	e.RecordValue("length", 2.71)
+//	e.RecordDuration("cooking time", 3 * time.Second, gmeasure.Style("{{red}}{{underline}}"))
+//	e.RecordDuration("cooking time", 2 * time.Second)
 //
 // will emit a report with blue bold entries for the length measurement and red underlined entries for the cooking time measurement.
 //
@@ -112,11 +112,11 @@ type PrecisionBundle struct {
 //
 // For example:
 //
-//     e := gmeasure.NewExperiment("My Experiment")
-//     e.RecordValue("length", 3.141, gmeasure.Precision(2))
-//     e.RecordValue("length", 2.71)
-//     e.RecordDuration("cooking time", 3214 * time.Millisecond, gmeasure.Precision(100*time.Millisecond))
-//     e.RecordDuration("cooking time", 2623 * time.Millisecond)
+//	e := gmeasure.NewExperiment("My Experiment")
+//	e.RecordValue("length", 3.141, gmeasure.Precision(2))
+//	e.RecordValue("length", 2.71)
+//	e.RecordDuration("cooking time", 3214 * time.Millisecond, gmeasure.Precision(100*time.Millisecond))
+//	e.RecordDuration("cooking time", 2623 * time.Millisecond)
 func Precision(p interface{}) PrecisionBundle {
 	out := DefaultPrecisionBundle
 	switch reflect.TypeOf(p) {
@@ -308,7 +308,7 @@ The resulting durations are recorded on a Duration Measurement with the passed-i
 
 The callback is given a zero-based index that increments by one between samples.  The callback must return an Annotation - this annotation is attached to the measured duration.
 
-The Sampling is configured via the passed-in SamplingConfig
+# The Sampling is configured via the passed-in SamplingConfig
 
 SampleAnnotatedDuration supports the Style() and Precision() decorations.
 */
@@ -395,7 +395,7 @@ SampleAnnotatedValue samples the passed-in callback and records the return value
 
 The callback is given a zero-based index that increments by one between samples.  The callback must return a float64 and an Annotation - the annotation is attached to the recorded value.
 
-The Sampling is configured via the passed-in SamplingConfig
+# The Sampling is configured via the passed-in SamplingConfig
 
 SampleValue supports the Style(), Units(), and Precision() decorations.
 */

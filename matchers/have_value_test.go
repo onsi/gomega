@@ -18,7 +18,6 @@ type S struct {
 func (s S) M() {}
 
 var _ = Describe("HaveValue", func() {
-
 	It("should fail when passed nil", func() {
 		var p *struct{}
 		m := HaveValue(BeNil())
@@ -70,5 +69,4 @@ var _ = Describe("HaveValue", func() {
 		Expect(i).To(HaveValue(Equal(S{V: 42})))
 		Expect(i).NotTo(HaveValue(Equal(S{})))
 	})
-
 })

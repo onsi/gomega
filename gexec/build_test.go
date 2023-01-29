@@ -274,7 +274,7 @@ var _ = Describe(".CompiledTestIn", func() {
 })
 
 func copyFile(source, directory, basename string) {
-	Expect(os.MkdirAll(directory, 0755)).To(Succeed())
+	Expect(os.MkdirAll(directory, 0o755)).To(Succeed())
 	content, err := gutil.ReadFile(source)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(gutil.WriteFile(filepath.Join(directory, basename), content)).To(Succeed())

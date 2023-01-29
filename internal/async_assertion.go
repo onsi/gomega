@@ -13,9 +13,11 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-var errInterface = reflect.TypeOf((*error)(nil)).Elem()
-var gomegaType = reflect.TypeOf((*types.Gomega)(nil)).Elem()
-var contextType = reflect.TypeOf(new(context.Context)).Elem()
+var (
+	errInterface = reflect.TypeOf((*error)(nil)).Elem()
+	gomegaType   = reflect.TypeOf((*types.Gomega)(nil)).Elem()
+	contextType  = reflect.TypeOf(new(context.Context)).Elem()
+)
 
 type formattedGomegaError interface {
 	FormattedGomegaError() string
@@ -483,7 +485,7 @@ func (assertion *AsyncAssertion) match(matcher types.GomegaMatcher, desiredMatch
 	passedRepeatedlyCount := 0
 	for {
 		var nextPoll <-chan time.Time = nil
-		var isTryAgainAfterError = false
+		isTryAgainAfterError := false
 
 		for _, err := range []error{actualErr, matcherErr} {
 			if pollingSignalErr, ok := AsPollingSignalError(err); ok {

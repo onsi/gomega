@@ -218,5 +218,4 @@ var _ = Describe("ContainElement", func() {
 			})
 		})
 	})
-
 })

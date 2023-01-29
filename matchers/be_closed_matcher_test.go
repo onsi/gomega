@@ -46,7 +46,6 @@ var _ = Describe("BeClosedMatcher", func() {
 			success, err = (&BeClosedMatcher{}).Match(closedWriterChannel)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
-
 		})
 	})
 

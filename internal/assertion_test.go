@@ -9,10 +9,10 @@ import (
 )
 
 var _ = Describe("Making Synchronous Assertions", func() {
-	var SHOULD_MATCH = true
-	var SHOULD_NOT_MATCH = false
-	var IT_PASSES = true
-	var IT_FAILS = false
+	SHOULD_MATCH := true
+	SHOULD_NOT_MATCH := false
+	IT_PASSES := true
+	IT_FAILS := false
 
 	Extras := func(extras ...interface{}) []interface{} {
 		return extras
@@ -152,8 +152,8 @@ var _ = Describe("Making Synchronous Assertions", func() {
 		),
 	)
 
-	var SHOULD_OCCUR = true
-	var SHOULD_NOT_OCCUR = false
+	SHOULD_OCCUR := true
+	SHOULD_NOT_OCCUR := false
 
 	DescribeTable("error expectations",
 		func(a, b int, e error, isPositiveAssertion bool, expectedFailureMessage string, expectedReturnValue bool) {
@@ -220,7 +220,5 @@ var _ = Describe("Making Synchronous Assertions", func() {
 				ig.G.Expect(42).To(HaveLen(1), "foo", ContainElement(42))
 			}).NotTo(Panic())
 		})
-
 	})
-
 })

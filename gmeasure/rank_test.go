@@ -173,5 +173,4 @@ var _ = Describe("Rank", func() {
 			})
 		})
 	})
-
 })

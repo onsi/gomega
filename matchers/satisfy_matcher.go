@@ -41,12 +41,10 @@ func (m *SatisfyMatcher) Match(actual interface{}) (success bool, err error) {
 	if actual != nil && reflect.TypeOf(actual).AssignableTo(m.predicateArgType) {
 		// The dynamic type of actual is compatible with the predicate argument.
 		param = reflect.ValueOf(actual)
-
 	} else if actual == nil && m.predicateArgType.Kind() == reflect.Interface {
 		// The dynamic type of actual is unknown, so there's no way to make its
 		// reflect.Value. Create a nil of the predicate argument, which is known.
 		param = reflect.Zero(m.predicateArgType)
-
 	} else {
 		return false, fmt.Errorf("predicate expects '%s' but we have '%T'", m.predicateArgType, actual)
 	}

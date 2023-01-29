@@ -15,7 +15,6 @@ import (
 )
 
 var _ = Describe("goroutine", func() {
-
 	const stack = `runtime/debug.Stack()
 	/usr/local/go-faketime/src/runtime/debug/stack.go:24 +0x65
 runtime/debug.PrintStack()
@@ -57,7 +56,6 @@ main.main()
 	})
 
 	Context("goroutine header", func() {
-
 		It("parses goroutine header", func() {
 			g := new(header)
 			Expect(g.ID).To(Equal(uint64(666)))
@@ -72,11 +70,9 @@ main.main()
 		It("panics on malformed goroutine ID", func() {
 			Expect(func() { _ = new("a b c:\n") }).To(PanicWith(MatchRegexp(`invalid stack header ID: "b", header: ".*"`)))
 		})
-
 	})
 
 	Context("goroutine backtrace", func() {
-
 		It("parses goroutine's backtrace", func() {
 			r := bufio.NewReader(strings.NewReader(stack))
 			topF, backtrace := parseGoroutineBacktrace(r)
@@ -175,11 +171,9 @@ created by main.foo
 			Expect(creator).To(BeEmpty())
 			Expect(location).To(BeEmpty())
 		})
-
 	})
 
 	Context("live", func() {
-
 		It("discovers current goroutine information", func() {
 			type T struct{}
 			pkg := reflect.TypeOf(T{}).PkgPath()
@@ -231,9 +225,7 @@ created by main.foo
 				WithTimeout(1 * time.Second).WithPolling(250 * time.Millisecond).
 				ShouldNot(ContainElement(HaveField("TopFunction", pkg+".testWait")))
 		})
-
 	})
-
 })
 
 func testWait(done <-chan struct{}) {

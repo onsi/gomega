@@ -51,5 +51,4 @@ var _ = Describe("BeKeyOf", func() {
 		actual := BeKeyOf(map[int]bool{1: true, 2: false}).NegatedFailureMessage(42)
 		Expect(actual).To(MatchRegexp("Expected\n    <int>: 42\nnot to be a key of\n    <\\[\\]bool | len:2, cap:2>: \\[(true, false)|(false, true)\\]"))
 	})
-
 })

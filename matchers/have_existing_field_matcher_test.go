@@ -8,7 +8,6 @@ import (
 )
 
 var _ = Describe("HaveExistingField", func() {
-
 	var book Book
 	BeforeEach(func() {
 		book = Book{
@@ -80,5 +79,4 @@ var _ = Describe("HaveExistingField", func() {
 		msg = matcher.NegatedFailureMessage(book)
 		Ω(msg).Should(MatchRegexp(`(?s)Expected\n\s+<matchers_test\.Book>: .*\nnot to have field 'Title'`))
 	})
-
 })

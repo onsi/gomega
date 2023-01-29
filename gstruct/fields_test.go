@@ -82,8 +82,8 @@ var _ = Describe("Struct", func() {
 
 		actual := struct{ A, C string }{A: "b", C: "c"}
 
-		//Because the order of the constituent errors can't be guaranteed,
-		//we do a number of checks to make sure everything's included
+		// Because the order of the constituent errors can't be guaranteed,
+		// we do a number of checks to make sure everything's included
 		m.Match(actual)
 		Expect(m.FailureMessage(actual)).Should(HavePrefix(
 			"Expected\n    <string>: \nto match fields: {\n",

@@ -14,16 +14,17 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-//MatchAllElements succeeds if every element of a slice matches the element matcher it maps to
-//through the id function, and every element matcher is matched.
-//    idFn := func(element interface{}) string {
-//        return fmt.Sprintf("%v", element)
-//    }
+// MatchAllElements succeeds if every element of a slice matches the element matcher it maps to
+// through the id function, and every element matcher is matched.
 //
-//    Expect([]string{"a", "b"}).To(MatchAllElements(idFn, Elements{
-//        "a": Equal("a"),
-//        "b": Equal("b"),
-//    }))
+//	idFn := func(element interface{}) string {
+//	    return fmt.Sprintf("%v", element)
+//	}
+//
+//	Expect([]string{"a", "b"}).To(MatchAllElements(idFn, Elements{
+//	    "a": Equal("a"),
+//	    "b": Equal("b"),
+//	}))
 func MatchAllElements(identifier Identifier, elements Elements) types.GomegaMatcher {
 	return &ElementsMatcher{
 		Identifier: identifier,
@@ -31,16 +32,17 @@ func MatchAllElements(identifier Identifier, elements Elements) types.GomegaMatc
 	}
 }
 
-//MatchAllElementsWithIndex succeeds if every element of a slice matches the element matcher it maps to
-//through the id with index function, and every element matcher is matched.
-//    idFn := func(index int, element interface{}) string {
-//        return strconv.Itoa(index)
-//    }
+// MatchAllElementsWithIndex succeeds if every element of a slice matches the element matcher it maps to
+// through the id with index function, and every element matcher is matched.
 //
-//    Expect([]string{"a", "b"}).To(MatchAllElements(idFn, Elements{
-//        "0": Equal("a"),
-//        "1": Equal("b"),
-//    }))
+//	idFn := func(index int, element interface{}) string {
+//	    return strconv.Itoa(index)
+//	}
+//
+//	Expect([]string{"a", "b"}).To(MatchAllElements(idFn, Elements{
+//	    "0": Equal("a"),
+//	    "1": Equal("b"),
+//	}))
 func MatchAllElementsWithIndex(identifier IdentifierWithIndex, elements Elements) types.GomegaMatcher {
 	return &ElementsMatcher{
 		Identifier: identifier,
@@ -48,22 +50,23 @@ func MatchAllElementsWithIndex(identifier IdentifierWithIndex, elements Elements
 	}
 }
 
-//MatchElements succeeds if each element of a slice matches the element matcher it maps to
-//through the id function. It can ignore extra elements and/or missing elements.
-//    idFn := func(element interface{}) string {
-//        return fmt.Sprintf("%v", element)
-//    }
+// MatchElements succeeds if each element of a slice matches the element matcher it maps to
+// through the id function. It can ignore extra elements and/or missing elements.
 //
-//    Expect([]string{"a", "b", "c"}).To(MatchElements(idFn, IgnoreExtras, Elements{
-//        "a": Equal("a"),
-//        "b": Equal("b"),
-//    }))
-//    Expect([]string{"a", "c"}).To(MatchElements(idFn, IgnoreMissing, Elements{
-//        "a": Equal("a"),
-//        "b": Equal("b"),
-//        "c": Equal("c"),
-//        "d": Equal("d"),
-//    }))
+//	idFn := func(element interface{}) string {
+//	    return fmt.Sprintf("%v", element)
+//	}
+//
+//	Expect([]string{"a", "b", "c"}).To(MatchElements(idFn, IgnoreExtras, Elements{
+//	    "a": Equal("a"),
+//	    "b": Equal("b"),
+//	}))
+//	Expect([]string{"a", "c"}).To(MatchElements(idFn, IgnoreMissing, Elements{
+//	    "a": Equal("a"),
+//	    "b": Equal("b"),
+//	    "c": Equal("c"),
+//	    "d": Equal("d"),
+//	}))
 func MatchElements(identifier Identifier, options Options, elements Elements) types.GomegaMatcher {
 	return &ElementsMatcher{
 		Identifier:      identifier,
@@ -74,22 +77,23 @@ func MatchElements(identifier Identifier, options Options, elements Elements) ty
 	}
 }
 
-//MatchElementsWithIndex succeeds if each element of a slice matches the element matcher it maps to
-//through the id with index function. It can ignore extra elements and/or missing elements.
-//    idFn := func(index int, element interface{}) string {
-//        return strconv.Itoa(index)
-//    }
+// MatchElementsWithIndex succeeds if each element of a slice matches the element matcher it maps to
+// through the id with index function. It can ignore extra elements and/or missing elements.
 //
-//    Expect([]string{"a", "b", "c"}).To(MatchElements(idFn, IgnoreExtras, Elements{
-//        "0": Equal("a"),
-//        "1": Equal("b"),
-//    }))
-//    Expect([]string{"a", "c"}).To(MatchElements(idFn, IgnoreMissing, Elements{
-//        "0": Equal("a"),
-//        "1": Equal("b"),
-//        "2": Equal("c"),
-//        "3": Equal("d"),
-//    }))
+//	idFn := func(index int, element interface{}) string {
+//	    return strconv.Itoa(index)
+//	}
+//
+//	Expect([]string{"a", "b", "c"}).To(MatchElements(idFn, IgnoreExtras, Elements{
+//	    "0": Equal("a"),
+//	    "1": Equal("b"),
+//	}))
+//	Expect([]string{"a", "c"}).To(MatchElements(idFn, IgnoreMissing, Elements{
+//	    "0": Equal("a"),
+//	    "1": Equal("b"),
+//	    "2": Equal("c"),
+//	    "3": Equal("d"),
+//	}))
 func MatchElementsWithIndex(identifier IdentifierWithIndex, options Options, elements Elements) types.GomegaMatcher {
 	return &ElementsMatcher{
 		Identifier:      identifier,

@@ -14,7 +14,6 @@ import (
 // Windows. The following tests thus work the same both on *nix and Windows.
 
 var _ = Describe("HaveLeaked", func() {
-
 	It("renders indented goroutine information including (malformed) backtrace", func() {
 		gs := []Goroutine{
 			{
@@ -80,7 +79,6 @@ created by main.foo`,
 	})
 
 	When("using signals", func() {
-
 		It("doesn't find leaks", func() {
 			c := make(chan os.Signal, 1)
 			signal.Notify(c, os.Interrupt)
@@ -91,7 +89,6 @@ created by main.foo`,
 			Eventually(Goroutines).WithTimeout(2*time.Second).WithPolling(250*time.Millisecond).
 				ShouldNot(HaveLeaked(), "found signal.Reset leaks")
 		})
-
 	})
 
 	It("checks against list of expected goroutines", func() {
@@ -118,7 +115,6 @@ created by main.foo`,
 	})
 
 	Context("failure messages", func() {
-
 		var snapshot []Goroutine
 
 		BeforeEach(func() {
@@ -154,7 +150,6 @@ created by main.foo`,
 		})
 
 		When("things go wrong", func() {
-
 			It("rejects unsupported filter args types", func() {
 				Expect(func() { _ = HaveLeaked(42) }).To(PanicWith(
 					"HaveLeaked expected a string, []Goroutine, or GomegaMatcher, but got:\n    <int>: 42"))
@@ -183,17 +178,13 @@ created by main.foo`,
 					{ID: 0},
 				})).Error().To(HaveOccurred())
 			})
-
 		})
-
 	})
 
 	Context("wrapped around test nodes", func() {
-
 		var snapshot []Goroutine
 
 		When("not leaking", func() {
-
 			BeforeEach(func() {
 				snapshot = Goroutines()
 			})
@@ -205,11 +196,9 @@ created by main.foo`,
 			It("doesn't leak in test", func() {
 				// nothing
 			})
-
 		})
 
 		When("leaking", func() {
-
 			done := make(chan struct{})
 
 			BeforeEach(func() {
@@ -227,15 +216,11 @@ created by main.foo`,
 					<-done
 				}()
 			})
-
 		})
-
 	})
 
 	Context("handling file names and paths in backtraces", func() {
-
 		When("ReportFilenameWithPath is true", Ordered, func() {
-
 			var oldState bool
 
 			BeforeAll(func() {
@@ -249,11 +234,9 @@ created by main.foo`,
 			It("doesn't shorten filenames", func() {
 				Expect(formatFilename("/home/foo/bar/baz.go")).To(Equal("/home/foo/bar/baz.go"))
 			})
-
 		})
 
 		When("ReportFilenameWithPath is false", Ordered, func() {
-
 			var oldState bool
 
 			BeforeAll(func() {
@@ -270,9 +253,6 @@ created by main.foo`,
 				Expect(formatFilename("/baz.go")).To(Equal("baz.go"))
 				Expect(formatFilename("/")).To(Equal("/"))
 			})
-
 		})
-
 	})
-
 })

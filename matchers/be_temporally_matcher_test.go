@@ -9,7 +9,6 @@ import (
 )
 
 var _ = Describe("BeTemporally", func() {
-
 	var t0, t1, t2 time.Time
 	BeforeEach(func() {
 		t0 = time.Now()
@@ -18,7 +17,6 @@ var _ = Describe("BeTemporally", func() {
 	})
 
 	Context("When comparing times", func() {
-
 		It("should support ==", func() {
 			Expect(t0).Should(BeTemporally("==", t0))
 			Expect(t1).ShouldNot(BeTemporally("==", t0))

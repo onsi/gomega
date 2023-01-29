@@ -230,7 +230,7 @@ var _ = Describe("TestServer", func() {
 
 	Describe("When a handler fails", func() {
 		BeforeEach(func() {
-			s.SetUnhandledRequestStatusCode(http.StatusForbidden) //just to be clear that 500s aren't coming from unhandled requests
+			s.SetUnhandledRequestStatusCode(http.StatusForbidden) // just to be clear that 500s aren't coming from unhandled requests
 		})
 
 		Context("because the handler has panicked", func() {

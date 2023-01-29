@@ -42,7 +42,7 @@ var _ = Describe("BeEquivalentTo", func() {
 			Expect(5).ShouldNot(BeEquivalentTo("5"))
 			Expect(5).ShouldNot(BeEquivalentTo(3))
 
-			//Here be dragons!
+			// Here be dragons!
 			Expect(5.1).Should(BeEquivalentTo(5))
 			Expect(5).ShouldNot(BeEquivalentTo(5.1))
 		})

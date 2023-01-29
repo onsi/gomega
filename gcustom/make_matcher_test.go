@@ -145,7 +145,6 @@ var _ = Describe("MakeMatcher", func() {
 				Ω(success).Should(BeFalse())
 				Ω(err).Should(MatchError(ContainSubstring("Matcher expected actual of type <gcustom_test.someType>.  Got:\n    <string>: foo")))
 				Ω(passedIn).Should(BeNil())
-
 			})
 		})
 	})
@@ -190,7 +189,6 @@ var _ = Describe("MakeMatcher", func() {
 				m = gcustom.MakeMatcher(func(a any) (bool, error) { return false, nil }, "have been confabulated")
 				Ω(m.FailureMessage(3)).Should(Equal("Expected:\n    <int>: 3\nto have been confabulated"))
 				Ω(m.NegatedFailureMessage(3)).Should(Equal("Expected:\n    <int>: 3\nnot to have been confabulated"))
-
 			})
 		})
 
@@ -199,7 +197,6 @@ var _ = Describe("MakeMatcher", func() {
 				m = m.WithTemplate("{{.Failure}} {{.NegatedFailure}} {{.To}} {{.FormattedActual}} {{.Actual.Name}}")
 				Ω(m.FailureMessage(someType{"foo"})).Should(Equal("true false to     <gcustom_test.someType>: {Name: \"foo\"} foo"))
 				Ω(m.NegatedFailureMessage(someType{"foo"})).Should(Equal("false true not to     <gcustom_test.someType>: {Name: \"foo\"} foo"))
-
 			})
 		})
 
@@ -221,7 +218,6 @@ var _ = Describe("MakeMatcher", func() {
 
 				Ω(m.FailureMessage(0)).Should(Equal("    <int>: 17"))
 				Ω(m.NegatedFailureMessage(0)).Should(Equal("    <int>: 17"))
-
 			})
 		})
 

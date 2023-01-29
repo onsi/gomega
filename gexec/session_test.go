@@ -31,7 +31,6 @@ var _ = Describe("Session", func() {
 			var err error
 			fireflyPath, err = Build("./_fixture/firefly")
 			Expect(err).ShouldNot(HaveOccurred())
-
 		})
 
 		JustBeforeEach(func() {
@@ -179,7 +178,6 @@ var _ = Describe("Session", func() {
 					Eventually(session2).Should(Exit(128 + 9))
 					Eventually(session3).Should(Exit(128 + 9))
 				})
-
 			})
 
 			Describe("killAndWait", func() {
@@ -287,7 +285,7 @@ var _ = Describe("Session", func() {
 				Expect(session.Out).Should(Say("We've done the impossible, and that makes us mighty"))
 			})
 
-			var So = It
+			So := It
 
 			So("this means that eventually should short circuit", func() {
 				t := time.Now()
@@ -300,9 +298,7 @@ var _ = Describe("Session", func() {
 		})
 
 		When("wrapping out and err", func() {
-			var (
-				outWriterBuffer, errWriterBuffer *Buffer
-			)
+			var outWriterBuffer, errWriterBuffer *Buffer
 
 			BeforeEach(func() {
 				outWriterBuffer = NewBuffer()
@@ -361,9 +357,7 @@ var _ = Describe("Session", func() {
 		})
 
 		When("wrapping out and err", func() {
-			var (
-				outWriterBuffer, errWriterBuffer *Buffer
-			)
+			var outWriterBuffer, errWriterBuffer *Buffer
 
 			BeforeEach(func() {
 				outWriterBuffer = NewBuffer()

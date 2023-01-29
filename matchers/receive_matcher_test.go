@@ -91,7 +91,7 @@ var _ = Describe("ReceiveMatcher", func() {
 
 		Context("to various types of objects", func() {
 			It("should work", func() {
-				//channels of strings
+				// channels of strings
 				stringChan := make(chan string, 1)
 				stringChan <- "foo"
 
@@ -99,7 +99,7 @@ var _ = Describe("ReceiveMatcher", func() {
 				Expect(stringChan).Should(Receive(&s))
 				Expect(s).Should(Equal("foo"))
 
-				//channels of slices
+				// channels of slices
 				sliceChan := make(chan []bool, 1)
 				sliceChan <- []bool{true, true, false}
 
@@ -107,7 +107,7 @@ var _ = Describe("ReceiveMatcher", func() {
 				Expect(sliceChan).Should(Receive(&sl))
 				Expect(sl).Should(Equal([]bool{true, true, false}))
 
-				//channels of channels
+				// channels of channels
 				chanChan := make(chan chan bool, 1)
 				c := make(chan bool)
 				chanChan <- c
@@ -116,7 +116,7 @@ var _ = Describe("ReceiveMatcher", func() {
 				Expect(chanChan).Should(Receive(&receivedC))
 				Expect(receivedC).Should(Equal(c))
 
-				//channels of interfaces
+				// channels of interfaces
 				jackieChan := make(chan kungFuActor, 1)
 				aJackie := &jackie{name: "Jackie Chan"}
 				jackieChan <- aJackie

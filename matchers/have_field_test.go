@@ -179,5 +179,4 @@ var _ = Describe("HaveField", func() {
 				"HaveField could not find method named 'PointerReceiverTitle()' in struct of type matchers_test.Book."))
 		})
 	})
-
 })

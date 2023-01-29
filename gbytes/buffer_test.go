@@ -1,12 +1,11 @@
 package gbytes_test
 
 import (
+	"bytes"
 	"io"
 	"time"
 
 	. "github.com/onsi/gomega/gbytes"
-
-	"bytes"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -148,7 +147,7 @@ var _ = Describe("Buffer", func() {
 		It("should only fast-forward the buffer when the channel is read, and only if doing so would not rewind it", func() {
 			buffer.Write([]byte("abcde"))
 			A := buffer.Detect("abc")
-			time.Sleep(20 * time.Millisecond) //give the goroutine a chance to detect and write to the channel
+			time.Sleep(20 * time.Millisecond) // give the goroutine a chance to detect and write to the channel
 			Expect(buffer).Should(Say("abcd"))
 			select {
 			case <-A:

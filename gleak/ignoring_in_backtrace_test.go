@@ -10,7 +10,6 @@ import (
 )
 
 var _ = Describe("IgnoringInBacktrace matcher", func() {
-
 	It("returns an error for an invalid actual", func() {
 		m := IgnoringInBacktrace("foo.bar")
 		Expect(m.Match(nil)).Error().To(MatchError(
@@ -31,7 +30,6 @@ var _ = Describe("IgnoringInBacktrace matcher", func() {
 		Expect(m.NegatedFailureMessage(Goroutine{Backtrace: "abc"})).To(MatchRegexp(
 			`Expected\n    <goroutine.Goroutine>: {ID: 0, State: "", TopFunction: "", CreatorFunction: "", BornAt: ""}\nnot to contain "foo.bar" in the goroutine's backtrace`))
 	})
-
 })
 
 func somefunction() Goroutine {

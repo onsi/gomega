@@ -41,7 +41,6 @@ var _ = Describe("Stopwatch", func() {
 		Ω(durations[1]).Should(BeNumerically("~", 200*time.Millisecond, 50*time.Millisecond))
 		Ω(durations[2]).Should(BeNumerically("~", 100*time.Millisecond, 50*time.Millisecond))
 		Ω(durations[3]).Should(BeNumerically("~", 300*time.Millisecond, 50*time.Millisecond))
-
 	})
 
 	It("panics when asked to record but not running", func() {

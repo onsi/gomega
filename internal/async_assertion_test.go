@@ -668,7 +668,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							g.Expect(true).To(BeTrue())
 						} else {
 							g.Expect(false).To(BeTrue())
-							panic("boom") //never see since the expectation stops execution
+							panic("boom") // never see since the expectation stops execution
 						}
 						return counter, s, f, err
 					}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
@@ -704,7 +704,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							defer GinkgoRecover()
 							defer close(c)
 							count += 1
-							g.Expect(count).To(Equal(3)) //panics!
+							g.Expect(count).To(Equal(3)) // panics!
 						}()
 						<-c
 					}).WithTimeout(30 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(Succeed())
@@ -727,7 +727,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 								g.Expect(true).To(BeTrue())
 							} else {
 								g.Expect(false).To(BeTrue())
-								panic("boom") //never see since the expectation stops execution
+								panic("boom") // never see since the expectation stops execution
 							}
 							return counter, s, f, err
 						}).WithTimeout(1 * time.Second).WithPolling(10 * time.Millisecond).ShouldNot(BeNumerically("<", 0))
@@ -782,7 +782,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						g.Expect(true).To(BeTrue())
 						if counter == 3 {
 							g.Expect(false).To(BeTrue())
-							panic("boom") //never see this
+							panic("boom") // never see this
 						}
 						return counter, s, f, err
 					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
@@ -818,7 +818,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 							counter += 1
 							if counter == 3 {
 								g.Expect(false).To(BeTrue())
-								panic("boom") //never see this
+								panic("boom") // never see this
 							}
 							return 9
 						}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).ShouldNot(Equal(10))
@@ -1046,7 +1046,6 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return ""
 					}).WithArguments(1).Should(Equal("foo"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int, ...int) string takes 3 arguments but 1 has been provided.  Please use Eventually().WithArguments() to pass the corect set of arguments."))
-
 				})
 			})
 		})
@@ -1111,10 +1110,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					},
 					func(_ any) bool {
 						order = append(order, fmt.Sprintf("oracle %d", i))
-						if i == 3 {
-							return false
-						}
-						return true
+						return i != 3
 					},
 				))
 				Ω(i).Should(Equal(4))
@@ -1281,7 +1277,6 @@ widget:
     <string>: bob
 sprocket:
     <int>: 17`))
-
 				})
 			})
 
@@ -1361,7 +1356,6 @@ sprocket:
 					Ω(i).Should(Equal(3))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Told to stop trying after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("bam"))
-
 				})
 			})
 
@@ -1612,7 +1606,6 @@ sprocket:
 						}), "My Description")
 						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\nactual-err\n    <*errors.errorString"))
 						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher was not satisfied:\nQM failure message: 3"))
-
 					})
 				})
 			})
@@ -1705,6 +1698,5 @@ sprocket:
 			Ω(counter).Should(Equal(7))
 			Ω(ig.FailureMessage).Should(BeZero())
 		})
-
 	})
 })

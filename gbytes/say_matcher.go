@@ -9,7 +9,7 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
-//Objects satisfying the BufferProvider can be used with the Say matcher.
+// Objects satisfying the BufferProvider can be used with the Say matcher.
 type BufferProvider interface {
 	Buffer() *Buffer
 }

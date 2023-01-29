@@ -10,10 +10,11 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-//PointTo applies the given matcher to the value pointed to by actual. It fails if the pointer is
-//nil.
-//  actual := 5
-//  Expect(&actual).To(PointTo(Equal(5)))
+// PointTo applies the given matcher to the value pointed to by actual. It fails if the pointer is
+// nil.
+//
+//	actual := 5
+//	Expect(&actual).To(PointTo(Equal(5)))
 func PointTo(matcher types.GomegaMatcher) types.GomegaMatcher {
 	return &PointerMatcher{
 		Matcher: matcher,

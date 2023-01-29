@@ -8,8 +8,7 @@ import (
 )
 
 var _ = Describe("SatisfyMatcher", func() {
-
-	var isEven = func(x int) bool { return x%2 == 0 }
+	isEven := func(x int) bool { return x%2 == 0 }
 
 	Context("Panic if predicate is invalid", func() {
 		panicsWithPredicate := func(predicate interface{}) {

@@ -32,7 +32,6 @@ var _ = Describe("ConsistOf", func() {
 			Expect(map[int]string{1: "foo", 2: "bar", 3: "baz"}).ShouldNot(ConsistOf("baz", "bar", "foo", "foo"))
 			Expect(map[int]string{1: "foo", 2: "bar", 3: "baz"}).ShouldNot(ConsistOf("baz", "foo"))
 		})
-
 	})
 
 	Context("with anything else", func() {

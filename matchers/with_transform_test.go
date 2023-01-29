@@ -9,8 +9,7 @@ import (
 )
 
 var _ = Describe("WithTransformMatcher", func() {
-
-	var plus1 = func(i int) int { return i + 1 }
+	plus1 := func(i int) int { return i + 1 }
 
 	Context("Panic if transform function invalid", func() {
 		panicsWithTransformer := func(transform interface{}) {

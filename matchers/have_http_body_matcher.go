@@ -97,5 +97,4 @@ func (matcher *HaveHTTPBodyMatcher) body(actual interface{}) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("HaveHTTPBody matcher expects *http.Response or *httptest.ResponseRecorder. Got:\n%s", format.Object(actual, 1))
 	}
-
 }

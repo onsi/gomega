@@ -7,7 +7,6 @@ import (
 )
 
 var _ = Describe("MatchXMLMatcher", func() {
-
 	var (
 		sample_01 = readFileContents("test_data/xml/sample_01.xml")
 		sample_02 = readFileContents("test_data/xml/sample_02.xml")

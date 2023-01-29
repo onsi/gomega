@@ -12,8 +12,7 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-//recursive struct
-
+// recursive struct
 const truncateHelpText = `
 Gomega truncated this representation as it exceeds 'format.MaxLength'.
 Consider having the object provide a custom 'GomegaStringer' representation
@@ -22,9 +21,11 @@ or adjust the parameters in Gomega's 'format' package.
 Learn more here: https://onsi.github.io/gomega/#adjusting-output
 `
 
-type StringAlias string
-type ByteAlias []byte
-type IntAlias int
+type (
+	StringAlias string
+	ByteAlias   []byte
+	IntAlias    int
+)
 
 type AStruct struct {
 	Exported string
@@ -81,8 +82,7 @@ func customFormatter(obj interface{}) (string, bool) {
 	return fmt.Sprintf("%s (%d)", cf.Data, cf.Count), true
 }
 
-type GoStringer struct {
-}
+type GoStringer struct{}
 
 func (g GoStringer) GoString() string {
 	return "go-string"
@@ -92,29 +92,25 @@ func (g GoStringer) String() string {
 	return "string"
 }
 
-type Stringer struct {
-}
+type Stringer struct{}
 
 func (g Stringer) String() string {
 	return "string"
 }
 
-type gomegaStringer struct {
-}
+type gomegaStringer struct{}
 
 func (g gomegaStringer) GomegaString() string {
 	return "gomegastring"
 }
 
-type gomegaStringerLong struct {
-}
+type gomegaStringerLong struct{}
 
 func (g gomegaStringerLong) GomegaString() string {
 	return strings.Repeat("s", MaxLength*2)
 }
 
-type gomegaStringerMultiline struct {
-}
+type gomegaStringerMultiline struct{}
 
 func (g gomegaStringerMultiline) GomegaString() string {
 	return "A\nB\nC"
@@ -772,7 +768,6 @@ var _ = Describe("Format", func() {
 					OuterCount: 10,
 				}
 				Ω(Object(wrapped, 1)).Should(Equal("    <format_test.Wrapped>: {\n        MyObject: The Data:\n            hey\n            bob\n            The Count:17,\n        OuterCount: 10,\n    }"))
-
 			})
 		})
 	})
@@ -815,54 +810,63 @@ Expected
 to equal               |
     <string>: "...aaaaazaaaaa..."
 `)
+
 var expectedTruncatedEndStringFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "baaaaa..."
 to equal       |
     <string>: "zaaaaa..."
 `)
+
 var expectedTruncatedStartStringFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaaab"
 to equal               |
     <string>: "...aaaaaz"
 `)
+
 var expectedTruncatedStartSizeFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaaaa"
 to equal               |
     <string>: "...aaaaa"
 `)
+
 var expectedTruncatedStartSizeFailureMessageExtraDiff = strings.TrimSpace(`
 Expected
     <string>: "...aaaaaaaaaaa"
 to equal                    |
     <string>: "...aaaaaaaaaa"
 `)
+
 var expectedTruncatedStartSizeSwappedFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...aaaa"
 to equal              |
     <string>: "...aaaaa"
 `)
+
 var expectedTruncatedStartSizeSwappedFailureMessageExtraDiff = strings.TrimSpace(`
 Expected
     <string>: "...aaaaaaaaa"
 to equal                   |
     <string>: "...aaaaaaaaaa"
 `)
+
 var expectedTruncatedMultiByteFailureMessage = strings.TrimSpace(`
 Expected
     <string>: "...tuvwxyz1"
 to equal                 |
     <string>: "...tuvwxyz"
 `)
+
 var expectedFullFailureDiff = strings.TrimSpace(`
 Expected
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 to equal
     <string>: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 `)
+
 var expectedSpecialCharacterFailureMessage = strings.TrimSpace(`
 Expected
     <string>: \n
@@ -870,18 +874,21 @@ to equal
     <string>: something_else
 
 `)
+
 var expectedDiffSmallThreshold = strings.TrimSpace(`
 Expected
     <string>: "aba"
 to equal        |
     <string>: "aza"
 `)
+
 var expectedDiffZeroMismatch = strings.TrimSpace(`
 Expected
     <string>: aba
 to equal
     <string>: aza
 `)
+
 var expectedDiffSmallThresholdZeroMismatch = strings.TrimSpace(`
 Expected
     <string>: "...b..."

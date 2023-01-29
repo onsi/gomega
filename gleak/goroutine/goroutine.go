@@ -33,6 +33,7 @@ import (
 //   - "copystack"
 //   - "preempted"
 //   - ("???" ... something IS severely broken.)
+//
 // In case a goroutine is in waiting state, the State field instead starts with
 // one of the following strings, never showing a lonely "waiting" string, but
 // rather one of the reasons for waiting:

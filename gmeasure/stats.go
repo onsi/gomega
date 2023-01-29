@@ -97,7 +97,7 @@ func (s Stats) String() string {
 // ValueFor returns the float64 value for a particular Stat.  You should only use this if the Stats has Type StatsTypeValue
 // For example:
 //
-//    median := experiment.GetStats("length").ValueFor(gmeasure.StatMedian)
+//	median := experiment.GetStats("length").ValueFor(gmeasure.StatMedian)
 //
 // will return the median data point for the "length" Measurement.
 func (s Stats) ValueFor(stat Stat) float64 {
@@ -107,7 +107,7 @@ func (s Stats) ValueFor(stat Stat) float64 {
 // DurationFor returns the time.Duration for a particular Stat.  You should only use this if the Stats has Type StatsTypeDuration
 // For example:
 //
-//    mean := experiment.GetStats("runtime").ValueFor(gmeasure.StatMean)
+//	mean := experiment.GetStats("runtime").ValueFor(gmeasure.StatMean)
 //
 // will return the mean duration for the "runtime" Measurement.
 func (s Stats) DurationFor(stat Stat) time.Duration {

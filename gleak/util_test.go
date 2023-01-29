@@ -6,9 +6,7 @@ import (
 )
 
 var _ = Describe("utilities", func() {
-
 	Context("G(oroutine) descriptions", func() {
-
 		It("returns an error for actual <nil>", func() {
 			Expect(func() { _, _ = G(nil, "foo") }).NotTo(Panic())
 			Expect(G(nil, "foo")).Error().To(MatchError("foo matcher expects a Goroutine or *Goroutine.  Got:\n    <nil>: nil"))
@@ -29,7 +27,6 @@ var _ = Describe("utilities", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(g.ID).To(Equal(uint64(42)))
 		})
-
 	})
 
 	It("returns a list of Goroutine IDs in textual format", func() {
@@ -42,5 +39,4 @@ var _ = Describe("utilities", func() {
 			{ID: 42},
 		})).To(Equal("42"))
 	})
-
 })

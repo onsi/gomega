@@ -9,8 +9,7 @@ import (
 	. "github.com/onsi/gomega/matchers"
 )
 
-type CustomError struct {
-}
+type CustomError struct{}
 
 func (c CustomError) Error() string {
 	return "an error"
@@ -144,7 +143,6 @@ var _ = Describe("MatchErrorMatcher", func() {
 		})
 		Expect(failuresMessages[0]).To(ContainSubstring("{s: \"foo\"}\nnot to match error\n    <string>: foo"))
 	})
-
 })
 
 type mockErr string

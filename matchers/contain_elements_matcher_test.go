@@ -31,7 +31,6 @@ var _ = Describe("ContainElements", func() {
 			Expect(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Should(ContainElements())
 			Expect(map[int]string{1: "foo", 2: "bar", 3: "baz"}).ShouldNot(ContainElements("baz", "bar", "foo", "foo"))
 		})
-
 	})
 
 	Context("with anything else", func() {

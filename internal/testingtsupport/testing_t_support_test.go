@@ -1,9 +1,9 @@
 package testingtsupport_test
 
 import (
-	. "github.com/onsi/gomega"
-
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestTestingT(t *testing.T) {
