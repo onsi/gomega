@@ -1215,6 +1215,38 @@ is the only element passed in to `ConsistOf`:
 
 Note that Go's type system does not allow you to write this as `ConsistOf([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
 
+#### HaveExactElements(element ...interface{})
+
+```go
+Expect(ACTUAL).To(HaveExactElements(ELEMENT1, ELEMENT2, ELEMENT3, ...))
+```
+
+or
+
+```go
+Expect(ACTUAL).To(HaveExactElements([]SOME_TYPE{ELEMENT1, ELEMENT2, ELEMENT3, ...}))
+```
+
+succeeds if `ACTUAL` contains precisely the elements and ordering passed into the matchers.
+
+By default `HaveExactElements()` uses `Equal()` to match the elements, however custom matchers can be passed in instead.  Here are some examples:
+
+```go
+Expect([]string{"Foo", "FooBar"}).To(HaveExactElements("Foo", "FooBar"))
+Expect([]string{"Foo", "FooBar"}).To(HaveExactElements("Foo", ContainSubstring("Bar")))
+Expect([]string{"Foo", "FooBar"}).To(HaveExactElements(ContainSubstring("Foo"), ContainSubstring("Foo")))
+```
+
+Actual must be an `array` or `slice`.
+
+You typically pass variadic arguments to `HaveExactElements` (as in the examples above).  However, if you need to pass in a slice you can provided that it
+is the only element passed in to `HaveExactElements`:
+
+```go
+Expect([]string{"Foo", "FooBar"}).To(HaveExactElements([]string{"FooBar", "Foo"}))
+```
+
+Note that Go's type system does not allow you to write this as `HaveExactElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
 
 #### HaveEach(element ...interface{})
 
