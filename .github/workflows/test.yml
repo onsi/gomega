@@ -24,6 +24,4 @@ jobs:
         go-version: ${{ matrix.version }}
     - uses: actions/checkout@v3
     - run: go vet ./...
-    - run: mv ./tools ./tools.go
-    - run: go get github.com/onsi/ginkgo/v2/ginkgo
     - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going --label-filter="!network"
