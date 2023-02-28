@@ -272,7 +272,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return MATCH
 					}, time.Hour).WithContext(ctx).Should(SpecMatch())
 					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("There is no failure as the matcher passed to Consistently has not yet failed"))
 				})
 			})
 
@@ -290,6 +290,23 @@ var _ = Describe("Asynchronous Assertions", func() {
 
 					Ω(message).Should(Equal("Expected\n    <string>: no match\nto equal\n    <string>: match"))
 					Ω(fakeSpecContext.Cancelled).Should(BeTrue())
+				})
+
+				Context("when used with consistently", func() {
+					It("returns a useful message that does not invoke the matcher's failure handlers", func() {
+						fakeSpecContext := &FakeGinkgoSpecContext{}
+						var message string
+						ctx := context.WithValue(context.Background(), "GINKGO_SPEC_CONTEXT", fakeSpecContext)
+						ig.G.Consistently(func() error {
+							if fakeSpecContext.Attached != nil {
+								message = fakeSpecContext.Attached()
+							}
+							return nil
+						}).WithTimeout(time.Millisecond * 20).WithContext(ctx).ShouldNot(HaveOccurred())
+
+						Ω(message).Should(Equal("There is no failure as the matcher passed to Consistently has not yet failed"))
+						Ω(fakeSpecContext.Cancelled).Should(BeTrue())
+					})
 				})
 			})
 
@@ -461,7 +478,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 						return MATCH
 					}, time.Hour).WithContext(ctx).Should(SpecMatch())
 					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("positive: match"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("There is no failure as the matcher passed to Consistently has not yet failed"))
 				})
 			})
 
