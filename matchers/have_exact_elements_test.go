@@ -110,4 +110,14 @@ to equal
 			})
 		})
 	})
+
+	When("matcher instance is reused", func() {
+		// This is a regression test for https://github.com/onsi/gomega/issues/647.
+		// Matcher instance may be reused, if placed inside ContainElement() or other collection matchers.
+		It("should work properly", func() {
+			matchSingleFalse := HaveExactElements(Equal(false))
+			Expect([]bool{true}).ShouldNot(matchSingleFalse)
+			Expect([]bool{false}).Should(matchSingleFalse)
+		})
+	})
 })
