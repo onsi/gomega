@@ -3,7 +3,7 @@ module github.com/onsi/gomega
 go 1.18
 
 require (
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.5.9
 	github.com/onsi/ginkgo/v2 v2.9.0
 	golang.org/x/net v0.7.0
