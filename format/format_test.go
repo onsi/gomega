@@ -612,6 +612,20 @@ var _ = Describe("Format", func() {
 				Expect(Object(t, 1)).Should(match("time.Time", `2016-10-31T09:57:23.000012345Z`))
 			})
 		})
+
+		Describe("formatting errors", func() {
+			It("should include the error() representation", func() {
+				err := fmt.Errorf("whoops: %w", fmt.Errorf("welp: %w", fmt.Errorf("ruh roh")))
+				Expect(Object(err, 1)).Should(MatchRegexp(`    \<\*fmt\.wrapError \| 0x[0-9a-f]*\>\: \{
+        msg\: "whoops\: welp\: ruh roh",
+        err\: \<\*fmt.wrapError \| 0x[0-9a-f]*\>\{
+            msg\: "welp\: ruh roh",
+            err\: \<\*errors.errorString \| 0x[0-9a-f]*\>\{s\: "ruh roh"\},
+        \},
+    \}
+    whoops\: welp\: ruh roh`))
+			})
+		})
 	})
 
 	Describe("Handling unexported fields in structs", func() {
