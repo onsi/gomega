@@ -77,7 +77,7 @@ var _ = Describe("Succeed", func() {
 	It("builds failure message", func() {
 		actual := Succeed().FailureMessage(errors.New("oops"))
 		actual = regexp.MustCompile(" 0x.*>").ReplaceAllString(actual, " 0x00000000>")
-		Expect(actual).To(Equal("Expected success, but got an error:\n    <*errors.errorString | 0x00000000>: {s: \"oops\"}\n    oops"))
+		Expect(actual).To(Equal("Expected success, but got an error:\n    <*errors.errorString | 0x00000000>: \n    oops\n    {s: \"oops\"}"))
 	})
 
 	It("simply returns .Error() for the failure message if the error is an AsyncPolledActualError", func() {

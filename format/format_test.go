@@ -616,14 +616,15 @@ var _ = Describe("Format", func() {
 		Describe("formatting errors", func() {
 			It("should include the error() representation", func() {
 				err := fmt.Errorf("whoops: %w", fmt.Errorf("welp: %w", fmt.Errorf("ruh roh")))
-				Expect(Object(err, 1)).Should(MatchRegexp(`    \<\*fmt\.wrapError \| 0x[0-9a-f]*\>\: \{
+				Expect(Object(err, 1)).Should(MatchRegexp(`    \<\*fmt\.wrapError \| 0x[0-9a-f]*\>\: 
+    whoops\: welp\: ruh roh
+    \{
         msg\: "whoops\: welp\: ruh roh",
         err\: \<\*fmt.wrapError \| 0x[0-9a-f]*\>\{
             msg\: "welp\: ruh roh",
             err\: \<\*errors.errorString \| 0x[0-9a-f]*\>\{s\: "ruh roh"\},
         \},
-    \}
-    whoops\: welp\: ruh roh`))
+    \}`))
 			})
 		})
 	})

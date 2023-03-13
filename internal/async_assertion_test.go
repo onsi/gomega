@@ -183,7 +183,8 @@ var _ = Describe("Asynchronous Assertions", func() {
 			It("renders the matcher's error if an error occured", func() {
 				ig.G.Eventually(ERR_MATCH).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Eventually returned the following error:\nspec matcher error"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Eventually returned the following error:"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("spec matcher error"))
 			})
 
 			It("renders the optional description", func() {
@@ -372,7 +373,8 @@ var _ = Describe("Asynchronous Assertions", func() {
 				}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(counter).Should(Equal(3))
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Consistently returned the following error:\nspec matcher error"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Consistently returned the following error:"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("spec matcher error"))
 			})
 
 			It("fails if the matcher doesn't match at any point", func() {
@@ -444,7 +446,8 @@ var _ = Describe("Asynchronous Assertions", func() {
 			It("renders the matcher's error if an error occured", func() {
 				ig.G.Consistently(ERR_MATCH).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
-				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Consistently returned the following error:\nspec matcher error"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Consistently returned the following error:"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("spec matcher error"))
 			})
 
 			It("renders the optional description", func() {
@@ -588,7 +591,8 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Eventually(func() (int, string, Foo, error) {
 						return 1, "", Foo{}, errors.New("welp!")
 					}).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(BeNumerically("<", 100))
-					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually returned the following error:\nwelp!"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually returned the following error:"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("welp!"))
 				})
 
 				Context("when making a ShouldNot assertion", func() {
@@ -1529,7 +1533,8 @@ sprocket:
 				}).WithTimeout(time.Millisecond*10).Should(QuickMatcher(func(actual any) (bool, error) {
 					return false, fmt.Errorf("matcher-error")
 				}), "My Description")
-				Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe matcher passed to Eventually returned the following error:\nmatcher-error\n    <*errors.errorString"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe matcher passed to Eventually returned the following error:\n    <*errors.errorString"))
+				Ω(ig.FailureMessage).Should(ContainSubstring("matcher-error"))
 			})
 
 			When("the matcher error is a StopTrying with attachments", func() {
@@ -1553,7 +1558,8 @@ sprocket:
 					}).WithTimeout(time.Millisecond*10).Should(QuickMatcher(func(actual any) (bool, error) {
 						return true, nil
 					}), "My Description")
-					Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\nactual-err\n    <*errors.errorString"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\n    <*errors.errorString"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("actual-err"))
 				})
 			})
 
@@ -1608,8 +1614,10 @@ sprocket:
 							}
 							return false, nil
 						}), "My Description")
-						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\nactual-err\n    <*errors.errorString"))
-						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher returned the following error:\nmatcher-err"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\n    <*errors.errorString"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("actual-err"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher returned the following error:"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("matcher-err"))
 					})
 				})
 
@@ -1627,7 +1635,8 @@ sprocket:
 							actualInt := actual.(int)
 							return actualInt > 3, nil
 						}), "My Description")
-						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\nactual-err\n    <*errors.errorString"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("My Description\nThe function passed to Eventually returned the following error:\n    <*errors.errorString"))
+						Ω(ig.FailureMessage).Should(ContainSubstring("actual-err"))
 						Ω(ig.FailureMessage).Should(ContainSubstring("At one point, however, the function did return successfully.\nYet, Eventually failed because the matcher was not satisfied:\nQM failure message: 3"))
 
 					})

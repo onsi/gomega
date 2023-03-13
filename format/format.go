@@ -260,9 +260,9 @@ func Object(object interface{}, indentation uint) string {
 	value := reflect.ValueOf(object)
 	commonRepresentation := ""
 	if err, ok := object.(error); ok {
-		commonRepresentation += "\n" + IndentString(err.Error(), indentation)
+		commonRepresentation += "\n" + IndentString(err.Error(), indentation) + "\n" + indent
 	}
-	return fmt.Sprintf("%s<%s>: %s%s", indent, formatType(value), formatValue(value, indentation), commonRepresentation)
+	return fmt.Sprintf("%s<%s>: %s%s", indent, formatType(value), commonRepresentation, formatValue(value, indentation))
 }
 
 /*
