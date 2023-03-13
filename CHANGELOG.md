@@ -1,3 +1,11 @@
+## 1.27.4
+
+### Fixes
+- improve error formatting and remove duplication of error message in Eventually/Consistently [854f075]
+
+### Maintenance
+- Bump github.com/onsi/ginkgo/v2 from 2.9.0 to 2.9.1 (#650) [ccebd9b]
+
 ## 1.27.3
 
 ### Fixes
