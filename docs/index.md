@@ -796,7 +796,7 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` mu
 - A matcher, in which case `ACTUAL.Error()` is tested against the matcher.
 - An error, in which case `ACTUAL` and `EXPECTED` are compared via `reflect.DeepEqual()`. If they are not deeply equal, they are tested by `errors.Is(ACTUAL, EXPECTED)`. (The latter allows to test whether `ACTUAL` wraps an `EXPECTED` error.)
 
-Any other type for `EXPECTED` is an error.
+Any other type for `EXPECTED` is an error. It is also an error for `ACTUAL` to be nil.
 
 ### Working with Channels
 
