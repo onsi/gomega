@@ -823,7 +823,7 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` mu
     - `errors.Is(ACTUAL, EXPECTED)` returns `true`
     - `ACTUAL` or any of the errors it wraps (directly or indirectly) equals `EXPECTED` in terms of `reflect.DeepEqual()`.
 
-Any other type for `EXPECTED` is an error.
+Any other type for `EXPECTED` is an error. It is also an error for `ACTUAL` to be nil.
 
 ### Working with Channels
 
