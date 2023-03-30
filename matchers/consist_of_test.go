@@ -74,6 +74,13 @@ var _ = Describe("ConsistOf", func() {
 		})
 	})
 
+	When("provided an expectation that has a nil value", func() {
+		It("should match without failure", func() {
+			Expect([]any{1, "two", nil}).Should(ConsistOf([]any{nil, 1, "two"}))
+			Expect([]any{1, "two", "nil", nil}).ShouldNot(ConsistOf([]any{nil, nil, 1, "two"}))
+		})
+	})
+
 	Describe("FailureMessage", func() {
 		When("actual contains an extra element", func() {
 			It("prints the extra element", func() {
@@ -93,6 +100,17 @@ var _ = Describe("ConsistOf", func() {
 				})
 
 				expected := "Expected\n.*\\[2\\]\nto consist of\n.*\\[1, 2\\]\nthe missing elements were\n.*\\[1\\]"
+				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
+
+		When("actual misses a nil element", func() {
+			It("prints the missing element", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]int{2}).Should(ConsistOf(nil, 2))
+				})
+
+				expected := "Expected\n.*\\[2\\]\nto consist of\n.*\\[nil, <int>2\\]\nthe missing elements were\n.*\\[nil\\]"
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
 		})

@@ -13,6 +13,10 @@ var _ = Describe("HaveExactElements", func() {
 			Expect([]string{"foo", "bar"}).ShouldNot(HaveExactElements("foo", "bar", "baz"))
 			Expect([]string{"foo", "bar"}).ShouldNot(HaveExactElements("bar", "foo"))
 		})
+
+		It("should work with arbitrary types, including nil", func() {
+			Expect([]any{"foo", nil, "bar", 17, true, []string{"hi", "there"}}).Should(HaveExactElements("foo", nil, "bar", 17, true, []string{"hi", "there"}))
+		})
 	})
 	Context("with an array", func() {
 		It("should do the right thing", func() {
