@@ -60,14 +60,14 @@ To use Gomega with Golang's XUnit style tests:
 
 ```go
 func TestFarmHasCow(t *testing.T) {
-    g := NewGomegaWithT(t)
+    g := NewWithT(t)
 
     f := farm.New([]string{"Cow", "Horse"})
     g.Expect(f.HasCow()).To(BeTrue(), "Farm should have cow")
 }
 ```
 
-`NewGomegaWithT(t)` wraps a `*testing.T` and returns a struct that supports `Expect`, `Eventually`, and `Consistently`.
+`NewWithT(t)` wraps a `*testing.T` and returns a struct that supports `Expect`, `Eventually`, and `Consistently`.
 
 ## Making Assertions
 
