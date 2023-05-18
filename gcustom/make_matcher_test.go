@@ -148,6 +148,21 @@ var _ = Describe("MakeMatcher", func() {
 
 			})
 		})
+
+		Context("when the match func accepts a nil-able type", func() {
+			It("ensure nil matches the type", func() {
+				var passedIn any
+				m := gcustom.MakeMatcher(func(a *someType) (bool, error) {
+					passedIn = a
+					return true, nil
+				})
+
+				success, err := m.Match(nil)
+				Ω(success).Should(BeTrue())
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(passedIn).Should(BeNil())
+			})
+		})
 	})
 
 	It("calls the matchFunc and returns whatever it returns when Match is called", func() {
