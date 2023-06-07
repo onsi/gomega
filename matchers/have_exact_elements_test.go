@@ -58,6 +58,14 @@ var _ = Describe("HaveExactElements", func() {
 				Expect([]string{"foo", "bar", "baz"}).ShouldNot(HaveExactElements(BeFalse(), "bar", "baz"))
 				Expect([]interface{}{"foo", "bar", false}).Should(HaveExactElements(ContainSubstring("foo"), "bar", BeFalse()))
 			})
+
+			It("should include the error message, not the failure message", func() {
+				failures := InterceptGomegaFailures(func() {
+					Expect([]string{"foo", "bar", "baz"}).Should(HaveExactElements("foo", BeFalse(), "bar"))
+				})
+				Ω(failures[0]).ShouldNot(ContainSubstring("to be false"))
+				Ω(failures[0]).Should(ContainSubstring("1: Expected a boolean.  Got:\n    <string>: bar"))
+			})
 		})
 	})
 
