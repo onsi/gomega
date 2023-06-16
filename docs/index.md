@@ -1510,7 +1510,7 @@ Here are some examples:
 - `Expect(resp).To(HaveHTTPHeaderWithValue("Content-Type", "application/json"))`:
     asserts that the `Content-Type` header has exactly the value `application/json`.
 
-- `Expect(resp).To(HaveHTTPHeaderWithValue(ContainsSubstring("json")))`:
+- `Expect(resp).To(HaveHTTPHeaderWithValue(ContainSubstring("json")))`:
     asserts that the `Content-Type` header contains the substring `json`.
 
 ### Asserting on Panics
