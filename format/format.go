@@ -259,7 +259,7 @@ func Object(object interface{}, indentation uint) string {
 	indent := strings.Repeat(Indent, int(indentation))
 	value := reflect.ValueOf(object)
 	commonRepresentation := ""
-	if err, ok := object.(error); ok {
+	if err, ok := object.(error); ok && !isNilValue(value) { // isNilValue check needed here to avoid nil deref due to boxed nil
 		commonRepresentation += "\n" + IndentString(err.Error(), indentation) + "\n" + indent
 	}
 	return fmt.Sprintf("%s<%s>: %s%s", indent, formatType(value), commonRepresentation, formatValue(value, indentation))

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
+
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
@@ -71,6 +72,16 @@ type CustomFormatted struct {
 type NotCustomFormatted struct {
 	Data  string
 	Count int
+}
+
+type CustomError struct {
+	Details string
+}
+
+var _ error = &CustomError{}
+
+func (c *CustomError) Error() string {
+	return c.Details
 }
 
 func customFormatter(obj interface{}) (string, bool) {
@@ -625,6 +636,11 @@ var _ = Describe("Format", func() {
             err\: \<\*errors.errorString \| 0x[0-9a-f]*\>\{s\: "ruh roh"\},
         \},
     \}`))
+			})
+
+			It("should not panic if the error is a boxed nil", func() {
+				var err *CustomError
+				Expect(Object(err, 1)).Should(Equal("    <*format_test.CustomError | 0x0>: nil"))
 			})
 		})
 	})
