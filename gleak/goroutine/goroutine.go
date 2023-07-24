@@ -33,6 +33,7 @@ import (
 //   - "copystack"
 //   - "preempted"
 //   - ("???" ... something IS severely broken.)
+//
 // In case a goroutine is in waiting state, the State field instead starts with
 // one of the following strings, never showing a lonely "waiting" string, but
 // rather one of the reasons for waiting:
@@ -176,6 +177,9 @@ func findCreator(backtrace string) (creator, location string) {
 	}
 	location = strings.TrimSpace(details[1][:offsetpos])
 	creator = details[0]
+	if offsetpos := strings.LastIndex(creator, " in goroutine "); offsetpos >= 0 {
+		creator = creator[:offsetpos]
+	}
 	return
 }
 
