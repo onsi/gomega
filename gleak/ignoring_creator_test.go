@@ -27,9 +27,11 @@ var _ = Describe("IgnoringCreator matcher", func() {
 	It("matches a creator function by full name", func() {
 		type T struct{}
 		pkg := reflect.TypeOf(T{}).PkgPath()
-		m := IgnoringCreator(pkg + ".creator")
+		ignore := pkg + ".creator"
+		m := IgnoringCreator(ignore)
 		g := creator()
-		Expect(m.Match(g)).To(BeTrue(), "creator %v", g.String())
+		Expect(m.Match(g)).To(BeTrue(), "creator: %v\ntried to ignore: %s",
+			g.String(), ignore)
 		Expect(m.Match(goroutine.Current())).To(BeFalse())
 	})
 
