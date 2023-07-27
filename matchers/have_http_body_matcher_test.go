@@ -2,6 +2,7 @@ package matchers_test
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -24,6 +25,19 @@ var _ = Describe("HaveHTTPBody", func() {
 			resp := &http.Response{Body: gutil.NopCloser(strings.NewReader(body))}
 			Expect(resp).NotTo(HaveHTTPBody("something else"))
 		})
+
+		It("matches the body against later calls", func() {
+			firstCall := true
+			getResp := func() *http.Response {
+				if firstCall {
+					firstCall = false
+					return &http.Response{Body: io.NopCloser(strings.NewReader("first_call"))}
+				} else {
+					return &http.Response{Body: io.NopCloser(strings.NewReader("later_call"))}
+				}
+			}
+			Eventually(getResp).MustPassRepeatedly(2).Should(HaveHTTPBody([]byte("later_call")))
+		})
 	})
 
 	When("ACTUAL is *httptest.ResponseRecorder", func() {
@@ -37,6 +51,19 @@ var _ = Describe("HaveHTTPBody", func() {
 			const body = "this is the body"
 			resp := &httptest.ResponseRecorder{Body: bytes.NewBufferString(body)}
 			Expect(resp).NotTo(HaveHTTPBody("something else"))
+		})
+
+		It("matches the body against later calls", func() {
+			firstCall := true
+			getResp := func() *httptest.ResponseRecorder {
+				if firstCall {
+					firstCall = false
+					return &httptest.ResponseRecorder{Body: bytes.NewBufferString("first_call")}
+				} else {
+					return &httptest.ResponseRecorder{Body: bytes.NewBufferString("later_call")}
+				}
+			}
+			Eventually(getResp).MustPassRepeatedly(2).Should(HaveHTTPBody([]byte("later_call")))
 		})
 	})
 
