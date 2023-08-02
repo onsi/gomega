@@ -6,7 +6,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.5.9
 	github.com/onsi/ginkgo/v2 v2.11.0
-	golang.org/x/net v0.12.0
+	golang.org/x/net v0.13.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
