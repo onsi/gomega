@@ -499,6 +499,69 @@ var _ = Describe("TestServer", func() {
 			})
 		})
 
+		Describe("VerifyHost", func() {
+			var (
+				err error
+				req *http.Request
+			)
+
+			BeforeEach(func() {
+				req, err = http.NewRequest("GET", s.URL()+"/host", nil)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			When("passed a matcher for host", func() {
+				BeforeEach(func() {
+					s.AppendHandlers(CombineHandlers(
+						VerifyRequest("GET", "/host"),
+						VerifyHost(Equal("my-host")),
+					))
+				})
+
+				It("should verify the host", func() {
+					req.Host = "my-host"
+
+					resp, err = http.DefaultClient.Do(req)
+					Expect(err).ShouldNot(HaveOccurred())
+				})
+
+				It("should reject an invalid host", func() {
+					req.Host = "not-my-host"
+
+					failures := InterceptGomegaFailures(func() {
+						http.DefaultClient.Do(req)
+					})
+					Expect(failures).Should(HaveLen(1))
+				})
+			})
+
+			When("passed a string for host", func() {
+				BeforeEach(func() {
+					s.AppendHandlers(CombineHandlers(
+						VerifyRequest("GET", "/host"),
+						VerifyHost("my-host"),
+					))
+				})
+
+				It("should verify the host", func() {
+					req.Host = "my-host"
+
+					resp, err = http.DefaultClient.Do(req)
+					Expect(err).ShouldNot(HaveOccurred())
+				})
+
+				It("should reject an invalid host", func() {
+					req.Host = "not-my-host"
+
+					failures := InterceptGomegaFailures(func() {
+						http.DefaultClient.Do(req)
+					})
+					Expect(failures).Should(HaveLen(1))
+				})
+			})
+
+		})
+
 		Describe("VerifyBody", func() {
 			BeforeEach(func() {
 				s.AppendHandlers(CombineHandlers(
