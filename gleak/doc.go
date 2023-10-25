@@ -1,13 +1,12 @@
 /*
-
 package gleak complements the Gingko/Gomega testing and matchers framework with
 matchers for Goroutine leakage detection.
 
-Basics of nleak
+# Basics of gleak
 
 To start with,
 
-    Goroutines()
+	Goroutines()
 
 returns information about all (non-dead) goroutines at a particular moment. This
 is useful to capture a known correct snapshot and then later taking a new
@@ -15,7 +14,7 @@ snapshot and comparing these two snapshots for leaked goroutines.
 
 Next, the matcher
 
-    HaveLeaked(...)
+	HaveLeaked(...)
 
 filters out well-known and expected "non-leaky" goroutines from an actual list
 of goroutines (passed from Eventually or Expect), hopefully ending up with an
@@ -26,16 +25,16 @@ because no one wants leaked goroutines.
 
 A typical pattern to detect goroutines leaked in individual tests is as follows:
 
-    var ignoreGood []Goroutine
+	var ignoreGood []Goroutine
 
-    BeforeEach(func() {
-        ignoreGood = Goroutines()
-    })
+	BeforeEach(func() {
+	    ignoreGood = Goroutines()
+	})
 
-    AfterEach(func() {
-        // Note: it's "Goroutines", but not "Goroutines()", when using with Eventually!
-        Eventually(Goroutines).ShouldNot(HaveLeaked(ignoreGood))
-    })
+	AfterEach(func() {
+	    // Note: it's "Goroutines", but not "Goroutines()", when using with Eventually!
+	    Eventually(Goroutines).ShouldNot(HaveLeaked(ignoreGood))
+	})
 
 Using Eventually instead of Expect ensures that there is some time given for
 temporary goroutines to finally wind down. Gomega's default values apply: the 1s
@@ -43,50 +42,50 @@ timeout and 10ms polling interval.
 
 Please note that the form
 
-    HaveLeaked(ignoreGood)
+	HaveLeaked(ignoreGood)
 
 is the same as the slightly longer, but also more expressive variant:
 
-    HaveLeaked(IgnoringGoroutines(ignoreGood))
+	HaveLeaked(IgnoringGoroutines(ignoreGood))
 
-Leak-Related Matchers
+# Leak-Related Matchers
 
 Depending on your tests and the dependencies used, you might need to identify
 additional goroutines as not being leaks. The gleak packages comes with the
 following predefined goroutine "filter" matchers that can be specified as
 arguments to HaveLeaked(...):
 
-    IgnoringTopFunction("foo.bar")                // exactly "foo.bar"
-    IgnoringTopFunction("foo.bar...")             // top function name with prefix "foo.bar." (note the trailing dot!)
-    IgnoringTopFunction("foo.bar [chan receive]") // exactly "foo.bar" with state starting with "chan receive"
-    IgnoringGoroutines(expectedGoroutines)        // ignore specified goroutines with these IDs
-    IgnoringInBacktrace("foo.bar.baz")            // "foo.bar.baz" within the backtrace
-    IgnoringCreator("foo.bar")                    // exact creator function name "foo.bar"
-    IgnoringCreator("foo.bar...")                 // creator function name with prefix "foo.bar."
+	IgnoringTopFunction("foo.bar")                // exactly "foo.bar"
+	IgnoringTopFunction("foo.bar...")             // top function name with prefix "foo.bar." (note the trailing dot!)
+	IgnoringTopFunction("foo.bar [chan receive]") // exactly "foo.bar" with state starting with "chan receive"
+	IgnoringGoroutines(expectedGoroutines)        // ignore specified goroutines with these IDs
+	IgnoringInBacktrace("foo.bar.baz")            // "foo.bar.baz" within the backtrace
+	IgnoringCreator("foo.bar")                    // exact creator function name "foo.bar"
+	IgnoringCreator("foo.bar...")                 // creator function name with prefix "foo.bar."
 
 In addition, you can use any other GomegaMatcher, as long as it can work on a
 (single) Goroutine. For instance, Gomega's HaveField and WithTransform
 matchers are good foundations for writing project-specific gleak matchers.
 
-Leaked Goroutine Dump
+# Leaked Goroutine Dump
 
 By default, when gleak's HaveLeaked matcher finds one or more leaked
 goroutines, it dumps the goroutine backtraces in a condensed format that uses
 only a single line per call instead of two lines. Moreover, the backtraces
 abbreviate the source file location in the form of package/source.go:lineno:
 
-    goroutine 42 [flabbergasted]
-        main.foo.func1() at foo/test.go:6
-        created by main.foo at foo/test.go:5
+	goroutine 42 [flabbergasted]
+	    main.foo.func1() at foo/test.go:6
+	    created by main.foo at foo/test.go:5
 
 By setting gleak.ReportFilenameWithPath=true the leaky goroutine backtraces
 will show full path names for each source file:
 
-    goroutine 42 [flabbergasted]
-        main.foo.func1() at /home/go/foo/test.go:6
-        created by main.foo at home/go/foo/test.go:5
+	goroutine 42 [flabbergasted]
+	    main.foo.func1() at /home/go/foo/test.go:6
+	    created by main.foo at home/go/foo/test.go:5
 
-Acknowledgement
+# Acknowledgement
 
 gleak has been heavily inspired by the Goroutine leak detector
 github.com/uber-go/goleak. That's definitely a fine piece of work!
@@ -110,9 +109,8 @@ out the non-leaking (and therefore expected) goroutines, using a few filter
 criteria. That is, a few new goroutine-related matchers. In this architecture,
 even existing Gomega matchers can optionally be (re)used as the need arises.
 
-References
+# References
 
 https://github.com/onsi/gomega and https://github.com/onsi/ginkgo.
-
 */
 package gleak
