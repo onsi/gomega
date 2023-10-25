@@ -812,18 +812,19 @@ where `FUNCTION()` is a function call that returns an error-type as its *first o
 #### MatchError(expected interface{})
 
 ```go
-Ω(ACTUAL).Should(MatchError(EXPECTED))
+Ω(ACTUAL).Should(MatchError(EXPECTED, <FUNCTION_ERROR_DESCRIPTION>))
 ```
 
 succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` must be one of the following:
 
-- A string, in which case `ACTUAL.Error()` will be compared against `EXPECTED`.
-- A matcher, in which case `ACTUAL.Error()` is tested against the matcher.
-- An error, in which case any of the following is satisfied:
-    - `errors.Is(ACTUAL, EXPECTED)` returns `true`
-    - `ACTUAL` or any of the errors it wraps (directly or indirectly) equals `EXPECTED` in terms of `reflect.DeepEqual()`.
+- A string, in which case the matcher asserts that `ACTUAL.Error() == EXPECTED`
+- An error (i.e. anything satisfying Go's `error` interface).  In which case the matcher:
+    - First checks if `errors.Is(ACTUAL, EXPECTED)` returns `true`
+    - If not, it checks if `ACTUAL` or any of the errors it wraps (directly or indirectly) equals `EXPECTED` via `reflect.DeepEqual()`.
+- A matcher, in which case `ACTUAL.Error()` is tested against the matcher, for example `Expect(err).Should(MatchError(ContainSubstring("sprocket not found")))`  will pass if `err.Error()` has the substring "sprocke tnot found"
+- A function with signature `func(error) bool`.  The matcher then passes if `f(ACTUAL)` returns `true`.  If using a function in this way you are required to pass a `FUNCTION_ERROR_DESCRIPTION` argument to `MatchError` that describes the function.  This description is used in the failure message.  For example: `Expect(err).To(MatchError(os.IsNotExist, "IsNotExist))`
 
-Any other type for `EXPECTED` is an error. It is also an error for `ACTUAL` to be nil.
+Any other type for `EXPECTED` is an error. It is also an error for `ACTUAL` to be nil.  Note that `FUNCTION_ERROR_DESCRIPTION` is a description of the error function, if used.  This is required when passing a function but is ignored in all other cases.
 
 ### Working with Channels
 
