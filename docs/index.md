@@ -768,9 +768,23 @@ succeeds if `ACTUAL` is the zero value for its type *or* if `ACTUAL` is `nil`.
 Ω(ACTUAL).Should(BeTrue())
 ```
 
-succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error for `ACTUAL` to not be a `bool`.
+succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error for `ACTUAL` to not be a `bool`. 
+
+Since Gomega has no additional context about your assertion the failure messages are generally not particularly helpful.  So it's generally recommended that you use `BeTrueBecause` instead.
 
 > Some matcher libraries have a notion of "truthiness" to assert that an object is present.  Gomega is strict, and `BeTrue()` only works with `bool`s.  You can use `Ω(ACTUAL).ShouldNot(BeZero())` or `Ω(ACTUAL).ShouldNot(BeNil())` to verify object presence.
+
+### BeTrueBecause(reason)
+
+```go
+Ω(ACTUAL).Should(BeTrueBecause(REASON, ARGS...))
+```
+
+is just like `BeTrue()` but allows you to pass in a reason.  This is a best practice as the default failure message is not particularly helpful. `fmt.Sprintf(REASON, ARGS...)` is used to render the reason.  For example:
+
+```go
+Ω(cow.JumpedOver(moon)).Should(BeTrueBecause("the cow should have jumped over the moon"))
+```
 
 #### BeFalse()
 
@@ -778,7 +792,19 @@ succeeds if `ACTUAL` is `bool` typed and has the value `true`.  It is an error f
 Ω(ACTUAL).Should(BeFalse())
 ```
 
-succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.
+succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.  You should generaly use `BeFalseBecause` instead to pas in a reason for a more helpful error message.
+
+### BeFalseBecause(reason)
+
+```go
+Ω(ACTUAL).Should(BeFalseBecause(REASON, ARGS...))
+```
+
+is just like `BeFalse()` but allows you to pass in a reason.  This is a best practice as the default failure message is not particularly helpful.  `fmt.Sprintf(REASON, ARGS...)` is used to render the reason.
+
+```go
+Ω(cow.JumpedOver(mars)).Should(BeFalseBecause("the cow should not have jumped over mars"))
+```
 
 ### Asserting on Errors
 
