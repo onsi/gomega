@@ -1,6 +1,7 @@
 package internal_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -10,7 +11,6 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"golang.org/x/net/context"
 )
 
 type quickMatcher struct {
@@ -274,6 +274,22 @@ var _ = Describe("Asynchronous Assertions", func() {
 					}, time.Hour).WithContext(ctx).Should(SpecMatch())
 					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("There is no failure as the matcher passed to Consistently has not yet failed"))
+				})
+
+				It("includes the cancel cause if provided", func() {
+					ctx, cancel := context.WithCancelCause(context.Background())
+					counter := 0
+					ig.G.Eventually(func() string {
+						counter++
+						if counter == 2 {
+							cancel(fmt.Errorf("kaboom"))
+						} else if counter == 10 {
+							return MATCH
+						}
+						return NO_MATCH
+					}, time.Hour, ctx).Should(SpecMatch())
+					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled (cause: kaboom) after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("positive: no match"))
 				})
 			})
 
