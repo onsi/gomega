@@ -180,7 +180,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				Ω(ig.RegisteredHelpers).Should(ContainElement("(*AsyncAssertion).match"))
 			})
 
-			It("renders the matcher's error if an error occured", func() {
+			It("renders the matcher's error if an error occurred", func() {
 				ig.G.Eventually(ERR_MATCH).WithTimeout(50 * time.Millisecond).WithPolling(10 * time.Millisecond).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Eventually returned the following error:"))
@@ -443,7 +443,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				Ω(ig.RegisteredHelpers).Should(ContainElement("(*AsyncAssertion).match"))
 			})
 
-			It("renders the matcher's error if an error occured", func() {
+			It("renders the matcher's error if an error occurred", func() {
 				ig.G.Consistently(ERR_MATCH).Should(SpecMatch())
 				Ω(ig.FailureMessage).Should(ContainSubstring("Failed after"))
 				Ω(ig.FailureMessage).Should(ContainSubstring("The matcher passed to Consistently returned the following error:"))
@@ -1575,7 +1575,7 @@ sprocket:
 			})
 
 			When("the actual error is because there was an assertion failure in the function, and there are return values", func() {
-				It("emits a clear message about the error having occured", func() {
+				It("emits a clear message about the error having occurred", func() {
 					_, file, line, _ := runtime.Caller(0)
 					ig.G.Eventually(func(g Gomega) int {
 						g.Expect(true).To(BeFalse())

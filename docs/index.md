@@ -161,7 +161,7 @@ Alternatively, such error assertions on multi return value functions can be simp
 Similar, asserting that no error occurred is supported, too (where the other return values are allowed to take on any value):
 
 ```go
-Ω(MultipleReturnValuesFunc()).Error().ShouldNot(HaveOccured())
+Ω(MultipleReturnValuesFunc()).Error().ShouldNot(HaveOccurred())
 ```
 
 ### Annotating Assertions
