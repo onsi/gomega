@@ -1,6 +1,6 @@
 module github.com/onsi/gomega
 
-go 1.18
+go 1.20
 
 require (
 	github.com/golang/protobuf v1.5.3
