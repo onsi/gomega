@@ -138,12 +138,12 @@ var _ = Describe("BeComparableTo", func() {
 				Exported   string
 			}
 
-			It("should produce failure message according to paseed cmp.Option", func() {
+			It("should produce failure message according to passed cmp.Option", func() {
 				actual := structWithUnexportedFields{unexported: "xxx", Exported: "exported field value"}
 				expectedEqual := structWithUnexportedFields{unexported: "yyy", Exported: "exported field value"}
 				matcherWithEqual := BeComparableTo(expectedEqual, cmpopts.IgnoreUnexported(structWithUnexportedFields{}))
 
-				Expect(matcherWithEqual.FailureMessage(actual)).To(BeEmpty())
+				Expect(matcherWithEqual.FailureMessage(actual)).To(BeEquivalentTo("Expected object to be comparable, diff: "))
 
 				expectedDiffernt := structWithUnexportedFields{unexported: "xxx", Exported: "other value"}
 				matcherWithDifference := BeComparableTo(expectedDiffernt, cmpopts.IgnoreUnexported(structWithUnexportedFields{}))
