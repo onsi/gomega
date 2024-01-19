@@ -215,7 +215,13 @@ to be false
 
 When a failure occurs, Gomega prints out a recursive description of the objects involved in the failed assertion.  This output can be very verbose, but Gomega's philosophy is to give as much output as possible to aid in identifying the root cause of a test failure.
 
-These recursive object renditions are performed by the `format` subpackage.  `format` provides some globally adjustable settings to tune Gomega's output:
+These recursive object renditions are performed by the `format` subpackage. Import the format subpackage in your test code:
+
+```go
+import "github.com/onsi/gomega/format"
+```
+
+`format` provides some globally adjustable settings to tune Gomega's output:
 
 - `format.MaxLength = 4000`: Gomega will recursively traverse nested data structures as it produces output. If the length of this string representation is more than MaxLength, it will be truncated to MaxLength. To disable this behavior, set the MaxLength to `0`.
 - `format.MaxDepth = 10`: Gomega will recursively traverse nested data structures as it produces output. By default the maximum depth of this recursion is set to `10` you can adjust this to see deeper or shallower representations of objects.
