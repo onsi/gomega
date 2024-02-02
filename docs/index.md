@@ -1281,7 +1281,7 @@ Expect([]string{"Foo", "FooBar"}).To(HaveExactElements([]string{"FooBar", "Foo"}
 
 Note that Go's type system does not allow you to write this as `HaveExactElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
 
-#### HaveEach(element ...interface{})
+#### HaveEach(element interface{})
 
 ```go
 Ω(ACTUAL).Should(HaveEach(ELEMENT))
