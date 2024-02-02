@@ -1364,7 +1364,7 @@ and an instance book `var book = Book{...}` - you can use `HaveField` to make as
 Ω(books).Should(ContainElement(HaveField("Author.DOB.Month()", Equal(2))))
 ```
 
-If you want to make lots of complex assertions against the fields of a struct take a look at the [`gstruct`package](#gstruct-testing-complex-data-types) package documented below.  
+If you want to make lots of complex assertions against the fields of a struct take a look at the [`gstruct`package](#codegstructcode-testing-complex-data-types) documented below.
 
 #### HaveExistingField(field interface{})
 
