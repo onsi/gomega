@@ -210,7 +210,7 @@ func (g GHTTPWithGomega) VerifyProtoRepresenting(expected proto.Message) http.Ha
 			err = proto.Unmarshal(body, actual)
 			g.gomega.Expect(err).ShouldNot(HaveOccurred(), "Failed to unmarshal protobuf")
 
-			g.gomega.Expect(actual).Should(Equal(expected), "ProtoBuf Mismatch")
+			g.gomega.Expect(proto.Equal(expected, actual)).Should(BeTrue(), "ProtoBuf Mismatch")
 		},
 	)
 }
