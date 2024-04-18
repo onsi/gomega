@@ -54,6 +54,39 @@ var _ = Describe("ReceiveMatcher", func() {
 		})
 	})
 
+	Context("with too many arguments", func() {
+		It("should error", func() {
+			channel := make(chan bool, 1)
+			var actual bool
+
+			channel <- true
+
+			success, err := (&ReceiveMatcher{Args: []interface{}{
+				&actual,
+				Equal(true),
+				42,
+			}}).Match(channel)
+			Expect(success).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Context("with swapped arguments", func() {
+		It("should error", func() {
+			channel := make(chan bool, 1)
+			var actual bool
+
+			channel <- true
+
+			success, err := (&ReceiveMatcher{Args: []interface{}{
+				Equal(true),
+				&actual,
+			}}).Match(channel)
+			Expect(success).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
 	Context("with a pointer argument", func() {
 		Context("of the correct type", func() {
 			When("the channel has an interface type", func() {
@@ -134,12 +167,12 @@ var _ = Describe("ReceiveMatcher", func() {
 
 				var incorrectType bool
 
-				success, err := (&ReceiveMatcher{Arg: &incorrectType}).Match(channel)
+				success, err := (&ReceiveMatcher{Args: []interface{}{&incorrectType}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 
 				var notAPointer int
-				success, err = (&ReceiveMatcher{Arg: notAPointer}).Match(channel)
+				success, err = (&ReceiveMatcher{Args: []interface{}{notAPointer}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 			})
@@ -192,7 +225,7 @@ var _ = Describe("ReceiveMatcher", func() {
 			It("should error", func() {
 				channel := make(chan int, 1)
 				channel <- 3
-				success, err := (&ReceiveMatcher{Arg: ContainSubstring("three")}).Match(channel)
+				success, err := (&ReceiveMatcher{Args: []interface{}{ContainSubstring("three")}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 			})
@@ -201,10 +234,22 @@ var _ = Describe("ReceiveMatcher", func() {
 		Context("if nothing is received", func() {
 			It("should fail", func() {
 				channel := make(chan int, 1)
-				success, err := (&ReceiveMatcher{Arg: Equal(1)}).Match(channel)
+				success, err := (&ReceiveMatcher{Args: []interface{}{Equal(1)}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).ShouldNot(HaveOccurred())
 			})
+		})
+	})
+
+	Context("with a pointer and a matcher argument", func() {
+		It("should succeed", func() {
+			channel := make(chan bool, 1)
+			channel <- true
+
+			var received bool
+
+			Expect(channel).Should(Receive(&received, Equal(true)))
+			Expect(received).Should(BeTrue())
 		})
 	})
 
