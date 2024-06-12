@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/gomega/matchers/support/goraph/edge"
 	. "github.com/onsi/gomega/matchers/support/goraph/node"
 	"github.com/onsi/gomega/matchers/support/goraph/util"
+	"slices"
 )
 
 // LargestMatching implements the Hopcroft–Karp algorithm taking as input a bipartite graph
@@ -156,6 +157,11 @@ func (bg *BipartiteGraph) createSLAPGuideLayers(matching EdgeSet) (guideLayers [
 
 		if len(currentLayer) == 0 {
 			return []NodeOrderedSet{}
+		}
+		if done { // if last layer - into last layer must be only 'free' nodes
+			currentLayer = slices.DeleteFunc(currentLayer, func(in Node)bool{
+				return !matching.Free(in)
+			})
 		}
 		guideLayers = append(guideLayers, currentLayer)
 	}
