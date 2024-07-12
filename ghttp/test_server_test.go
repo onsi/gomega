@@ -1190,4 +1190,63 @@ var _ = Describe("TestServer", func() {
 			})
 		})
 	})
+
+	Describe("RoundTripper", func() {
+		var called []string
+		BeforeEach(func() {
+			called = []string{}
+			s.RouteToHandler("GET", "/routed", func(w http.ResponseWriter, req *http.Request) {
+				called = append(called, "get")
+			})
+			s.RouteToHandler("POST", "/routed", func(w http.ResponseWriter, req *http.Request) {
+				called = append(called, "post")
+			})
+		})
+
+		It("should send http traffic to test server with default transport", func() {
+			client := http.Client{Transport: s.RoundTripper(nil)}
+			client.Get("http://example.com/routed")
+			client.Post("http://example.com/routed", "application/json", nil)
+			client.Get("http://foo.bar/routed")
+			client.Post("http://foo.bar/routed", "application/json", nil)
+			Expect(called).Should(Equal([]string{"get", "post", "get", "post"}))
+		})
+
+		It("should send https traffic to test server with default transport", func() {
+			client := http.Client{Transport: s.RoundTripper(nil)}
+			client.Get("https://example.com/routed")
+			client.Post("https://example.com/routed", "application/json", nil)
+			client.Get("https://foo.bar/routed")
+			client.Post("https://foo.bar/routed", "application/json", nil)
+			Expect(called).Should(Equal([]string{"get", "post", "get", "post"}))
+		})
+
+		It("should send http traffic to test server with default transport", func() {
+			transport := http.Transport{}
+			client := http.Client{Transport: s.RoundTripper(&transport)}
+			client.Get("http://example.com/routed")
+			client.Post("http://example.com/routed", "application/json", nil)
+			client.Get("http://foo.bar/routed")
+			client.Post("http://foo.bar/routed", "application/json", nil)
+			Expect(called).Should(Equal([]string{"get", "post", "get", "post"}))
+		})
+
+		It("should send http traffic to test server with default transport", func() {
+			transport := http.Transport{}
+			client := http.Client{Transport: s.RoundTripper(&transport)}
+			client.Get("https://example.com/routed")
+			client.Post("https://example.com/routed", "application/json", nil)
+			client.Get("https://foo.bar/routed")
+			client.Post("https://foo.bar/routed", "application/json", nil)
+			Expect(called).Should(Equal([]string{"get", "post", "get", "post"}))
+		})
+
+		It("should not change the path of the request", func() {
+			client := http.Client{Transport: s.RoundTripper(nil)}
+			client.Get("https://example.com/routed")
+			Expect(called).Should(Equal([]string{"get"}))
+			Expect(s.ReceivedRequests()).Should(HaveLen(1))
+			Expect(s.ReceivedRequests()[0].URL.Path).Should(Equal("/routed"))
+		})
+	})
 })
