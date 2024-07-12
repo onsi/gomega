@@ -2424,6 +2424,33 @@ To bring it all together: there are three ways to instruct a `ghttp` server to h
 
 When a `ghttp` server receives a request it first checks against the set of handlers registered via `RouteToHandler` if there is no such handler it proceeds to pop an `AppendHandlers` handler off the stack, if the stack of ordered handlers is empty, it will check whether `GetAllowUnhandledRequests` returns `true` or `false`.  If `false` the test fails.  If `true`, a response is sent with whatever `GetUnhandledRequestStatusCode` returns.
 
+### Using a RoundTripper to route requests to the test Server
+
+So far you have seen examples of using `server.URL()` to get the string URL of the test server. This is ok if you are testing code where you can pass the URL. In some cases you might need to pass a `http.Client` or similar.
+
+You can use `server.RounderTripper(nil)` to create a `http.RounderTripper` which will redirect requests to the test server.
+
+The method takes another `http.RounderTripper` to make the request to the test server, this allows chaining `http.Transports` or otherwise.
+
+If passed `nil`, then `http.DefaultTransport` is used to make the request.
+
+```go
+Describe("The http client", func() {
+    var server *ghttp.Server
+    var httpClient *http.Client
+
+    BeforeEach(func() {
+        server = ghttp.NewServer()
+        httpClient = &http.Client{Transport: server.RounderTripper(nil)}
+    })
+
+    AfterEach(func() {
+        //shut down the server between tests
+        server.Close()
+    })
+})
+```
+
 ## `gbytes`: Testing Streaming Buffers
 
 `gbytes` implements `gbytes.Buffer` - an `io.WriteCloser` that captures all input to an in-memory buffer.
