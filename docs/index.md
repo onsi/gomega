@@ -2428,9 +2428,9 @@ When a `ghttp` server receives a request it first checks against the set of hand
 
 So far you have seen examples of using `server.URL()` to get the string URL of the test server. This is ok if you are testing code where you can pass the URL. In some cases you might need to pass a `http.Client` or similar.
 
-You can use `server.RounderTripper(nil)` to create a `http.RounderTripper` which will redirect requests to the test server.
+You can use `server.RoundTripper(nil)` to create a `http.RoundTripper` which will redirect requests to the test server.
 
-The method takes another `http.RounderTripper` to make the request to the test server, this allows chaining `http.Transports` or otherwise.
+The method takes another `http.RoundTripper` to make the request to the test server, this allows chaining `http.Transports` or otherwise.
 
 If passed `nil`, then `http.DefaultTransport` is used to make the request.
 
@@ -2441,7 +2441,7 @@ Describe("The http client", func() {
 
     BeforeEach(func() {
         server = ghttp.NewServer()
-        httpClient = &http.Client{Transport: server.RounderTripper(nil)}
+        httpClient = &http.Client{Transport: server.RoundTripper(nil)}
     })
 
     AfterEach(func() {
