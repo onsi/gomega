@@ -1,6 +1,7 @@
 package bipartitegraph_test
 
 import (
+	"fmt"
 	"reflect"
 
 	. "github.com/onsi/gomega/matchers/support/goraph/bipartitegraph"
@@ -163,6 +164,46 @@ var _ = Describe("Bipartitegraph", func() {
 			Ω(graph1.LargestMatching()).Should(HaveLen(66))
 			Ω(graph2.LargestMatching()).Should(HaveLen(90))
 			Ω(graph3.LargestMatching()).Should(HaveLen(79))
+		})
+	})
+
+	Describe("Edge case in Issue #765", func() {
+		It("is now resolved", func() {
+			knownEdges := map[string]bool{
+				"1A": true,
+				"1B": true,
+				"1C": true,
+				"1D": true,
+				"1E": true,
+				"2A": true,
+				"2D": true,
+				"3B": true,
+				"3D": true,
+				"4B": true,
+				"4D": true,
+				"4E": true,
+				"5A": true,
+			}
+
+			edgesFunc := func(l, r interface{}) (bool, error) {
+				return knownEdges[fmt.Sprintf("%v%v", l, r)], nil
+			}
+
+			vertices := []interface{}{"1", "2", "3", "4", "5", "A", "B", "C", "D", "E"}
+			leftPart := vertices[:5]
+			rightPart := vertices[5:]
+
+			bipartiteGraph, err := NewBipartiteGraph(leftPart, rightPart, edgesFunc)
+			Ω(err).ShouldNot(HaveOccurred())
+			edgeSet := bipartiteGraph.LargestMatching()
+			Ω(edgeSet).Should(HaveLen(5))
+
+			result := []string{}
+			for _, edge := range edgeSet {
+				result = append(result, fmt.Sprintf("%v%v", vertices[edge.Node1], vertices[edge.Node2]))
+			}
+			Ω(result).Should(ConsistOf("1C", "2D", "3B", "4E", "5A"))
+
 		})
 	})
 })
