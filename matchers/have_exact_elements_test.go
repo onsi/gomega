@@ -76,6 +76,16 @@ var _ = Describe("HaveExactElements", func() {
 		})
 	})
 
+	When("passed nil", func() {
+		It("should fail correctly", func() {
+			failures := InterceptGomegaFailures(func() {
+				var expected []any
+				Expect([]string{"one"}).Should(HaveExactElements(expected...))
+			})
+			Expect(failures).Should(HaveLen(1))
+		})
+	})
+
 	Describe("Failure Message", func() {
 		When("actual contains extra elements", func() {
 			It("should print the starting index of the extra elements", func() {
