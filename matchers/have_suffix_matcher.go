@@ -14,7 +14,8 @@ type HaveSuffixMatcher struct {
 func (matcher *HaveSuffixMatcher) Match(actual interface{}) (success bool, err error) {
 	actualString, ok := toString(actual)
 	if !ok {
-		return false, fmt.Errorf("HaveSuffix matcher requires a string or stringer.  Got:\n%s", format.Object(actual, 1))
+		return false, fmt.Errorf("HaveSuffix matcher requires a string, stringer, []bytes, or json.RawMessage. "+
+			"Got:\n%s", format.Object(actual, 1))
 	}
 	suffix := matcher.suffix()
 	return len(actualString) >= len(suffix) && actualString[len(actualString)-len(suffix):] == suffix, nil
