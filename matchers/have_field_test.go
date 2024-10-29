@@ -140,15 +140,17 @@ var _ = Describe("HaveField", func() {
 	})
 
 	Describe("Failure Messages", func() {
-		It("renders the underlying matcher failure", func() {
+		It("renders the underlying matcher failure without caching the object", func() {
 			matcher := HaveField("Title", "Les Mis")
 			success, err := matcher.Match(book)
 			Ω(success).Should(BeFalse())
 			Ω(err).ShouldNot(HaveOccurred())
 
+			book.Title = "Les Miser"
 			msg := matcher.FailureMessage(book)
-			Ω(msg).Should(Equal("Value for field 'Title' failed to satisfy matcher.\nExpected\n    <string>: Les Miserables\nto equal\n    <string>: Les Mis"))
+			Ω(msg).Should(Equal("Value for field 'Title' failed to satisfy matcher.\nExpected\n    <string>: Les Miser\nto equal\n    <string>: Les Mis"))
 
+			book.Title = "Les Miserables"
 			matcher = HaveField("Title", "Les Miserables")
 			success, err = matcher.Match(book)
 			Ω(success).Should(BeTrue())
