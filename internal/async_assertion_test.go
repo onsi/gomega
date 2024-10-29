@@ -1220,6 +1220,19 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("Told to stop trying after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("bam"))
 				})
+
+				It("fails, even if the match were to happen to succeed and the user uses Succeed", func() {
+					ig.G.Eventually(func() (int, error) {
+						i += 1
+						if i < 3 {
+							return i, nil
+						}
+						return i, StopTrying("bam").Successfully()
+					}).Should(Equal(3))
+					Ω(i).Should(Equal(3))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Told to stop trying (and ignoring call to Successfully(), as it is only relevant with Consistently) after"))
+					Ω(ig.FailureMessage).Should(ContainSubstring("bam"))
+				})
 			})
 
 			Context("when returned as the sole actual", func() {
@@ -1278,7 +1291,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 			})
 
 			Context("when used with consistently", func() {
-				It("always signifies a failure", func() {
+				It("signifies a failure", func() {
 					ig.G.Consistently(func() (int, error) {
 						i += 1
 						if i >= 3 {
@@ -1289,6 +1302,17 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(i).Should(Equal(3))
 					Ω(ig.FailureMessage).Should(ContainSubstring("Told to stop trying after"))
 					Ω(ig.FailureMessage).Should(ContainSubstring("bam"))
+				})
+
+				It("signifies success when called Successfully", func() {
+					Consistently(func() (int, error) {
+						i += 1
+						if i >= 3 {
+							return i, StopTrying("bam").Successfully()
+						}
+						return i, nil
+					}).Should(BeNumerically("<", 10))
+					Ω(i).Should(Equal(3))
 				})
 			})
 

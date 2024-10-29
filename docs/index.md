@@ -539,7 +539,23 @@ calling `.Now()` will trigger a panic that will signal to `Eventually` that it s
 
 You can also return `StopTrying()` errors and use `StopTrying().Now()` with `Consistently`.
 
-Both `Eventually` and `Consistently` always treat the `StopTrying()` signal as a failure.   The failure message will include the message passed in to `StopTrying()`.
+By default, both `Eventually` and `Consistently` treat the `StopTrying()` signal as a failure.   The failure message will include the message passed in to `StopTrying()`.  However, there are cases when you might want to short-circuit `Consistently` early without failing the test (e.g. you are using consistently to monitor the sideeffect of a goroutine and that goroutine has now ended.  Once it ends there is no need to continue polling `Consistently`).  In this case you can use `StopTrying(message).Successfully()` to signal that `Consistently` can end early without failing.  For example:
+
+```
+Consistently(func() bool {
+    select{
+        case err := <-done: //the process has ended
+            if err != nil {
+                return StopTrying("error occurred").Now()
+            }
+            StopTrying("success!).Successfully().Now()
+        default:
+            return GetCounts()
+    }   
+}).Should(BeNumerically("<", 10))
+```
+
+note taht `StopTrying(message).Successfully()` is not intended for use with `Eventually`.  `Eventually` *always* interprets `StopTrying` as a failure.
 
 You can add additional information to this failure message in a few ways.  You can wrap an error via `StopTrying(message).Wrap(wrappedErr)` - now the output will read `<message>: <wrappedErr.Error()>`.
 
