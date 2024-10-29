@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/onsi/ginkgo/v2 v2.20.1
+	github.com/onsi/ginkgo/v2 v2.20.2
 	golang.org/x/net v0.30.0
 	google.golang.org/protobuf v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
