@@ -346,6 +346,26 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("Context was cancelled after"))
 				})
 
+				It("uses the default timeout if the user explicitly opts into EnforceDefaultTimeoutsWhenUsingContexts()", func() {
+					ig.G.SetDefaultEventuallyTimeout(time.Millisecond * 100)
+					ig.G.SetDefaultEventuallyPollingInterval(time.Millisecond * 10)
+					ig.G.EnforceDefaultTimeoutsWhenUsingContexts()
+					t := time.Now()
+					ctx, cancel := context.WithCancel(context.Background())
+					iterations := 0
+					ig.G.Eventually(func() string {
+						iterations += 1
+						if time.Since(t) > time.Millisecond*1000 {
+							cancel()
+						}
+						return "A"
+					}).WithContext(ctx).Should(Equal("B"))
+					Ω(time.Since(t)).Should(BeNumerically("~", time.Millisecond*100, time.Millisecond*50))
+					Ω(iterations).Should(BeNumerically("~", 100/10, 2))
+					Ω(ig.FailureMessage).Should(ContainSubstring("Timed out after"))
+					Ω(ctx.Err()).Should(BeNil())
+				})
+
 				It("uses the explicit timeout when it is provided", func() {
 					t := time.Now()
 					ctx, cancel := context.WithCancel(context.Background())

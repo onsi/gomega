@@ -335,7 +335,7 @@ func (assertion *AsyncAssertion) afterTimeout() <-chan time.Time {
 	if assertion.asyncType == AsyncAssertionTypeConsistently {
 		return time.After(assertion.g.DurationBundle.ConsistentlyDuration)
 	} else {
-		if assertion.ctx == nil {
+		if assertion.ctx == nil || assertion.g.DurationBundle.EnforceDefaultTimeoutsWhenUsingContexts {
 			return time.After(assertion.g.DurationBundle.EventuallyTimeout)
 		} else {
 			return nil

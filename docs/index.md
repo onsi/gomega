@@ -280,7 +280,7 @@ You can also configure the context in this way:
 Eventually(ACTUAL).WithTimeout(TIMEOUT).WithPolling(POLLING_INTERVAL).WithContext(ctx).Should(MATCHER)
 ```
 
-When no explicit timeout is provided, `Eventually` will use the default timeout.  However if no explicit timeout is provided _and_ a context is provided, `Eventually` will not apply a timeout but will instead keep trying until the context is cancelled.  If both a context and a timeout are provided, `Eventually` will keep trying until either the context is cancelled or time runs out, whichever comes first.
+When no explicit timeout is provided, `Eventually` will use the default timeout.  If both a context and a timeout are provided, `Eventually` will keep trying until either the context is cancelled or time runs out, whichever comes first.  However if no explicit timeout is provided _and_ a context is provided, `Eventually` will not apply a timeout but will instead keep trying until the context is cancelled.  This behavior is intentional in order to allow a single `context` to control the duration of a collection of `Eventually` assertions.  To opt out of this behavior you can call the global `EnforceDefaultTimeoutsWhenUsingContexts()` configuration to force `Eventually` to apply a default timeout even when a context is provided.
 
 You can also ensure a number of consecutive pass before continuing with `MustPassRepeatedly`:
 
@@ -587,6 +587,8 @@ SetDefaultConsistentlyPollingInterval(t time.Duration)
 ```
 
 You can also adjust these global timeouts by setting the `GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT`, `GOMEGA_DEFAULT_EVENTUALLY_POLLING_INTERVAL`, `GOMEGA_DEFAULT_CONSISTENTLY_DURATION`, and `GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL` environment variables to a parseable duration string. The environment variables have a lower precedence than `SetDefault...()`.
+
+As discussed [above](#category-2-making-eventually-assertions-on-functions) `Eventually`s that are passed a `context` object without an explicit timeout will only stop polling when the context is cancelled.  If you would like to enforce the default timeout when a context is provided you can call `EnforceDefaultTimeoutsWhenUsingContexts()` (to go back to the default behavior call `DoNotEnforceDefaultTimeoutsWhenUsingContexts()`).   You can also set the `GOMEGA_ENFORCE_DEFAULT_TIMEOUTS_WHEN_USING_CONTEXTS` environment variable to enforce the default timeout when a context is provided.
 
 ## Making Assertions in Helper Functions
 

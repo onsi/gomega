@@ -43,6 +43,7 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 				Ω(bundle.EventuallyPollingInterval).Should(Equal(10 * time.Millisecond))
 				Ω(bundle.ConsistentlyDuration).Should(Equal(100 * time.Millisecond))
 				Ω(bundle.ConsistentlyPollingInterval).Should(Equal(10 * time.Millisecond))
+				Ω(bundle.EnforceDefaultTimeoutsWhenUsingContexts).Should(BeFalse())
 			})
 		})
 
@@ -52,6 +53,7 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 				os.Setenv(internal.EventuallyPollingIntervalEnvVarName, "2s")
 				os.Setenv(internal.ConsistentlyDurationEnvVarName, "1h")
 				os.Setenv(internal.ConsistentlyPollingIntervalEnvVarName, "3ms")
+				os.Setenv(internal.EnforceDefaultTimeoutsWhenUsingContextsEnvVarName, "")
 			})
 
 			It("returns an appropriate bundle", func() {
@@ -60,6 +62,7 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 				Ω(bundle.EventuallyPollingInterval).Should(Equal(2 * time.Second))
 				Ω(bundle.ConsistentlyDuration).Should(Equal(time.Hour))
 				Ω(bundle.ConsistentlyPollingInterval).Should(Equal(3 * time.Millisecond))
+				Ω(bundle.EnforceDefaultTimeoutsWhenUsingContexts).Should(BeTrue())
 			})
 		})
 
