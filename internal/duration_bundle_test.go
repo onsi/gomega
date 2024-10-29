@@ -16,7 +16,7 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 		var originalValues map[string]string
 
 		BeforeEach(func() {
-			envVars = []string{internal.EventuallyTimeoutEnvVarName, internal.EventuallyPollingIntervalEnvVarName, internal.ConsistentlyDurationEnvVarName, internal.ConsistentlyPollingIntervalEnvVarName, internal.EnforceDefaultTimeoutsWhenUsingContextsEnvVarName}
+			envVars = []string{internal.EventuallyTimeoutEnvVarName, internal.EventuallyPollingIntervalEnvVarName, internal.ConsistentlyDurationEnvVarName, internal.ConsistentlyPollingIntervalEnvVarName}
 			originalValues = map[string]string{}
 
 			for _, envVar := range envVars {
@@ -28,6 +28,7 @@ var _ = Describe("DurationBundle and Duration Support", func() {
 			for _, envVar := range envVars {
 				Ω(os.Setenv(envVar, originalValues[envVar])).Should(Succeed())
 			}
+			os.Unsetenv(internal.EnforceDefaultTimeoutsWhenUsingContextsEnvVarName)
 		})
 
 		Context("with no environment set", func() {
