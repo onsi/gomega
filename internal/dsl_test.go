@@ -19,6 +19,11 @@ func setGlobalDurationBundle(bundle internal.DurationBundle) {
 	SetDefaultEventuallyPollingInterval(bundle.EventuallyPollingInterval)
 	SetDefaultConsistentlyDuration(bundle.ConsistentlyDuration)
 	SetDefaultConsistentlyPollingInterval(bundle.ConsistentlyPollingInterval)
+	if bundle.EnforceDefaultTimeoutsWhenUsingContexts {
+		EnforceDefaultTimeoutsWhenUsingContexts()
+	} else {
+		DisableDefaultTimeoutsWhenUsingContext()
+	}
 }
 
 var _ = Describe("Gomega DSL", func() {
@@ -51,10 +56,11 @@ var _ = Describe("Gomega DSL", func() {
 	Describe("NewGomega", func() {
 		It("creates and configures a new Gomega, using the global duration bundle", func() {
 			bundle := internal.DurationBundle{
-				EventuallyTimeout:           time.Minute,
-				EventuallyPollingInterval:   2 * time.Minute,
-				ConsistentlyDuration:        3 * time.Minute,
-				ConsistentlyPollingInterval: 4 * time.Minute,
+				EventuallyTimeout:                       time.Minute,
+				EventuallyPollingInterval:               2 * time.Minute,
+				ConsistentlyDuration:                    3 * time.Minute,
+				ConsistentlyPollingInterval:             4 * time.Minute,
+				EnforceDefaultTimeoutsWhenUsingContexts: true,
 			}
 			setGlobalDurationBundle(bundle)
 
@@ -74,10 +80,11 @@ var _ = Describe("Gomega DSL", func() {
 	Describe("NewWithT", func() {
 		It("creates and configure a new Gomega with the passed-in T, using the global duration bundle", func() {
 			bundle := internal.DurationBundle{
-				EventuallyTimeout:           time.Minute,
-				EventuallyPollingInterval:   2 * time.Minute,
-				ConsistentlyDuration:        3 * time.Minute,
-				ConsistentlyPollingInterval: 4 * time.Minute,
+				EventuallyTimeout:                       time.Minute,
+				EventuallyPollingInterval:               2 * time.Minute,
+				ConsistentlyDuration:                    3 * time.Minute,
+				ConsistentlyPollingInterval:             4 * time.Minute,
+				EnforceDefaultTimeoutsWhenUsingContexts: true,
 			}
 			setGlobalDurationBundle(bundle)
 
@@ -191,16 +198,18 @@ var _ = Describe("Gomega DSL", func() {
 	Describe("specifying default durations globally", func() {
 		It("should update the durations on the Default gomega", func() {
 			bundle := internal.DurationBundle{
-				EventuallyTimeout:           time.Minute,
-				EventuallyPollingInterval:   2 * time.Minute,
-				ConsistentlyDuration:        3 * time.Minute,
-				ConsistentlyPollingInterval: 4 * time.Minute,
+				EventuallyTimeout:                       time.Minute,
+				EventuallyPollingInterval:               2 * time.Minute,
+				ConsistentlyDuration:                    3 * time.Minute,
+				ConsistentlyPollingInterval:             4 * time.Minute,
+				EnforceDefaultTimeoutsWhenUsingContexts: true,
 			}
 
 			SetDefaultEventuallyTimeout(bundle.EventuallyTimeout)
 			SetDefaultEventuallyPollingInterval(bundle.EventuallyPollingInterval)
 			SetDefaultConsistentlyDuration(bundle.ConsistentlyDuration)
 			SetDefaultConsistentlyPollingInterval(bundle.ConsistentlyPollingInterval)
+			EnforceDefaultTimeoutsWhenUsingContexts()
 
 			Ω(Default.(*internal.Gomega).DurationBundle).Should(Equal(bundle))
 		})
