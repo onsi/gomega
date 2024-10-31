@@ -14,51 +14,53 @@ import (
 	"github.com/onsi/gomega/types"
 )
 
-//MatchAllFields succeeds if every field of a struct matches the field matcher associated with
-//it, and every element matcher is matched.
-//    actual := struct{
-//      A int
-//      B []bool
-//      C string
-//    }{
-//      A: 5,
-//      B: []bool{true, false},
-//      C: "foo",
-//    }
+// MatchAllFields succeeds if every field of a struct matches the field matcher associated with
+// it, and every element matcher is matched.
 //
-//    Expect(actual).To(MatchAllFields(Fields{
-//      "A": Equal(5),
-//      "B": ConsistOf(true, false),
-//      "C": Equal("foo"),
-//    }))
+//	actual := struct{
+//	  A int
+//	  B []bool
+//	  C string
+//	}{
+//	  A: 5,
+//	  B: []bool{true, false},
+//	  C: "foo",
+//	}
+//
+//	Expect(actual).To(MatchAllFields(Fields{
+//	  "A": Equal(5),
+//	  "B": ConsistOf(true, false),
+//	  "C": Equal("foo"),
+//	}))
 func MatchAllFields(fields Fields) types.GomegaMatcher {
 	return &FieldsMatcher{
 		Fields: fields,
 	}
 }
 
-//MatchFields succeeds if each element of a struct matches the field matcher associated with
-//it. It can ignore extra fields and/or missing fields.
-//    actual := struct{
-//      A int
-//      B []bool
-//      C string
-//    }{
-//      A: 5,
-//      B: []bool{true, false},
-//      C: "foo",
-//    }
+// MatchFields succeeds if each element of a struct matches the field matcher associated with
+// it. It can ignore extra fields and/or missing fields.
 //
-//    Expect(actual).To(MatchFields(IgnoreExtras, Fields{
-//      "A": Equal(5),
-//      "B": ConsistOf(true, false),
-//    }))
-//    Expect(actual).To(MatchFields(IgnoreMissing, Fields{
-//      "A": Equal(5),
-//      "B": ConsistOf(true, false),
-//      "C": Equal("foo"),
-//      "D": Equal("extra"),
-//    }))
+//	actual := struct{
+//	  A int
+//	  B []bool
+//	  C string
+//	}{
+//	  A: 5,
+//	  B: []bool{true, false},
+//	  C: "foo",
+//	}
+//
+//	Expect(actual).To(MatchFields(IgnoreExtras, Fields{
+//	  "A": Equal(5),
+//	  "B": ConsistOf(true, false),
+//	}))
+//	Expect(actual).To(MatchFields(IgnoreMissing, Fields{
+//	  "A": Equal(5),
+//	  "B": ConsistOf(true, false),
+//	  "C": Equal("foo"),
+//	  "D": Equal("extra"),
+//	}))
 func MatchFields(options Options, fields Fields) types.GomegaMatcher {
 	return &FieldsMatcher{
 		Fields:        fields,
@@ -129,7 +131,7 @@ func (m *FieldsMatcher) matchFields(actual interface{}) (errs []error) {
 				if nesting, ok := matcher.(errorsutil.NestingMatcher); ok {
 					return errorsutil.AggregateError(nesting.Failures())
 				}
-				return errors.New(matcher.FailureMessage(field))
+				return errors.New(matcher.FailureMessage(actual))
 			}
 			return nil
 		}()
@@ -152,7 +154,7 @@ func (m *FieldsMatcher) FailureMessage(actual interface{}) (message string) {
 	for i := range m.failures {
 		failures[i] = m.failures[i].Error()
 	}
-	return format.Message(reflect.TypeOf(actual).Name(),
+	return format.Message(actual,
 		fmt.Sprintf("to match fields: {\n%v\n}\n", strings.Join(failures, "\n")))
 }
 
