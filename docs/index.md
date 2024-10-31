@@ -604,7 +604,7 @@ SetDefaultConsistentlyPollingInterval(t time.Duration)
 
 You can also adjust these global timeouts by setting the `GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT`, `GOMEGA_DEFAULT_EVENTUALLY_POLLING_INTERVAL`, `GOMEGA_DEFAULT_CONSISTENTLY_DURATION`, and `GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL` environment variables to a parseable duration string. The environment variables have a lower precedence than `SetDefault...()`.
 
-As discussed [above](#category-2-making-eventually-assertions-on-functions) `Eventually`s that are passed a `context` object without an explicit timeout will only stop polling when the context is cancelled.  If you would like to enforce the default timeout when a context is provided you can call `EnforceDefaultTimeoutsWhenUsingContexts()` (to go back to the default behavior call `DoNotEnforceDefaultTimeoutsWhenUsingContexts()`).   You can also set the `GOMEGA_ENFORCE_DEFAULT_TIMEOUTS_WHEN_USING_CONTEXTS` environment variable to enforce the default timeout when a context is provided.
+As discussed [above](#category-2-making-eventually-assertions-on-functions) `Eventually`s that are passed a `context` object without an explicit timeout will only stop polling when the context is cancelled.  If you would like to enforce the default timeout when a context is provided you can call `EnforceDefaultTimeoutsWhenUsingContexts()` (to go back to the default behavior call `DisableDefaultTimeoutsWhenUsingContexts()`).   You can also set the `GOMEGA_ENFORCE_DEFAULT_TIMEOUTS_WHEN_USING_CONTEXTS` environment variable to enforce the default timeout when a context is provided.
 
 ## Making Assertions in Helper Functions
 

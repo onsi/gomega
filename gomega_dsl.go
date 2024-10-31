@@ -503,6 +503,16 @@ func SetDefaultConsistentlyPollingInterval(t time.Duration) {
 	Default.SetDefaultConsistentlyPollingInterval(t)
 }
 
+// EnforceDefaultTimeoutsWhenUsingContexts forces `Eventually` to apply a default timeout even when a context is provided.
+func EnforceDefaultTimeoutsWhenUsingContexts() {
+	Default.EnforceDefaultTimeoutsWhenUsingContexts()
+}
+
+// DisableDefaultTimeoutsWhenUsingContext disables the default timeout when a context is provided to `Eventually`.
+func DisableDefaultTimeoutsWhenUsingContext() {
+	Default.DisableDefaultTimeoutsWhenUsingContext()
+}
+
 // AsyncAssertion is returned by Eventually and Consistently and polls the actual value passed into Eventually against
 // the matcher passed to the Should and ShouldNot methods.
 //
