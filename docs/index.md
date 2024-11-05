@@ -555,7 +555,7 @@ Consistently(func() bool {
 }).Should(BeNumerically("<", 10))
 ```
 
-note taht `StopTrying(message).Successfully()` is not intended for use with `Eventually`.  `Eventually` *always* interprets `StopTrying` as a failure.
+Note that `StopTrying(message).Successfully()` is not intended for use with `Eventually`.  `Eventually` *always* interprets `StopTrying` as a failure.
 
 You can add additional information to this failure message in a few ways.  You can wrap an error via `StopTrying(message).Wrap(wrappedErr)` - now the output will read `<message>: <wrappedErr.Error()>`.
 
@@ -816,7 +816,7 @@ is just like `BeTrue()` but allows you to pass in a reason.  This is a best prac
 Ω(ACTUAL).Should(BeFalse())
 ```
 
-succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.  You should generaly use `BeFalseBecause` instead to pas in a reason for a more helpful error message.
+succeeds if `ACTUAL` is `bool` typed and has the value `false`.  It is an error for `ACTUAL` to not be a `bool`.  You should generally use `BeFalseBecause` instead to pas in a reason for a more helpful error message.
 
 ### BeFalseBecause(reason)
 
@@ -3203,7 +3203,7 @@ This will now emit a ranking result that will highlight the winning algorithm (i
 - `LowerMaxIsBetter`
 - `HigherMaxIsBetter`
 
-We can also inspect the statistics of the two algorithms programatically.  `experiment.GetStats` returns a `Stats` object that provides access to the following `Stat`s:
+We can also inspect the statistics of the two algorithms programmatically.  `experiment.GetStats` returns a `Stats` object that provides access to the following `Stat`s:
 
 - `StatMin` - the data point with the smallest value
 - `StatMax` - the data point with the highest values
