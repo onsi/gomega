@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
+	"github.com/onsi/gomega/matchers/internal/miter"
 )
 
 var _ = Describe("HaveKeyWithValue", func() {
@@ -77,6 +78,61 @@ var _ = Describe("HaveKeyWithValue", func() {
 			success, err = (&HaveKeyWithValueMatcher{Key: "foo", Value: "bar"}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("iterators", func() {
+		BeforeEach(func() {
+			if !miter.HasIterators() {
+				Skip("iterators not available")
+			}
+		})
+
+		When("passed an iter.Seq2", func() {
+			It("should do the right thing", func() {
+				Expect(universalMapIter2).Should(HaveKeyWithValue("foo", 0))
+				Expect(universalMapIter2).ShouldNot(HaveKeyWithValue("foo", 1))
+				Expect(universalMapIter2).ShouldNot(HaveKeyWithValue("baz", 2))
+				Expect(universalMapIter2).ShouldNot(HaveKeyWithValue("baz", 1))
+
+				Expect(universalMapIter2).Should(HaveKeyWithValue("bar", 42))
+				Expect(universalMapIter2).Should(HaveKeyWithValue("baz", 666))
+
+				Expect(universalMapIter2).ShouldNot(HaveKeyWithValue("bar", "abc"))
+				Expect(universalMapIter2).ShouldNot(HaveKeyWithValue(555, "abc"))
+			})
+		})
+
+		When("passed a correctly typed nil", func() {
+			It("should operate succesfully on the passed in value", func() {
+				var nilIter2 func(func(string, int) bool)
+				Expect(nilIter2).ShouldNot(HaveKeyWithValue("foo", 0))
+			})
+		})
+
+		When("the passed in key or value is actually a matcher", func() {
+			It("should pass each element through the matcher", func() {
+				Expect(universalMapIter2).Should(HaveKeyWithValue(ContainSubstring("oo"), BeNumerically("<", 1)))
+				Expect(universalMapIter2).Should(HaveKeyWithValue(ContainSubstring("foo"), 0))
+			})
+
+			It("should fail if the matcher ever fails", func() {
+				success, err := (&HaveKeyWithValueMatcher{Key: "bar", Value: ContainSubstring("argh")}).Match(universalMapIter2)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+
+				success, err = (&HaveKeyWithValueMatcher{Key: "foo", Value: ContainSubstring("1")}).Match(universalMapIter2)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+
+		When("passed something that is not an iter.Seq2", func() {
+			It("should error", func() {
+				success, err := (&HaveKeyWithValueMatcher{Key: "foo", Value: "bar"}).Match(universalIter)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+			})
 		})
 	})
 })

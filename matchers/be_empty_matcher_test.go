@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
+	"github.com/onsi/gomega/matchers/internal/miter"
 )
 
 var _ = Describe("BeEmpty", func() {
@@ -47,6 +48,34 @@ var _ = Describe("BeEmpty", func() {
 			success, err = (&BeEmptyMatcher{}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("iterators", func() {
+		BeforeEach(func() {
+			if !miter.HasIterators() {
+				Skip("iterators not available")
+			}
+		})
+
+		When("passed an iterator type", func() {
+			It("should do the right thing", func() {
+				Expect(emptyIter).To(BeEmpty())
+				Expect(emptyIter2).To(BeEmpty())
+
+				Expect(universalIter).NotTo(BeEmpty())
+				Expect(universalIter2).NotTo(BeEmpty())
+			})
+		})
+
+		When("passed a correctly typed nil", func() {
+			It("should be true", func() {
+				var nilIter func(func(string) bool)
+				Expect(nilIter).Should(BeEmpty())
+
+				var nilIter2 func(func(int, string) bool)
+				Expect(nilIter2).Should(BeEmpty())
+			})
 		})
 	})
 })

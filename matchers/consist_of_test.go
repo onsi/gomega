@@ -3,6 +3,7 @@ package matchers_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/matchers/internal/miter"
 )
 
 var _ = Describe("ConsistOf", func() {
@@ -193,6 +194,44 @@ the extra elements were
 
 				expected := `not to consist of\n\s*<\[\]interface {} \| len:2, cap:2>: \[<int>1, <string>"B"\]`
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
+			})
+		})
+	})
+
+	Context("iterators", func() {
+		BeforeEach(func() {
+			if !miter.HasIterators() {
+				Skip("iterators not available")
+			}
+		})
+
+		Context("with an iter.Seq", func() {
+			It("should do the right thing", func() {
+				Expect(universalIter).Should(ConsistOf("foo", "bar", "baz"))
+				Expect(universalIter).Should(ConsistOf("foo", "bar", "baz"))
+				Expect(universalIter).Should(ConsistOf("baz", "bar", "foo"))
+				Expect(universalIter).ShouldNot(ConsistOf("baz", "bar", "foo", "foo"))
+				Expect(universalIter).ShouldNot(ConsistOf("baz", "foo"))
+			})
+		})
+
+		Context("with an iter.Seq2", func() {
+			It("should do the right thing", func() {
+				Expect(universalIter2).Should(ConsistOf("foo", "bar", "baz"))
+				Expect(universalIter2).Should(ConsistOf("foo", "bar", "baz"))
+				Expect(universalIter2).Should(ConsistOf("baz", "bar", "foo"))
+				Expect(universalIter2).ShouldNot(ConsistOf("baz", "bar", "foo", "foo"))
+				Expect(universalIter2).ShouldNot(ConsistOf("baz", "foo"))
+			})
+		})
+
+		When("passed exactly one argument, and that argument is an iter.Seq", func() {
+			It("should match against the elements of that argument", func() {
+				Expect(universalIter).Should(ConsistOf(universalIter))
+				Expect(universalIter).ShouldNot(ConsistOf(fooElements))
+
+				Expect(universalIter2).Should(ConsistOf(universalIter))
+				Expect(universalIter2).ShouldNot(ConsistOf(fooElements))
 			})
 		})
 	})
