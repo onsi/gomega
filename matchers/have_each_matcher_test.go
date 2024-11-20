@@ -1,6 +1,8 @@
 package matchers_test
 
 import (
+	"github.com/onsi/gomega/matchers/internal/miter"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
@@ -90,6 +92,68 @@ var _ = Describe("HaveEach", func() {
 			success, err = (&HaveEachMatcher{Element: 0}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("iterators", func() {
+		BeforeEach(func() {
+			if !miter.HasIterators() {
+				Skip("iterators not available")
+			}
+		})
+
+		When("passed an iterator type", func() {
+			Context("and expecting a non-matcher", func() {
+				It("should do the right thing", func() {
+					Expect(fooIter).Should(HaveEach("foo"))
+					Expect(fooIter).ShouldNot(HaveEach("bar"))
+
+					Expect(fooIter2).Should(HaveEach("foo"))
+					Expect(fooIter2).ShouldNot(HaveEach("bar"))
+				})
+			})
+
+			Context("and expecting a matcher", func() {
+				It("should pass each element through the matcher", func() {
+					Expect(universalIter).Should(HaveEach(HaveLen(3)))
+					Expect(universalIter).ShouldNot(HaveEach(HaveLen(4)))
+
+					Expect(universalIter2).Should(HaveEach(HaveLen(3)))
+					Expect(universalIter2).ShouldNot(HaveEach(HaveLen(4)))
+				})
+
+				It("should not power through if the matcher ever fails", func() {
+					success, err := (&HaveEachMatcher{Element: BeNumerically(">=", 1)}).Match(universalIter)
+					Expect(success).Should(BeFalse())
+					Expect(err).Should(HaveOccurred())
+
+					success, err = (&HaveEachMatcher{Element: BeNumerically(">=", 1)}).Match(universalIter2)
+					Expect(success).Should(BeFalse())
+					Expect(err).Should(HaveOccurred())
+				})
+			})
+		})
+
+		When("passed an iterator yielding nothing or correctly typed nil", func() {
+			It("should error", func() {
+				success, err := (&HaveEachMatcher{Element: "foo"}).Match(emptyIter)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+
+				success, err = (&HaveEachMatcher{Element: "foo"}).Match(emptyIter2)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+
+				var nilIter func(func(string) bool)
+				success, err = (&HaveEachMatcher{Element: "foo"}).Match(nilIter)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+
+				var nilIter2 func(func(int, string) bool)
+				success, err = (&HaveEachMatcher{Element: "foo"}).Match(nilIter2)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+			})
 		})
 	})
 })

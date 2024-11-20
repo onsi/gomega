@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/matchers"
+	"github.com/onsi/gomega/matchers/internal/miter"
 )
 
 var _ = Describe("HaveKey", func() {
@@ -68,6 +69,51 @@ var _ = Describe("HaveKey", func() {
 			success, err = (&HaveKeyMatcher{Key: "foo"}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("iterators", func() {
+		BeforeEach(func() {
+			if !miter.HasIterators() {
+				Skip("iterators not available")
+			}
+		})
+
+		When("passed an iter.Seq2", func() {
+			It("should do the right thing", func() {
+				Expect(universalMapIter2).To(HaveKey("bar"))
+				Expect(universalMapIter2).To(HaveKey(HavePrefix("ba")))
+				Expect(universalMapIter2).NotTo(HaveKey("barrrrz"))
+				Expect(universalMapIter2).NotTo(HaveKey(42))
+			})
+		})
+
+		When("passed a correctly typed nil", func() {
+			It("should operate succesfully on the passed in value", func() {
+				var nilIter2 func(func(string, int) bool)
+				Expect(nilIter2).ShouldNot(HaveKey("foo"))
+			})
+		})
+
+		When("the passed in key is actually a matcher", func() {
+			It("should pass each element through the matcher", func() {
+				Expect(universalMapIter2).Should(HaveKey(ContainSubstring("oo")))
+				Expect(universalMapIter2).ShouldNot(HaveKey(ContainSubstring("foobar")))
+			})
+
+			It("should fail if the matcher ever fails", func() {
+				success, err := (&HaveKeyMatcher{Key: ContainSubstring("ar")}).Match(universalIter2)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+
+		When("passed something that is not an iter.Seq2", func() {
+			It("should error", func() {
+				success, err := (&HaveKeyMatcher{Key: "foo"}).Match(universalIter)
+				Expect(success).Should(BeFalse())
+				Expect(err).Should(HaveOccurred())
+			})
 		})
 	})
 })
