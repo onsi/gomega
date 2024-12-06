@@ -162,7 +162,7 @@ var _ = Describe("HaveField", func() {
 	})
 
 	Describe("receiver lookup", func() {
-		DescribeTable("(pointer) receiver lookup works",
+		DescribeTable("(pointer) receiver lookup on book pointer works",
 			func(field string, expected interface{}) {
 				Ω(&book).Should(HaveField(field, expected))
 			},
@@ -170,15 +170,15 @@ var _ = Describe("HaveField", func() {
 			Entry("pointer receiver", "PointerReceiverTitle()", "Les Miserables"),
 		)
 
+		It("correctly looks up a pointer receiver on a book value", func() {
+			Ω(book).Should(HaveField("PointerReceiverTitle()", "Les Miserables"))
+		})
+
 		It("correctly fails", func() {
 			matcher := HaveField("ReceiverTitle()", "Les Miserables")
 			answer := struct{}{}
 			Ω(matcher.Match(answer)).Error().Should(MatchError(
 				"HaveField could not find method named 'ReceiverTitle()' in struct of type struct {}."))
-
-			matcher = HaveField("PointerReceiverTitle()", "Les Miserables")
-			Ω(matcher.Match(book)).Error().Should(MatchError(
-				"HaveField could not find method named 'PointerReceiverTitle()' in struct of type matchers_test.Book."))
 		})
 	})
 
