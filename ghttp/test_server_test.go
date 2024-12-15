@@ -81,7 +81,7 @@ var _ = Describe("TestServer", func() {
 	Describe("closing server mulitple times", func() {
 		It("should not fail", func() {
 			s.Close()
-			Expect(s.Close).ShouldNot(Panic())
+			Expect(s.Close()).ShouldNot(Panic())
 		})
 	})
 
