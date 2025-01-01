@@ -52,7 +52,7 @@ var _ = Describe("ContainElement", func() {
 		})
 
 		When("passed a correctly typed nil", func() {
-			It("should operate succesfully on the passed in value", func() {
+			It("should operate successfully on the passed in value", func() {
 				var nilSlice []int
 				Expect(nilSlice).ShouldNot(ContainElement(1))
 
@@ -309,7 +309,7 @@ var _ = Describe("ContainElement", func() {
 			})
 
 			When("passed a correctly typed nil", func() {
-				It("should operate succesfully on the passed in value", func() {
+				It("should operate successfully on the passed in value", func() {
 					var nilIter func(func(string) bool)
 					Expect(nilIter).ShouldNot(ContainElement(1))
 

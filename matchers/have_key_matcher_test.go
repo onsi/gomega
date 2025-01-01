@@ -40,7 +40,7 @@ var _ = Describe("HaveKey", func() {
 	})
 
 	When("passed a correctly typed nil", func() {
-		It("should operate succesfully on the passed in value", func() {
+		It("should operate successfully on the passed in value", func() {
 			var nilMap map[int]string
 			Expect(nilMap).ShouldNot(HaveKey("foo"))
 		})
@@ -89,7 +89,7 @@ var _ = Describe("HaveKey", func() {
 		})
 
 		When("passed a correctly typed nil", func() {
-			It("should operate succesfully on the passed in value", func() {
+			It("should operate successfully on the passed in value", func() {
 				var nilIter2 func(func(string, int) bool)
 				Expect(nilIter2).ShouldNot(HaveKey("foo"))
 			})

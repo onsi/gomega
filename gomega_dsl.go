@@ -319,19 +319,19 @@ you an also use Eventually().WithContext(ctx) to pass in the context.  Passed-in
 		Eventually(client.FetchCount).WithContext(ctx).WithArguments("/users").Should(BeNumerically(">=", 17))
 	}, SpecTimeout(time.Second))
 
-Either way the context pasesd to Eventually is also passed to the underlying function.  Now, when Ginkgo cancels the context both the FetchCount client and Gomega will be informed and can exit.
+Either way the context passed to Eventually is also passed to the underlying function.  Now, when Ginkgo cancels the context both the FetchCount client and Gomega will be informed and can exit.
 
 By default, when a context is passed to Eventually *without* an explicit timeout, Gomega will rely solely on the context's cancellation to determine when to stop polling.  If you want to specify a timeout in addition to the context you can do so using the .WithTimeout() method.  For example:
 
 	Eventually(client.FetchCount).WithContext(ctx).WithTimeout(10*time.Second).Should(BeNumerically(">=", 17))
 
-now either the context cacnellation or the timeout will cause Eventually to stop polling.
+now either the context cancellation or the timeout will cause Eventually to stop polling.
 
 If, instead, you would like to opt out of this behavior and have Gomega's default timeouts govern Eventuallys that take a context you can call:
 
 	EnforceDefaultTimeoutsWhenUsingContexts()
 
-in the DSL (or on a Gomega instance).  Now all calls to Eventually that take a context will fail if eitehr the context is cancelled or the default timeout elapses.
+in the DSL (or on a Gomega instance).  Now all calls to Eventually that take a context will fail if either the context is cancelled or the default timeout elapses.
 
 **Category 3: Making assertions _in_ the function passed into Eventually**
 
@@ -441,7 +441,7 @@ func ConsistentlyWithOffset(offset int, actualOrCtx interface{}, args ...interfa
 }
 
 /*
-StopTrying can be used to signal to Eventually and Consistentlythat they should abort and stop trying.  This always results in a failure of the assertion - and the failure message is the content of the StopTrying signal.
+StopTrying can be used to signal to Eventually and Consistently that they should abort and stop trying.  This always results in a failure of the assertion - and the failure message is the content of the StopTrying signal.
 
 You can send the StopTrying signal by either returning StopTrying("message") as an error from your passed-in function _or_ by calling StopTrying("message").Now() to trigger a panic and end execution.
 

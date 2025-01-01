@@ -21,7 +21,7 @@ var _ = Describe("ContainSubstringMatcher", func() {
 	})
 
 	When("actual is a stringer", func() {
-		It("should call the stringer and match agains the returned string", func() {
+		It("should call the stringer and match against the returned string", func() {
 			Expect(&myStringer{a: "Abc3"}).Should(ContainSubstring("bc3"))
 		})
 	})

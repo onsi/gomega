@@ -330,7 +330,7 @@ var _ = Describe("Session", func() {
 					errWriter = io.Discard
 				})
 
-				It("executes succesfuly", func() {
+				It("executes successfully", func() {
 					Eventually(session).Should(Exit())
 				})
 			})
@@ -391,7 +391,7 @@ var _ = Describe("Session", func() {
 					errWriter = io.Discard
 				})
 
-				It("executes succesfuly", func() {
+				It("executes successfully", func() {
 					Eventually(session).Should(Exit())
 				})
 			})

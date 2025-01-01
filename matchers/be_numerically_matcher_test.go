@@ -120,7 +120,7 @@ var _ = Describe("BeNumerically", func() {
 				})
 
 				Context("and there is a precision parameter", func() {
-					It("should use precision paramter", func() {
+					It("should use precision parameter", func() {
 						Expect(5).Should(BeNumerically("~", 6, 2))
 						Expect(5).ShouldNot(BeNumerically("~", 8, 2))
 						Expect(uint(5)).Should(BeNumerically("~", 6, 1))

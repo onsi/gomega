@@ -27,7 +27,7 @@ var _ = Describe("HaveCap", func() {
 	})
 
 	When("passed a correctly typed nil", func() {
-		It("should operate succesfully on the passed in value", func() {
+		It("should operate successfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(nilSlice).Should(HaveCap(0))
 

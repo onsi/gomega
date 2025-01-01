@@ -3405,7 +3405,7 @@ Describe("server performance", func() {
         baseline := cache.Load("performance regression test", 1)
         if baseline == nil {
             // this is the first run, let's store a baseline
-            cache.Save("performacne regression test", 1, experiment)
+            cache.Save("performance regression test", 1, experiment)
         } else {
             for _, m := range []string{"fetching one", "listing"} {
                 baselineStats := baseline.GetStats(m)

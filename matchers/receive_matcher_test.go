@@ -289,7 +289,7 @@ var _ = Describe("ReceiveMatcher", func() {
 		})
 	})
 
-	When("acutal is a non-channel", func() {
+	When("actual is a non-channel", func() {
 		It("should error", func() {
 			var nilChannel chan bool
 

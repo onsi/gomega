@@ -77,7 +77,7 @@ var _ = Describe("Cache", func() {
 			Ω(cache.Clear()).Should(Succeed())
 		})
 
-		It("returs nil when loading a non-existing experiment", func() {
+		It("returns nil when loading a non-existing experiment", func() {
 			Ω(cache.Load("floop", 17)).Should(BeNil())
 		})
 	})

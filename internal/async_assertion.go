@@ -224,7 +224,7 @@ func (assertion *AsyncAssertion) argumentMismatchError(t reflect.Type, numProvid
 	if numProvided == 1 {
 		have = "has"
 	}
-	return fmt.Errorf(`The function passed to %s has signature %s takes %d arguments but %d %s been provided.  Please use %s().WithArguments() to pass the corect set of arguments.
+	return fmt.Errorf(`The function passed to %s has signature %s takes %d arguments but %d %s been provided.  Please use %s().WithArguments() to pass the correct set of arguments.
 
 You can learn more at https://onsi.github.io/gomega/#eventually
 `, assertion.asyncType, t, t.NumIn(), numProvided, have, assertion.asyncType)

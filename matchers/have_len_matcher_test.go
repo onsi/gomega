@@ -32,7 +32,7 @@ var _ = Describe("HaveLen", func() {
 	})
 
 	When("passed a correctly typed nil", func() {
-		It("should operate succesfully on the passed in value", func() {
+		It("should operate successfully on the passed in value", func() {
 			var nilSlice []int
 			Expect(nilSlice).Should(HaveLen(0))
 
@@ -71,7 +71,7 @@ var _ = Describe("HaveLen", func() {
 		})
 
 		When("passed a correctly typed nil", func() {
-			It("should operate succesfully on the passed in value", func() {
+			It("should operate successfully on the passed in value", func() {
 				var nilIter func(func(string) bool)
 				Expect(nilIter).Should(HaveLen(0))
 
