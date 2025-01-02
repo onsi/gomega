@@ -54,7 +54,7 @@ type ignoringTopFunctionMatcher struct {
 // Match succeeds if an actual goroutine's top function in the backtrace matches
 // the specified function name or function name prefix, or name and goroutine
 // state.
-func (matcher *ignoringTopFunctionMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *ignoringTopFunctionMatcher) Match(actual any) (success bool, err error) {
 	g, err := G(actual, "IgnoringTopFunction")
 	if err != nil {
 		return false, err
@@ -74,14 +74,14 @@ func (matcher *ignoringTopFunctionMatcher) Match(actual interface{}) (success bo
 // FailureMessage returns a failure message if the actual goroutine doesn't have
 // the specified function name/prefix (and optional state) at the top of the
 // backtrace.
-func (matcher *ignoringTopFunctionMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringTopFunctionMatcher) FailureMessage(actual any) (message string) {
 	return format.Message(actual, matcher.message())
 }
 
 // NegatedFailureMessage returns a failure message if the actual goroutine has
 // the specified function name/prefix (and optional state) at the top of the
 // backtrace.
-func (matcher *ignoringTopFunctionMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringTopFunctionMatcher) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, "not "+matcher.message())
 }
 

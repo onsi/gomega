@@ -39,11 +39,11 @@ var _ = Describe("ContainElement", func() {
 				})
 
 				It("should power through even if the matcher ever fails", func() {
-					Expect([]interface{}{1, 2, "3", 4}).Should(ContainElement(BeNumerically(">=", 3)))
+					Expect([]any{1, 2, "3", 4}).Should(ContainElement(BeNumerically(">=", 3)))
 				})
 
 				It("should fail if the matcher fails", func() {
-					actual := []interface{}{1, 2, "3", "4"}
+					actual := []any{1, 2, "3", "4"}
 					success, err := (&ContainElementMatcher{Element: BeNumerically(">=", 3)}).Match(actual)
 					Expect(success).Should(BeFalse())
 					Expect(err).Should(HaveOccurred())
@@ -157,27 +157,27 @@ var _ = Describe("ContainElement", func() {
 					Expect(ContainElement("foo", &arrstash).Match(actual)).Error().To(HaveOccurred())
 				})
 
-				It("should error for actual []interface{}, return reference T", func() {
-					actual := []interface{}{"foo", 42}
+				It("should error for actual []any, return reference T", func() {
+					actual := []any{"foo", 42}
 					var stash int
 					Expect(ContainElement(Not(BeZero()), &stash).Match(actual)).Error().To(
 						MatchError(MatchRegexp(`cannot return findings\.  Need \*interface.+, got \*int`)))
 				})
 
-				It("should error for actual []interface{}, return reference []T", func() {
-					actual := []interface{}{"foo", 42}
+				It("should error for actual []any, return reference []T", func() {
+					actual := []any{"foo", 42}
 					var stash []string
 					Expect(ContainElement(Not(BeZero()), &stash).Match(actual)).Error().To(
 						MatchError(MatchRegexp(`cannot return findings\.  Need \*\[\]interface.+, got \*\[\]string`)))
 				})
 
-				It("should error for actual map[T]T, return reference map[T]interface{}", func() {
+				It("should error for actual map[T]T, return reference map[T]any", func() {
 					actual := map[string]string{
 						"foo": "foo",
 						"bar": "bar",
 						"baz": "baz",
 					}
-					var stash map[string]interface{}
+					var stash map[string]any
 					Expect(ContainElement(Not(BeZero()), &stash).Match(actual)).Error().To(
 						MatchError(MatchRegexp(`cannot return findings\.  Need \*map\[string\]string, got \*map\[string\]interface`)))
 				})
@@ -224,8 +224,8 @@ var _ = Describe("ContainElement", func() {
 
 			When("the matcher errors", func() {
 				It("should report last matcher error", func() {
-					actual := []interface{}{"bar", 42}
-					var stash []interface{}
+					actual := []any{"bar", 42}
+					var stash []any
 					Expect(ContainElement(HaveField("yeehaw", 42), &stash).Match(actual)).Error().To(MatchError(MatchRegexp(`HaveField encountered:\n.*<int>: 42\nWhich is not a struct`)))
 				})
 			})
@@ -282,7 +282,7 @@ var _ = Describe("ContainElement", func() {
 					})
 
 					It("should fail if the matcher fails", func() {
-						elements := []interface{}{1, 2, "3", "4"}
+						elements := []any{1, 2, "3", "4"}
 						it := func(yield func(any) bool) {
 							for _, element := range elements {
 								if !yield(element) {
@@ -397,8 +397,8 @@ var _ = Describe("ContainElement", func() {
 						Expect(ContainElement("foo", &arrstash).Match(universalIter2)).Error().To(HaveOccurred())
 					})
 
-					It("should error for actual map[T1]T2, return reference map[T1]interface{}", func() {
-						var stash map[int]interface{}
+					It("should error for actual map[T1]T2, return reference map[T1]any", func() {
+						var stash map[int]any
 						Expect(ContainElement(Not(BeZero()), &stash).Match(universalIter2)).Error().To(
 							MatchError(MatchRegexp(`cannot return findings\.  Need \*map\[int\]string, got \*map\[int\]interface`)))
 					})
@@ -426,7 +426,7 @@ var _ = Describe("ContainElement", func() {
 
 				When("the matcher errors", func() {
 					It("should report last matcher error", func() {
-						var stash []interface{}
+						var stash []any
 						Expect(ContainElement(HaveField("yeehaw", 42), &stash).Match(universalIter)).Error().To(MatchError(MatchRegexp(`HaveField encountered:\n.*<string>: baz\nWhich is not a struct`)))
 					})
 				})

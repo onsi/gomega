@@ -191,7 +191,7 @@ func ensureDefaultGomegaIsConfigured() {
 // Will succeed only if `MyAmazingThing()` returns `(3, nil)`
 //
 // Ω and Expect are identical
-func Ω(actual interface{}, extra ...interface{}) Assertion {
+func Ω(actual any, extra ...any) Assertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.Ω(actual, extra...)
 }
@@ -217,7 +217,7 @@ func Ω(actual interface{}, extra ...interface{}) Assertion {
 // Will succeed only if `MyAmazingThing()` returns `(3, nil)`
 //
 // Expect and Ω are identical
-func Expect(actual interface{}, extra ...interface{}) Assertion {
+func Expect(actual any, extra ...any) Assertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.Expect(actual, extra...)
 }
@@ -233,7 +233,7 @@ func Expect(actual interface{}, extra ...interface{}) Assertion {
 // This is most useful in helper functions that make assertions.  If you want Gomega's
 // error message to refer to the calling line in the test (as opposed to the line in the helper function)
 // set the first argument of `ExpectWithOffset` appropriately.
-func ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) Assertion {
+func ExpectWithOffset(offset int, actual any, extra ...any) Assertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.ExpectWithOffset(offset, actual, extra...)
 }
@@ -390,7 +390,7 @@ is equivalent to
 
 	Eventually(...).WithTimeout(10*time.Second).WithPolling(2*time.Second).WithContext(ctx).Should(...)
 */
-func Eventually(actualOrCtx interface{}, args ...interface{}) AsyncAssertion {
+func Eventually(actualOrCtx any, args ...any) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.Eventually(actualOrCtx, args...)
 }
@@ -404,7 +404,7 @@ func Eventually(actualOrCtx interface{}, args ...interface{}) AsyncAssertion {
 // `EventuallyWithOffset` specifying a timeout interval (and an optional polling interval) are
 // the same as `Eventually(...).WithOffset(...).WithTimeout` or
 // `Eventually(...).WithOffset(...).WithTimeout(...).WithPolling`.
-func EventuallyWithOffset(offset int, actualOrCtx interface{}, args ...interface{}) AsyncAssertion {
+func EventuallyWithOffset(offset int, actualOrCtx any, args ...any) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.EventuallyWithOffset(offset, actualOrCtx, args...)
 }
@@ -424,7 +424,7 @@ Consistently is useful in cases where you want to assert that something *does no
 
 This will block for 200 milliseconds and repeatedly check the channel and ensure nothing has been received.
 */
-func Consistently(actualOrCtx interface{}, args ...interface{}) AsyncAssertion {
+func Consistently(actualOrCtx any, args ...any) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.Consistently(actualOrCtx, args...)
 }
@@ -435,7 +435,7 @@ func Consistently(actualOrCtx interface{}, args ...interface{}) AsyncAssertion {
 //
 // `ConsistentlyWithOffset` is the same as `Consistently(...).WithOffset` and
 // optional `WithTimeout` and `WithPolling`.
-func ConsistentlyWithOffset(offset int, actualOrCtx interface{}, args ...interface{}) AsyncAssertion {
+func ConsistentlyWithOffset(offset int, actualOrCtx any, args ...any) AsyncAssertion {
 	ensureDefaultGomegaIsConfigured()
 	return Default.ConsistentlyWithOffset(offset, actualOrCtx, args...)
 }

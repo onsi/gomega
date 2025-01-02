@@ -30,7 +30,7 @@ func (q quickMatcher) NegatedFailureMessage(actual any) (message string) {
 	return fmt.Sprintf("QM negated failure message: %v", actual)
 }
 
-func (q quickMatcher) MatchMayChangeInTheFuture(actual interface{}) bool {
+func (q quickMatcher) MatchMayChangeInTheFuture(actual any) bool {
 	if q.oracleFunc == nil {
 		return true
 	}
@@ -756,7 +756,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				It("correctly handles the case (in concert with Ginkgo) when an assertion fails in a goroutine", func() {
 					count := 0
 					ig.G.Eventually(func(g Gomega) {
-						c := make(chan interface{})
+						c := make(chan any)
 						go func() {
 							defer GinkgoRecover()
 							defer close(c)

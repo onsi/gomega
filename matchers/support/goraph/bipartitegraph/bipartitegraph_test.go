@@ -13,11 +13,11 @@ import (
 var _ = Describe("Bipartitegraph", func() {
 	Context("tiny graphs", func() {
 		var (
-			empty, _        = NewBipartiteGraph([]interface{}{}, []interface{}{}, func(x, y interface{}) (bool, error) { return true, nil })
-			oneLeft, _      = NewBipartiteGraph([]interface{}{1}, []interface{}{}, func(x, y interface{}) (bool, error) { return true, nil })
-			oneRight, _     = NewBipartiteGraph([]interface{}{}, []interface{}{1}, func(x, y interface{}) (bool, error) { return true, nil })
-			twoSeparate, _  = NewBipartiteGraph([]interface{}{1}, []interface{}{1}, func(x, y interface{}) (bool, error) { return false, nil })
-			twoConnected, _ = NewBipartiteGraph([]interface{}{1}, []interface{}{1}, func(x, y interface{}) (bool, error) { return true, nil })
+			empty, _        = NewBipartiteGraph([]any{}, []any{}, func(x, y any) (bool, error) { return true, nil })
+			oneLeft, _      = NewBipartiteGraph([]any{1}, []any{}, func(x, y any) (bool, error) { return true, nil })
+			oneRight, _     = NewBipartiteGraph([]any{}, []any{1}, func(x, y any) (bool, error) { return true, nil })
+			twoSeparate, _  = NewBipartiteGraph([]any{1}, []any{1}, func(x, y any) (bool, error) { return false, nil })
+			twoConnected, _ = NewBipartiteGraph([]any{1}, []any{1}, func(x, y any) (bool, error) { return true, nil })
 		)
 
 		It("Computes the correct largest matching", func() {
@@ -32,7 +32,7 @@ var _ = Describe("Bipartitegraph", func() {
 
 	Context("small yet complex graphs", func() {
 		var (
-			neighbours = func(x, y interface{}) (bool, error) {
+			neighbours = func(x, y any) (bool, error) {
 				switch x.(string) + y.(string) {
 				case "aw", "bw", "bx", "cy", "cz", "dx", "ew":
 					return true, nil
@@ -41,8 +41,8 @@ var _ = Describe("Bipartitegraph", func() {
 				}
 			}
 			graph, _ = NewBipartiteGraph(
-				[]interface{}{"a", "b", "c", "d", "e"},
-				[]interface{}{"w", "x", "y", "z"},
+				[]any{"a", "b", "c", "d", "e"},
+				[]any{"w", "x", "y", "z"},
 				neighbours,
 			)
 		)
@@ -73,12 +73,12 @@ var _ = Describe("Bipartitegraph", func() {
 
 	When("node values are unhashable types", func() {
 		var (
-			neighbours = func(x, y interface{}) (bool, error) {
+			neighbours = func(x, y any) (bool, error) {
 				return reflect.DeepEqual(x, y), nil
 			}
 			graph, _ = NewBipartiteGraph(
-				[]interface{}{[]int{1, 2}, []int{3, 4}},
-				[]interface{}{[]int{1, 2}},
+				[]any{[]int{1, 2}, []int{3, 4}},
+				[]any{[]int{1, 2}},
 				neighbours,
 			)
 		)
@@ -95,10 +95,10 @@ var _ = Describe("Bipartitegraph", func() {
 
 	Context("large yet simple graphs", func() {
 		var (
-			half                = make([]interface{}, 100)
-			discreteNeighbours  = func(x, y interface{}) (bool, error) { return false, nil }
-			completeNeighbours  = func(x, y interface{}) (bool, error) { return true, nil }
-			bijectionNeighbours = func(x, y interface{}) (bool, error) {
+			half                = make([]any, 100)
+			discreteNeighbours  = func(x, y any) (bool, error) { return false, nil }
+			completeNeighbours  = func(x, y any) (bool, error) { return true, nil }
+			bijectionNeighbours = func(x, y any) (bool, error) {
 				return x.(int) == y.(int), nil
 			}
 			discrete, complete, bijection *BipartiteGraph
@@ -122,8 +122,8 @@ var _ = Describe("Bipartitegraph", func() {
 
 	Context("large graphs that are unpleasant for the algorithm", func() {
 		var (
-			half        = make([]interface{}, 100)
-			neighbours1 = func(x, y interface{}) (bool, error) {
+			half        = make([]any, 100)
+			neighbours1 = func(x, y any) (bool, error) {
 				if x.(int) < 33 {
 					return x.(int) == y.(int), nil
 				} else if x.(int) < 66 {
@@ -132,7 +132,7 @@ var _ = Describe("Bipartitegraph", func() {
 					return false, nil
 				}
 			}
-			neighbours2 = func(x, y interface{}) (bool, error) {
+			neighbours2 = func(x, y any) (bool, error) {
 				if x.(int) == 50 {
 					return true, nil
 				} else if x.(int) < 90 {
@@ -141,7 +141,7 @@ var _ = Describe("Bipartitegraph", func() {
 					return false, nil
 				}
 			}
-			neighbours3 = func(x, y interface{}) (bool, error) {
+			neighbours3 = func(x, y any) (bool, error) {
 				if y.(int) < x.(int)-20 {
 					return true, nil
 				} else {
@@ -185,11 +185,11 @@ var _ = Describe("Bipartitegraph", func() {
 				"5A": true,
 			}
 
-			edgesFunc := func(l, r interface{}) (bool, error) {
+			edgesFunc := func(l, r any) (bool, error) {
 				return knownEdges[fmt.Sprintf("%v%v", l, r)], nil
 			}
 
-			vertices := []interface{}{"1", "2", "3", "4", "5", "A", "B", "C", "D", "E"}
+			vertices := []any{"1", "2", "3", "4", "5", "A", "B", "C", "D", "E"}
 			leftPart := vertices[:5]
 			rightPart := vertices[5:]
 

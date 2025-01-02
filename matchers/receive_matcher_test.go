@@ -61,7 +61,7 @@ var _ = Describe("ReceiveMatcher", func() {
 
 			channel <- true
 
-			success, err := (&ReceiveMatcher{Args: []interface{}{
+			success, err := (&ReceiveMatcher{Args: []any{
 				&actual,
 				Equal(true),
 				42,
@@ -78,7 +78,7 @@ var _ = Describe("ReceiveMatcher", func() {
 
 			channel <- true
 
-			success, err := (&ReceiveMatcher{Args: []interface{}{
+			success, err := (&ReceiveMatcher{Args: []any{
 				Equal(true),
 				&actual,
 			}}).Match(channel)
@@ -167,12 +167,12 @@ var _ = Describe("ReceiveMatcher", func() {
 
 				var incorrectType bool
 
-				success, err := (&ReceiveMatcher{Args: []interface{}{&incorrectType}}).Match(channel)
+				success, err := (&ReceiveMatcher{Args: []any{&incorrectType}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 
 				var notAPointer int
-				success, err = (&ReceiveMatcher{Args: []interface{}{notAPointer}}).Match(channel)
+				success, err = (&ReceiveMatcher{Args: []any{notAPointer}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 			})
@@ -225,7 +225,7 @@ var _ = Describe("ReceiveMatcher", func() {
 			It("should error", func() {
 				channel := make(chan int, 1)
 				channel <- 3
-				success, err := (&ReceiveMatcher{Args: []interface{}{ContainSubstring("three")}}).Match(channel)
+				success, err := (&ReceiveMatcher{Args: []any{ContainSubstring("three")}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 			})
@@ -234,7 +234,7 @@ var _ = Describe("ReceiveMatcher", func() {
 		Context("if nothing is received", func() {
 			It("should fail", func() {
 				channel := make(chan int, 1)
-				success, err := (&ReceiveMatcher{Args: []interface{}{Equal(1)}}).Match(channel)
+				success, err := (&ReceiveMatcher{Args: []any{Equal(1)}}).Match(channel)
 				Expect(success).Should(BeFalse())
 				Expect(err).ShouldNot(HaveOccurred())
 			})

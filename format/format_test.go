@@ -62,7 +62,7 @@ type SecretiveStruct struct {
 	byteArrValue   [3]byte
 	mapValue       map[string]int
 	structValue    AStruct
-	interfaceValue interface{}
+	interfaceValue any
 }
 
 type CustomFormatted struct {
@@ -84,7 +84,7 @@ func (c *CustomError) Error() string {
 	return c.Details
 }
 
-func customFormatter(obj interface{}) (string, bool) {
+func customFormatter(obj any) (string, bool) {
 	cf, ok := obj.(CustomFormatted)
 	if !ok {
 		return "", false
@@ -132,14 +132,14 @@ func (g gomegaStringerMultiline) GomegaString() string {
 }
 
 var _ = Describe("Format", func() {
-	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
+	match := func(typeRepresentation string, valueRepresentation string, args ...any) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
 		}
 		return Equal(fmt.Sprintf("%s<%s>: %s", Indent, typeRepresentation, valueRepresentation))
 	}
 
-	matchRegexp := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
+	matchRegexp := func(typeRepresentation string, valueRepresentation string, args ...any) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
 		}
@@ -599,18 +599,18 @@ var _ = Describe("Format", func() {
 			})
 		})
 
-		Describe("formatting nested interface{} types", func() {
+		Describe("formatting nested any types", func() {
 			It("should print out the types of the container and value", func() {
-				Expect(Object([]interface{}{"foo"}, 1)).
+				Expect(Object([]any{"foo"}, 1)).
 					To(match("[]interface {} | len:1, cap:1", `[<string>"foo"]`))
 
-				Expect(Object(map[string]interface{}{"foo": true}, 1)).
+				Expect(Object(map[string]any{"foo": true}, 1)).
 					To(match("map[string]interface {} | len:1", `{"foo": <bool>true}`))
 
-				Expect(Object(struct{ A interface{} }{A: 1}, 1)).
+				Expect(Object(struct{ A any }{A: 1}, 1)).
 					To(match("struct { A interface {} }", "{A: <int>1}"))
 
-				v := struct{ A interface{} }{A: struct{ B string }{B: "foo"}}
+				v := struct{ A any }{A: struct{ B string }{B: "foo"}}
 				Expect(Object(v, 1)).To(match(`struct { A interface {} }`, `{
         A: <struct { B string }>{B: "foo"},
     }`))
@@ -694,7 +694,7 @@ var _ = Describe("Format", func() {
 
 	Describe("Handling interfaces", func() {
 		It("should unpack the interface", func() {
-			outerHash := map[string]interface{}{}
+			outerHash := map[string]any{}
 			innerHash := map[string]int{}
 
 			innerHash["inner"] = 3
@@ -708,7 +708,7 @@ var _ = Describe("Format", func() {
 
 	Describe("Handling recursive things", func() {
 		It("should not go crazy...", func() {
-			m := map[string]interface{}{}
+			m := map[string]any{}
 			m["integer"] = 2
 			m["map"] = m
 			Expect(Object(m, 1)).Should(ContainSubstring("..."))
@@ -716,11 +716,11 @@ var _ = Describe("Format", func() {
 
 		It("really should not go crazy...", func() {
 			type complexKey struct {
-				Value map[interface{}]int
+				Value map[any]int
 			}
 
 			complexObject := complexKey{}
-			complexObject.Value = make(map[interface{}]int)
+			complexObject.Value = make(map[any]int)
 
 			complexObject.Value[&complexObject] = 2
 			Expect(Object(complexObject, 1)).Should(ContainSubstring("..."))
@@ -784,7 +784,7 @@ var _ = Describe("Format", func() {
 
 			It("indents CustomFormatter output correctly", func() {
 				cf := CustomFormatted{"hey\nbob", 17}
-				DeferCleanup(UnregisterCustomFormatter, RegisterCustomFormatter(func(value interface{}) (string, bool) {
+				DeferCleanup(UnregisterCustomFormatter, RegisterCustomFormatter(func(value any) (string, bool) {
 					cf, ok := value.(CustomFormatted)
 					if !ok {
 						return "", false

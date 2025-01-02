@@ -13,7 +13,7 @@ import (
 // possible. It returns an error if actual isn't of either type Goroutine or a
 // pointer to it. G is intended to be mainly used by goroutine-related Gomega
 // matchers, such as IgnoringTopFunction, et cetera.
-func G(actual interface{}, matchername string) (Goroutine, error) {
+func G(actual any, matchername string) (Goroutine, error) {
 	if actual != nil {
 		switch actual := actual.(type) {
 		case Goroutine:

@@ -124,7 +124,7 @@ var standardFilters = []types.GomegaMatcher{
 //	IgnoringTopFunction("foo.bar [chan receive]")
 //	IgnoringGoroutines(expectedGoroutines)
 //	IgnoringInBacktrace("foo.bar.baz")
-func HaveLeaked(ignoring ...interface{}) types.GomegaMatcher {
+func HaveLeaked(ignoring ...any) types.GomegaMatcher {
 	m := &HaveLeakedMatcher{filters: standardFilters}
 	for _, ign := range ignoring {
 		switch ign := ign.(type) {
@@ -154,7 +154,7 @@ var gsT = reflect.TypeOf([]Goroutine{})
 // Match succeeds if actual is an array or slice of Goroutine
 // information and still contains goroutines after filtering out all expected
 // goroutines that were specified when creating the matcher.
-func (matcher *HaveLeakedMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *HaveLeakedMatcher) Match(actual any) (success bool, err error) {
 	val := reflect.ValueOf(actual)
 	switch val.Kind() {
 	case reflect.Array, reflect.Slice:
@@ -180,12 +180,12 @@ func (matcher *HaveLeakedMatcher) Match(actual interface{}) (success bool, err e
 }
 
 // FailureMessage returns a failure message if there are leaked goroutines.
-func (matcher *HaveLeakedMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *HaveLeakedMatcher) FailureMessage(actual any) (message string) {
 	return fmt.Sprintf("Expected to leak %d goroutines:\n%s", len(matcher.leaked), matcher.listGoroutines(matcher.leaked, 1))
 }
 
 // NegatedFailureMessage returns a negated failure message if there aren't any leaked goroutines.
-func (matcher *HaveLeakedMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *HaveLeakedMatcher) NegatedFailureMessage(actual any) (message string) {
 	return fmt.Sprintf("Expected not to leak %d goroutines:\n%s", len(matcher.leaked), matcher.listGoroutines(matcher.leaked, 1))
 }
 

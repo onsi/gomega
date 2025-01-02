@@ -80,7 +80,7 @@ var _ = Describe("Slice", func() {
 	})
 
 	Context("with elements that share a key", func() {
-		nonUniqueID := func(element interface{}) string {
+		nonUniqueID := func(element any) string {
 			return element.(string)[0:1]
 		}
 
@@ -171,6 +171,6 @@ var _ = Describe("Slice", func() {
 	})
 })
 
-func id(element interface{}) string {
+func id(element any) string {
 	return element.(string)
 }

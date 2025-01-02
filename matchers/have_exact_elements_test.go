@@ -57,7 +57,7 @@ var _ = Describe("HaveExactElements", func() {
 		When("a matcher errors", func() {
 			It("should soldier on", func() {
 				Expect([]string{"foo", "bar", "baz"}).ShouldNot(HaveExactElements(BeFalse(), "bar", "baz"))
-				Expect([]interface{}{"foo", "bar", false}).Should(HaveExactElements(ContainSubstring("foo"), "bar", BeFalse()))
+				Expect([]any{"foo", "bar", false}).Should(HaveExactElements(ContainSubstring("foo"), "bar", BeFalse()))
 			})
 
 			It("should include the error message, not the failure message", func() {
