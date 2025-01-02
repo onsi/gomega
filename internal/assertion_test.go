@@ -14,17 +14,17 @@ var _ = Describe("Making Synchronous Assertions", func() {
 	var IT_PASSES = true
 	var IT_FAILS = false
 
-	Extras := func(extras ...interface{}) []interface{} {
+	Extras := func(extras ...any) []any {
 		return extras
 	}
 
-	OptionalDescription := func(optionalDescription ...interface{}) []interface{} {
+	OptionalDescription := func(optionalDescription ...any) []any {
 		return optionalDescription
 	}
 
 	DescribeTable(
 		"the various cases",
-		func(actual interface{}, extras []interface{}, optionalDescription []interface{}, isPositiveAssertion bool, expectedFailureMessage string, expectedReturnValue bool) {
+		func(actual any, extras []any, optionalDescription []any, isPositiveAssertion bool, expectedFailureMessage string, expectedReturnValue bool) {
 			if isPositiveAssertion {
 				ig := NewInstrumentedGomega()
 				returnValue := ig.G.Expect(actual, extras...).To(SpecMatch(), optionalDescription...)

@@ -32,7 +32,7 @@ var _ = Describe("BeKeyOf", func() {
 
 	When("passed an unsupported type", func() {
 		It("should error", func() {
-			success, err := (&BeKeyOfMatcher{Map: []interface{}{0}}).Match(nil)
+			success, err := (&BeKeyOfMatcher{Map: []any{0}}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 

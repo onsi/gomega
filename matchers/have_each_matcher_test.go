@@ -42,14 +42,14 @@ var _ = Describe("HaveEach", func() {
 			})
 
 			It("should not power through if the matcher ever fails", func() {
-				actual := []interface{}{1, 2, "3", 4}
+				actual := []any{1, 2, "3", 4}
 				success, err := (&HaveEachMatcher{Element: BeNumerically(">=", 1)}).Match(actual)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())
 			})
 
 			It("should fail if the matcher fails", func() {
-				actual := []interface{}{1, 2, "3", "4"}
+				actual := []any{1, 2, "3", "4"}
 				success, err := (&HaveEachMatcher{Element: BeNumerically(">=", 1)}).Match(actual)
 				Expect(success).Should(BeFalse())
 				Expect(err).Should(HaveOccurred())

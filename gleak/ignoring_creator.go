@@ -36,7 +36,7 @@ type ignoringCreator struct {
 
 // Match succeeds if an actual goroutine's creator function in the backtrace
 // matches the specified function name or function name prefix.
-func (matcher *ignoringCreator) Match(actual interface{}) (success bool, err error) {
+func (matcher *ignoringCreator) Match(actual any) (success bool, err error) {
 	g, err := G(actual, "IgnoringCreator")
 	if err != nil {
 		return false, err
@@ -50,14 +50,14 @@ func (matcher *ignoringCreator) Match(actual interface{}) (success bool, err err
 // FailureMessage returns a failure message if the actual goroutine doesn't have
 // the specified function name/prefix (and optional state) at the top of the
 // backtrace.
-func (matcher *ignoringCreator) FailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringCreator) FailureMessage(actual any) (message string) {
 	return format.Message(actual, matcher.message())
 }
 
 // NegatedFailureMessage returns a failure message if the actual goroutine has
 // the specified function name/prefix (and optional state) at the top of the
 // backtrace.
-func (matcher *ignoringCreator) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringCreator) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, "not "+matcher.message())
 }
 

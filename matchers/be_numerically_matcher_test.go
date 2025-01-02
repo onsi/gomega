@@ -132,7 +132,7 @@ var _ = Describe("BeNumerically", func() {
 
 	When("passed a non-number", func() {
 		It("should error", func() {
-			success, err := (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{5}}).Match("foo")
+			success, err := (&BeNumericallyMatcher{Comparator: "==", CompareTo: []any{5}}).Match("foo")
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 
@@ -140,24 +140,24 @@ var _ = Describe("BeNumerically", func() {
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 
-			success, err = (&BeNumericallyMatcher{Comparator: "~", CompareTo: []interface{}{3.0, "foo"}}).Match(5.0)
+			success, err = (&BeNumericallyMatcher{Comparator: "~", CompareTo: []any{3.0, "foo"}}).Match(5.0)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 			Expect(err.Error()).Should(ContainSubstring("foo"))
 
-			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match(5)
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []any{"bar"}}).Match(5)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 
-			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{"bar"}}).Match("foo")
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []any{"bar"}}).Match("foo")
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 
-			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{nil}}).Match(0)
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []any{nil}}).Match(0)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 
-			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []interface{}{0}}).Match(nil)
+			success, err = (&BeNumericallyMatcher{Comparator: "==", CompareTo: []any{0}}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 		})
@@ -165,7 +165,7 @@ var _ = Describe("BeNumerically", func() {
 
 	When("passed an unsupported comparator", func() {
 		It("should error", func() {
-			success, err := (&BeNumericallyMatcher{Comparator: "!=", CompareTo: []interface{}{5}}).Match(4)
+			success, err := (&BeNumericallyMatcher{Comparator: "!=", CompareTo: []any{5}}).Match(4)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 		})
