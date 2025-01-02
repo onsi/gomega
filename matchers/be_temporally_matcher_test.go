@@ -67,7 +67,7 @@ var _ = Describe("BeTemporally", func() {
 				BeforeEach(func() {
 					t2 = t0.Add(3 * time.Second)
 				})
-				It("should use precision paramter", func() {
+				It("should use precision parameter", func() {
 					d := 2 * time.Second
 					Expect(t0).Should(BeTemporally("~", t0, d))
 					Expect(t0).Should(BeTemporally("~", t1, d))

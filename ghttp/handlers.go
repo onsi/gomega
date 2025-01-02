@@ -251,7 +251,7 @@ func (g GHTTPWithGomega) RespondWith(statusCode int, body interface{}, optionalH
 /*
 RespondWithPtr returns a handler that responds to a request with the specified status code and body
 
-Unlike RespondWith, you pass RepondWithPtr a pointer to the status code and body allowing different tests
+Unlike RespondWith, you pass RespondWithPtr a pointer to the status code and body allowing different tests
 to share the same setup but specify different status codes and bodies.
 
 Also, RespondWithPtr can be given an optional http.Header.  The headers defined therein will be added to the response headers.

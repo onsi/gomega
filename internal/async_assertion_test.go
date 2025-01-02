@@ -803,7 +803,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).Should(ContainSubstring("Expected\n    <bool>: false\nto be true"))
 				})
 
-				It("shows the state of the last match if there was a non-failing funciton at some point", func() {
+				It("shows the state of the last match if there was a non-failing function at some point", func() {
 					counter := 0
 					_, file, line, _ := runtime.Caller(0)
 					ig.G.Eventually(func(g Gomega) int {
@@ -917,7 +917,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(ig.FailureMessage).ShouldNot(ContainSubstring("bloop"))
 				})
 
-				It("returns the first failed assertion as an error and should satisy ShouldNot(Succeed) eventually", func() {
+				It("returns the first failed assertion as an error and should satisfy ShouldNot(Succeed) eventually", func() {
 					counter := 0
 					ig.G.Eventually(func(g Gomega) {
 						counter += 1
@@ -967,7 +967,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 					Ω(counter).Should(Equal(3))
 				})
 
-				It("returns the first failed assertion as an error and should satisy ShouldNot(Succeed) consistently if an error always occur", func() {
+				It("returns the first failed assertion as an error and should satisfy ShouldNot(Succeed) consistently if an error always occur", func() {
 					counter := 0
 					ig.G.Consistently(func(g Gomega) {
 						counter += 1
@@ -1033,7 +1033,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				})
 			})
 
-			Context("with a Gomega arugment as well", func() {
+			Context("with a Gomega argument as well", func() {
 				It("can also forward arguments alongside a Gomega", func() {
 					Eventually(func(g Gomega, a int, b int) {
 						g.Expect(a).To(Equal(b))
@@ -1044,7 +1044,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				})
 			})
 
-			Context("with a context arugment as well", func() {
+			Context("with a context argument as well", func() {
 				It("can also forward arguments alongside a context", func() {
 					ctx := context.WithValue(context.Background(), "key", "value")
 					Eventually(func(ctx context.Context, animal string) string {
@@ -1053,7 +1053,7 @@ var _ = Describe("Asynchronous Assertions", func() {
 				})
 			})
 
-			Context("with Gomega and context arugments", func() {
+			Context("with Gomega and context arguments", func() {
 				It("forwards arguments alongside both", func() {
 					ctx := context.WithValue(context.Background(), "key", "I have")
 					f := func(g Gomega, ctx context.Context, count int, zoo ...string) {
@@ -1082,27 +1082,27 @@ var _ = Describe("Asynchronous Assertions", func() {
 					ig.G.Eventually(func(a int) string {
 						return ""
 					}).Should(Equal("foo"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int) string takes 1 arguments but 0 have been provided.  Please use Eventually().WithArguments() to pass the corect set of arguments."))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int) string takes 1 arguments but 0 have been provided.  Please use Eventually().WithArguments() to pass the correct set of arguments."))
 
 					ig.G.Eventually(func(a int, b int) string {
 						return ""
 					}).WithArguments(1).Should(Equal("foo"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int) string takes 2 arguments but 1 has been provided.  Please use Eventually().WithArguments() to pass the corect set of arguments."))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int) string takes 2 arguments but 1 has been provided.  Please use Eventually().WithArguments() to pass the correct set of arguments."))
 
 					ig.G.Eventually(func(a int, b int) string {
 						return ""
 					}).WithArguments(1, 2, 3).Should(Equal("foo"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int) string takes 2 arguments but 3 have been provided.  Please use Eventually().WithArguments() to pass the corect set of arguments."))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int) string takes 2 arguments but 3 have been provided.  Please use Eventually().WithArguments() to pass the correct set of arguments."))
 
 					ig.G.Eventually(func(g Gomega, a int, b int) string {
 						return ""
 					}).WithArguments(1, 2, 3).Should(Equal("foo"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(types.Gomega, int, int) string takes 3 arguments but 4 have been provided.  Please use Eventually().WithArguments() to pass the corect set of arguments."))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(types.Gomega, int, int) string takes 3 arguments but 4 have been provided.  Please use Eventually().WithArguments() to pass the correct set of arguments."))
 
 					ig.G.Eventually(func(a int, b int, c ...int) string {
 						return ""
 					}).WithArguments(1).Should(Equal("foo"))
-					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int, ...int) string takes 3 arguments but 1 has been provided.  Please use Eventually().WithArguments() to pass the corect set of arguments."))
+					Ω(ig.FailureMessage).Should(ContainSubstring("The function passed to Eventually has signature func(int, int, ...int) string takes 3 arguments but 1 has been provided.  Please use Eventually().WithArguments() to pass the correct set of arguments."))
 
 				})
 			})

@@ -57,7 +57,7 @@ var Indent = "    "
 
 var longFormThreshold = 20
 
-// GomegaStringer allows for custom formating of objects for gomega.
+// GomegaStringer allows for custom formatting of objects for gomega.
 type GomegaStringer interface {
 	// GomegaString will be used to custom format an object.
 	// It does not follow UseStringerRepresentation value and will always be called regardless.

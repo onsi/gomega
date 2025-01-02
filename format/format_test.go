@@ -165,13 +165,13 @@ var _ = Describe("Format", func() {
 				Expect(Message(3, "to be three.")).Should(Equal("Expected\n    <int>: 3\nto be three."))
 			})
 
-			It("should print out an indented formatted representation of the value and the message, and trucate it when too long", func() {
+			It("should print out an indented formatted representation of the value and the message, and truncate it when too long", func() {
 				tooLong := strings.Repeat("s", MaxLength+1)
 				tooLongResult := strings.Repeat("s", MaxLength) + "...\n" + truncateHelpText
 				Expect(Message(tooLong, "to be truncated")).Should(Equal("Expected\n    <string>: " + tooLongResult + "\nto be truncated"))
 			})
 
-			It("should print out an indented formatted representation of the value and the message, and not trucate it when MaxLength = 0", func() {
+			It("should print out an indented formatted representation of the value and the message, and not truncate it when MaxLength = 0", func() {
 				MaxLength = 0
 				tooLong := strings.Repeat("s", MaxLength+1)
 				Expect(Message(tooLong, "to be truncated")).Should(Equal("Expected\n    <string>: " + tooLong + "\nto be truncated"))

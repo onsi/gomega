@@ -30,7 +30,7 @@ var _ = Describe("BeIdenticalTo", func() {
 		Expect(5).ShouldNot(BeIdenticalTo(3))
 	})
 
-	It("should treat primtives as identical", func() {
+	It("should treat primitives as identical", func() {
 		Expect("5").Should(BeIdenticalTo("5"))
 		Expect("5").ShouldNot(BeIdenticalTo("55"))
 

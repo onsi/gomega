@@ -202,7 +202,7 @@ func BeClosed() types.GomegaMatcher {
 //	Expect(myThing.IsValid()).Should(BeTrue())
 //
 // Finally, if you want to match the received object as well as get the actual received value into a variable, so you can reason further about the value received,
-// you can pass a pointer to a variable of the approriate type first, and second a matcher:
+// you can pass a pointer to a variable of the appropriate type first, and second a matcher:
 //
 //	var myThing thing
 //	Eventually(thingChan).Should(Receive(&myThing, ContainSubstring("bar")))
@@ -395,7 +395,7 @@ func ConsistOf(elements ...interface{}) types.GomegaMatcher {
 	}
 }
 
-// HaveExactElements succeeds if actual contains elements that precisely match the elemets passed into the matcher. The ordering of the elements does matter.
+// HaveExactElements succeeds if actual contains elements that precisely match the elements passed into the matcher. The ordering of the elements does matter.
 // By default HaveExactElements() uses Equal() to match the elements, however custom matchers can be passed in instead.  Here are some examples:
 //
 //	Expect([]string{"Foo", "FooBar"}).Should(HaveExactElements("Foo", "FooBar"))
@@ -692,7 +692,7 @@ func WithTransform(transform interface{}, matcher types.GomegaMatcher) types.Gom
 }
 
 // Satisfy matches the actual value against the `predicate` function.
-// The given predicate must be a function of one paramter that returns bool.
+// The given predicate must be a function of one parameter that returns bool.
 //
 //	var isEven = func(i int) bool { return i%2 == 0 }
 //	Expect(2).To(Satisfy(isEven))

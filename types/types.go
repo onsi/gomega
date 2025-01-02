@@ -13,7 +13,7 @@ type GomegaTestingT interface {
 	Fatalf(format string, args ...interface{})
 }
 
-// Gomega represents an object that can perform synchronous and assynchronous assertions with Gomega matchers
+// Gomega represents an object that can perform synchronous and asynchronous assertions with Gomega matchers
 type Gomega interface {
 	Ω(actual interface{}, extra ...interface{}) Assertion
 	Expect(actual interface{}, extra ...interface{}) Assertion

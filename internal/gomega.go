@@ -78,7 +78,7 @@ func (g *Gomega) makeAsyncAssertion(asyncAssertionType AsyncAssertionType, offse
 	actual := actualOrCtx
 	startingIndex := 0
 	if _, isCtx := actualOrCtx.(context.Context); isCtx && len(args) > 0 {
-		// the first argument is a context, we should accept it as the context _only if_ it is **not** the only argumnent **and** the second argument is not a parseable duration
+		// the first argument is a context, we should accept it as the context _only if_ it is **not** the only argument **and** the second argument is not a parseable duration
 		// this is due to an unfortunate ambiguity in early version of Gomega in which multi-type durations are allowed after the actual
 		if _, err := toDuration(args[0]); err != nil {
 			ctx = actualOrCtx.(context.Context)

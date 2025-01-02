@@ -251,7 +251,7 @@ func (matcher *ContainElementMatcher) Match(actual interface{}) (success bool, e
 	}
 
 	// pick up any findings the test is interested in as it specified a non-nil
-	// result reference. However, the expection always is that there are at
+	// result reference. However, the expectation always is that there are at
 	// least one or multiple findings. So, if a result is expected, but we had
 	// no findings, then this is an error.
 	findings := getFindings()

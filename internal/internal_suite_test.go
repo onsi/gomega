@@ -60,7 +60,7 @@ func (matcher SpecMatcher) Match(actual interface{}) (bool, error) {
 	case ERR_MATCH:
 		return false, TEST_MATCHER_ERR
 	}
-	return false, fmt.Errorf("unkown actual %v", actual)
+	return false, fmt.Errorf("unknown actual %v", actual)
 }
 
 func (matcher SpecMatcher) FailureMessage(actual interface{}) string {
@@ -75,7 +75,7 @@ func SpecMatch() SpecMatcher {
 	return SpecMatcher{}
 }
 
-//FakeGomegaTestingT
+// FakeGomegaTestingT
 type FakeGomegaTestingT struct {
 	CalledHelper bool
 	CalledFatalf string
