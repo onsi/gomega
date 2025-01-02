@@ -12,7 +12,7 @@ var _ = Describe("SatisfyMatcher", func() {
 	var isEven = func(x int) bool { return x%2 == 0 }
 
 	Context("Panic if predicate is invalid", func() {
-		panicsWithPredicate := func(predicate interface{}) {
+		panicsWithPredicate := func(predicate any) {
 			Expect(func() { Satisfy(predicate) }).WithOffset(1).To(Panic())
 		}
 		It("nil", func() {

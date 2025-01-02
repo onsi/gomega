@@ -62,7 +62,7 @@ var _ = Describe("ContainElements", func() {
 		Context("when a matcher errors", func() {
 			It("should soldier on", func() {
 				Expect([]string{"foo", "bar", "baz"}).ShouldNot(ContainElements(BeFalse(), "foo", "bar"))
-				Expect([]interface{}{"foo", "bar", false}).Should(ContainElements(BeFalse(), ContainSubstring("foo"), "bar"))
+				Expect([]any{"foo", "bar", false}).Should(ContainElements(BeFalse(), ContainSubstring("foo"), "bar"))
 			})
 		})
 	})
@@ -128,9 +128,9 @@ the missing elements were
 		})
 
 		When("the expected values are different types", func() {
-			It("uses interface{} for the expectation slice", func() {
+			It("uses any for the expectation slice", func() {
 				failures := InterceptGomegaFailures(func() {
-					Expect([]interface{}{1, true}).To(ContainElements(1, "C"))
+					Expect([]any{1, true}).To(ContainElements(1, "C"))
 				})
 
 				expected := `to contain elements
@@ -140,9 +140,9 @@ the missing elements were
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
 
-			It("uses interface{} for the negated expectation slice", func() {
+			It("uses any for the negated expectation slice", func() {
 				failures := InterceptGomegaFailures(func() {
-					Expect([]interface{}{1, "B"}).NotTo(ContainElements(1, "B"))
+					Expect([]any{1, "B"}).NotTo(ContainElements(1, "B"))
 				})
 
 				expected := `not to contain elements\n\s*<\[\]interface {} \| len:2, cap:2>: \[<int>1, <string>"B"\]`

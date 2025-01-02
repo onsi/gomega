@@ -51,7 +51,7 @@ var TEST_MATCHER_ERR = errors.New("spec matcher error")
 
 type SpecMatcher struct{}
 
-func (matcher SpecMatcher) Match(actual interface{}) (bool, error) {
+func (matcher SpecMatcher) Match(actual any) (bool, error) {
 	switch actual {
 	case MATCH:
 		return true, nil
@@ -63,11 +63,11 @@ func (matcher SpecMatcher) Match(actual interface{}) (bool, error) {
 	return false, fmt.Errorf("unknown actual %v", actual)
 }
 
-func (matcher SpecMatcher) FailureMessage(actual interface{}) string {
+func (matcher SpecMatcher) FailureMessage(actual any) string {
 	return fmt.Sprintf("positive: %s", actual)
 }
 
-func (matcher SpecMatcher) NegatedFailureMessage(actual interface{}) string {
+func (matcher SpecMatcher) NegatedFailureMessage(actual any) string {
 	return fmt.Sprintf("negative: %s", actual)
 }
 
@@ -85,6 +85,6 @@ func (f *FakeGomegaTestingT) Helper() {
 	f.CalledHelper = true
 }
 
-func (f *FakeGomegaTestingT) Fatalf(s string, args ...interface{}) {
+func (f *FakeGomegaTestingT) Fatalf(s string, args ...any) {
 	f.CalledFatalf = fmt.Sprintf(s, args...)
 }

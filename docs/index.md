@@ -241,7 +241,7 @@ fmt.Println(format.Object(theThingYouWantToPrint, 1))
 - `format.TruncatedDiff = true`: Gomega will truncate long strings and only show where they differ. You can set this to `false` if
 you want to see the full strings.
 
-You can also register your own custom formatter using `format.RegisterCustomFormatter(f)`.  Custom formatters must be of type `type CustomFormatter func(value interface{}) (string, bool)`.  Gomega will pass in any objects to be formatted to each registered custom formatter.  A custom formatter signals that it will handle the passed-in object by returning a formatted string and `true`.  If it does not handle the object it should return `"", false`.  Strings returned by custom formatters will _not_ be truncated (though they may be truncated if the object being formatted is within another struct).  Custom formatters take precedence of `GomegaStringer` and `format.UseStringerRepresentation`.
+You can also register your own custom formatter using `format.RegisterCustomFormatter(f)`.  Custom formatters must be of type `type CustomFormatter func(value any) (string, bool)`.  Gomega will pass in any objects to be formatted to each registered custom formatter.  A custom formatter signals that it will handle the passed-in object by returning a formatted string and `true`.  If it does not handle the object it should return `"", false`.  Strings returned by custom formatters will _not_ be truncated (though they may be truncated if the object being formatted is within another struct).  Custom formatters take precedence of `GomegaStringer` and `format.UseStringerRepresentation`.
 
 `format.RegisterCustomFormatter` returns a key that can be used to unregister the custom formatter:
 
@@ -576,7 +576,7 @@ Told to stop trying after <X>
 Just like functions being polled, matchers can also indicate if `Eventually`/`Consistently` should stop polling.  Matchers implement a `Match` method with the following signature:
 
 ```go
-Match(actual interface{}) (success bool, err error)
+Match(actual any) (success bool, err error)
 ```
 
 If a matcher returns `StopTrying` for `error`, or calls `StopTrying(...).Now()`, `Eventually` and `Consistently` will stop polling and fail: `StopTrying` **always** signifies a failure.
@@ -694,7 +694,7 @@ When using Go toolchain of version 1.23 or later, certain matchers as documented
 
 ### Asserting Equivalence
 
-#### Equal(expected interface{})
+#### Equal(expected any)
 
 ```go
 Ω(ACTUAL).Should(Equal(EXPECTED))
@@ -710,7 +710,7 @@ When both `ACTUAL` and `EXPECTED` are a very long strings, it will attempt to pr
 
 > For asserting equality between numbers of different types, you'll want to use the [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) matcher.
 
-#### BeComparableTo(expected interface{}, options ...cmp.Option)
+#### BeComparableTo(expected any, options ...cmp.Option)
 
 ```go
 Ω(ACTUAL).Should(BeComparableTo(EXPECTED, options ...cmp.Option))
@@ -718,7 +718,7 @@ When both `ACTUAL` and `EXPECTED` are a very long strings, it will attempt to pr
 
 uses [`gocmp.Equal`](http://github.com/google/go-cmp) from `github.com/google/go-cmp` to compare `ACTUAL` with `EXPECTED`.  This performs a deep object comparison like `reflect.DeepEqual` but offers a few additional configuration options.  Learn more at the [go-cmp godocs](https://pkg.go.dev/github.com/google/go-cmp).
 
-#### BeEquivalentTo(expected interface{})
+#### BeEquivalentTo(expected any)
 
 ```go
 Ω(ACTUAL).Should(BeEquivalentTo(EXPECTED))
@@ -748,7 +748,7 @@ As a rule, you **should not** use `BeEquivalentTo` with numbers.  Both of the fo
 
 the first assertion passes because 5.1 will be cast to an integer and will get rounded down!  Such false positives are terrible and should be avoided.  Use [`BeNumerically()`](#benumericallycomparator-string-compareto-interface) to compare numbers instead.
 
-#### BeIdenticalTo(expected interface{})
+#### BeIdenticalTo(expected any)
 
 ```go
 Ω(ACTUAL).Should(BeIdenticalTo(EXPECTED))
@@ -861,7 +861,7 @@ succeeds if `ACTUAL` is `nil`.  The intended usage is
 
 where `FUNCTION()` is a function call that returns an error-type as its *first or only* return value.  See [Handling Errors](#handling-errors) for a more detailed discussion.
 
-#### MatchError(expected interface{})
+#### MatchError(expected any)
 
 ```go
 Ω(ACTUAL).Should(MatchError(EXPECTED, <FUNCTION_ERROR_DESCRIPTION>))
@@ -960,7 +960,7 @@ Eventually(bagelChan).Should(Receive(&receivedBagel, HaveField("Kind", "sesame")
 
 Finally, `Receive` *never* blocks.  `Eventually(c).Should(Receive())` repeatedly polls `c` in a non-blocking fashion.  That means that you cannot use this pattern to verify that a *non-blocking send* has occurred on the channel - [more details at this GitHub issue](https://github.com/onsi/gomega/issues/82).
 
-#### BeSent(value interface{})
+#### BeSent(value any)
 
 ```go
 Ω(ACTUAL).Should(BeSent(VALUE))
@@ -1012,7 +1012,7 @@ succeeds IFF a file is located at `ACTUAL` exists and is a directory.
 
 ### Working with Strings, JSON and YAML
 
-#### ContainSubstring(substr string, args ...interface{})
+#### ContainSubstring(substr string, args ...any)
 
 ```go
 Ω(ACTUAL).Should(ContainSubstring(STRING, ARGS...))
@@ -1028,7 +1028,7 @@ fmt.Sprintf(STRING, ARGS...)
 
 > Note, of course, that the `ARGS...` are not required.  They are simply a convenience to allow you to build up strings programmatically inline in the matcher.
 
-#### HavePrefix(prefix string, args ...interface{})
+#### HavePrefix(prefix string, args ...any)
 
 ```go
 Ω(ACTUAL).Should(HavePrefix(STRING, ARGS...))
@@ -1044,7 +1044,7 @@ fmt.Sprintf(STRING, ARGS...)
 
 > Note, of course, that the `ARGS...` are not required.  They are simply a convenience to allow you to build up strings programmatically inline in the matcher.
 
-#### HaveSuffix(suffix string, args ...interface{})
+#### HaveSuffix(suffix string, args ...any)
 
 ```go
 Ω(ACTUAL).Should(HaveSuffix(STRING, ARGS...))
@@ -1060,7 +1060,7 @@ fmt.Sprintf(STRING, ARGS...)
 
 > Note, of course, that the `ARGS...` are not required.  They are simply a convenience to allow you to build up strings programmatically inline in the matcher.
 
-#### MatchRegexp(regexp string, args ...interface{})
+#### MatchRegexp(regexp string, args ...any)
 
 ```go
 Ω(ACTUAL).Should(MatchRegexp(STRING, ARGS...))
@@ -1076,7 +1076,7 @@ fmt.Sprintf(STRING, ARGS...)
 
 > Note, of course, that the `ARGS...` are not required.  They are simply a convenience to allow you to build up strings programmatically inline in the matcher.
 
-#### MatchJSON(json interface{})
+#### MatchJSON(json any)
 
 ```go
 Ω(ACTUAL).Should(MatchJSON(EXPECTED))
@@ -1088,7 +1088,7 @@ It is an error for either `ACTUAL` or `EXPECTED` to be invalid JSON.
 
 In some cases it is useful to match two JSON strings while ignoring list order.  For this you can use the community maintained [MatchUnorderedJSON](https://github.com/Benjamintf1/Expanded-Unmarshalled-Matchers) matcher.
 
-#### MatchXML(xml interface{})
+#### MatchXML(xml any)
 
 ```go
 Ω(ACTUAL).Should(MatchXML(EXPECTED))
@@ -1098,7 +1098,7 @@ Both `ACTUAL` and `EXPECTED` must be a `string`, `[]byte` or a `Stringer`.  `Mat
 
 It is an error for either `ACTUAL` or `EXPECTED` to be invalid XML.
 
-#### MatchYAML(yaml interface{})
+#### MatchYAML(yaml any)
 
 ```go
 Ω(ACTUAL).Should(MatchYAML(EXPECTED))
@@ -1134,7 +1134,7 @@ succeeds if the length of `ACTUAL` is `INT`. `ACTUAL` must be of type `string`, 
 
 succeeds if the capacity of `ACTUAL` is `INT`. `ACTUAL` must be of type `array`, `chan`, or `slice`.  It is an error for it to have any other type.
 
-#### ContainElement(element interface{})
+#### ContainElement(element any)
 
 ```go
 Ω(ACTUAL).Should(ContainElement(ELEMENT))
@@ -1206,7 +1206,7 @@ var findings map[int]string
 Ω(it).Should(ContainElement(HasPrefix("ba"), &findings))
 ```
 
-#### ContainElements(element ...interface{})
+#### ContainElements(element ...any)
 
 ```go
 Ω(ACTUAL).Should(ContainElements(ELEMENT1, ELEMENT2, ELEMENT3, ...))
@@ -1236,13 +1236,13 @@ is the only element passed in to `ContainElements`:
 Ω([]string{"Foo", "FooBar"}).Should(ContainElements([]string{"FooBar", "Foo"}))
 ```
 
-Note that Go's type system does not allow you to write this as `ContainElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
+Note that Go's type system does not allow you to write this as `ContainElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]any` are different types - hence the need for this special rule.
 
 Starting with Go 1.23, you can also pass in an iterator assignable to `iter.Seq` (but not `iter.Seq2`) as the only element to `ConsistOf`.
 
 The difference between the `ContainElements` and `ConsistOf` matchers is that the latter is more restrictive because the `ConsistOf` matcher checks additionally that the `ACTUAL` elements and the elements passed into the matcher have the same length.
 
-#### BeElementOf(elements ...interface{})
+#### BeElementOf(elements ...any)
 
 ```go
 Ω(ACTUAL).Should(BeElementOf(ELEMENT1, ELEMENT2, ELEMENT3, ...))
@@ -1250,7 +1250,7 @@ The difference between the `ContainElements` and `ConsistOf` matchers is that th
 
 succeeds if `ACTUAL` equals one of the elements passed into the matcher. When a single element `ELEMENT` of type `array` or `slice` is passed into the matcher, `BeElementOf` succeeds if `ELEMENT` contains an element that equals `ACTUAL` (reverse of `ContainElement`). `BeElementOf` always uses the `Equal()` matcher under the hood to assert equality.
 
-#### BeKeyOf(m interface{})
+#### BeKeyOf(m any)
 
 ```go
 Ω(ACTUAL).Should(BeKeyOf(MAP))
@@ -1273,7 +1273,7 @@ Expect(projects).To(ContainElement(HaveField("Name", BeKeyOf(names)), &canaries)
 Expect(canaries).To(HaveLen(len(names)))
 ```
 
-#### ConsistOf(element ...interface{})
+#### ConsistOf(element ...any)
 
 ```go
 Ω(ACTUAL).Should(ConsistOf(ELEMENT1, ELEMENT2, ELEMENT3, ...))
@@ -1303,11 +1303,11 @@ You typically pass variadic arguments to `ConsistOf` (as in the examples above).
 Ω([]string{"Foo", "FooBar"}).Should(ConsistOf([]string{"FooBar", "Foo"}))
 ```
 
-Note that Go's type system does not allow you to write this as `ConsistOf([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
+Note that Go's type system does not allow you to write this as `ConsistOf([]string{"FooBar", "Foo"}...)` as `[]string` and `[]any` are different types - hence the need for this special rule.
 
 Starting with Go 1.23, you can also pass in an iterator assignable to `iter.Seq` (but not `iter.Seq2`) as the only element to `ConsistOf`.
 
-#### HaveExactElements(element ...interface{})
+#### HaveExactElements(element ...any)
 
 ```go
 Expect(ACTUAL).To(HaveExactElements(ELEMENT1, ELEMENT2, ELEMENT3, ...))
@@ -1338,9 +1338,9 @@ is the only element passed in to `HaveExactElements`:
 Expect([]string{"Foo", "FooBar"}).To(HaveExactElements([]string{"FooBar", "Foo"}))
 ```
 
-Note that Go's type system does not allow you to write this as `HaveExactElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]interface{}` are different types - hence the need for this special rule.
+Note that Go's type system does not allow you to write this as `HaveExactElements([]string{"FooBar", "Foo"}...)` as `[]string` and `[]any` are different types - hence the need for this special rule.
 
-#### HaveEach(element interface{})
+#### HaveEach(element any)
 
 ```go
 Ω(ACTUAL).Should(HaveEach(ELEMENT))
@@ -1356,7 +1356,7 @@ By default `HaveEach()` uses the `Equal()` matcher under the hood to assert equa
 Ω([]string{"Foo", "FooBar"}).Should(HaveEach(ContainSubstring("Foo")))
 ```
 
-#### HaveKey(key interface{})
+#### HaveKey(key any)
 
 ```go
 Ω(ACTUAL).Should(HaveKey(KEY))
@@ -1370,7 +1370,7 @@ By default `HaveKey()` uses the `Equal()` matcher under the hood to assert equal
 Ω(map[string]string{"Foo": "Bar", "BazFoo": "Duck"}).Should(HaveKey(MatchRegexp(`.+Foo$`)))
 ```
 
-#### HaveKeyWithValue(key interface{}, value interface{})
+#### HaveKeyWithValue(key any, value any)
 
 ```go
 Ω(ACTUAL).Should(HaveKeyWithValue(KEY, VALUE))
@@ -1386,7 +1386,7 @@ By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to ass
 
 ### Working with Structs
 
-#### HaveField(field interface{}, value interface{})
+#### HaveField(field any, value any)
 
 ```go
 Ω(ACTUAL).Should(HaveField(FIELD, VALUE))
@@ -1427,7 +1427,7 @@ and an instance book `var book = Book{...}` - you can use `HaveField` to make as
 
 If you want to make lots of complex assertions against the fields of a struct take a look at the [`gstruct`package](#codegstructcode-testing-complex-data-types) documented below.
 
-#### HaveExistingField(field interface{})
+#### HaveExistingField(field any)
 
 While `HaveField()` considers a missing field to be an error (instead of non-success), combining it with `HaveExistingField()` allows `HaveField()` to be reused in test contexts other than assertions: for instance, as filters to [`ContainElement(ELEMENT, <POINTER>)`](#containelementelement-interface) or in detecting resource leaks (like leaked file descriptors).
 
@@ -1445,7 +1445,7 @@ To assert a particular field value, but only if such a field exists in an `ACTUA
 
 ### Working with Numbers and Times
 
-#### BeNumerically(comparator string, compareTo ...interface{})
+#### BeNumerically(comparator string, compareTo ...any)
 
 ```go
 Ω(ACTUAL).Should(BeNumerically(COMPARATOR_STRING, EXPECTED, <THRESHOLD>))
@@ -1533,7 +1533,7 @@ Or(BeNil(), Not(HaveValue(...)))
 
 ### Working with HTTP responses
 
-#### HaveHTTPStatus(expected interface{})
+#### HaveHTTPStatus(expected any)
 
 ```go
   Expect(ACTUAL).To(HaveHTTPStatus(EXPECTED, ...))
@@ -1555,7 +1555,7 @@ Here are some examples:
 - `Expect(resp).To(HaveHTTPStatus("404 Not Found"))`:
     asserts that `resp.Status == "404 Not Found"`.
 
-#### HaveHTTPBody(expected interface{})
+#### HaveHTTPBody(expected any)
 
 ```go
 Expect(ACTUAL).To(HaveHTTPBody(EXPECTED))
@@ -1581,7 +1581,7 @@ Here are some examples:
 Note that the body is an `io.ReadCloser` and the `HaveHTTPBody()` will read it and the close it.
 This means that subsequent attempts to read the body may have unexpected results.
 
-#### HaveHTTPHeaderWithValue(key string, value interface{})
+#### HaveHTTPHeaderWithValue(key string, value any)
 
 ```go
 Expect(ACTUAL).To(HaveHTTPHeaderWithValue(KEY, VALUE))
@@ -1705,7 +1705,7 @@ Tests the given matchers in order, returning immediately if one succeeds, withou
 
 succeeds if `ACTUAL` does **not** satisfy the specified matcher (similar to a logical NOT).
 
-#### WithTransform(transform interface{}, matcher GomegaMatcher)
+#### WithTransform(transform any, matcher GomegaMatcher)
 
 ```go
 Ω(ACTUAL).Should(WithTransform(TRANSFORM, MATCHER))
@@ -1743,7 +1743,7 @@ The following lightweight matcher expects to be used either on a `Sprocket` valu
 // either a Sprocket or a *Sprocket, having the specified name.
 func HaveSprocketName(name string) GomegaMatcher {
     return WithTransform(
-        func(actual interface{}) (string, error) {
+        func(actual any) (string, error) {
             switch sprocket := actual.(type) {
             case *Sprocket:
                 return Sprocket.Name, nil
@@ -1758,7 +1758,7 @@ func HaveSprocketName(name string) GomegaMatcher {
 Ω(element).Should(HaveSprocketName("gomega")))
 ```
 
-#### Satisfy(predicate interface{})
+#### Satisfy(predicate any)
 
 ```go
 Ω(ACTUAL).Should(Satisfy(PREDICATE))
@@ -1778,9 +1778,9 @@ A matcher, in Gomega, is any type that satisfies the `GomegaMatcher` interface:
 
 ```go
 type GomegaMatcher interface {
-    Match(actual interface{}) (success bool, err error)
-    FailureMessage(actual interface{}) (message string)
-    NegatedFailureMessage(actual interface{}) (message string)
+    Match(actual any) (success bool, err error)
+    FailureMessage(actual any) (message string)
+    NegatedFailureMessage(actual any) (message string)
 }
 ```
 
@@ -1790,7 +1790,7 @@ In addition to composition, however, it is fairly straightforward to build domai
 
 Let's work through an example and illustrate both approaches.
 
-### A Custom Matcher: RepresentJSONifiedObject(EXPECTED interface{})
+### A Custom Matcher: RepresentJSONifiedObject(EXPECTED any)
 
 Say you're working on a JSON API and you want to assert that your server returns the correct JSON representation.  Rather than marshal/unmarshal JSON in your tests, you want to write an expressive matcher that checks that the received response is a JSON representation for the object in question.  This is what the `RepresentJSONifiedObject` matcher could look like:
 
@@ -1806,17 +1806,17 @@ import (
     "reflect"
 )
 
-func RepresentJSONifiedObject(expected interface{}) types.GomegaMatcher {
+func RepresentJSONifiedObject(expected any) types.GomegaMatcher {
     return &representJSONMatcher{
         expected: expected,
     }
 }
 
 type representJSONMatcher struct {
-    expected interface{}
+    expected any
 }
 
-func (matcher *representJSONMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *representJSONMatcher) Match(actual any) (success bool, err error) {
     response, ok := actual.(*http.Response)
     if !ok {
         return false, fmt.Errorf("RepresentJSONifiedObject matcher expects an http.Response")
@@ -1834,18 +1834,18 @@ func (matcher *representJSONMatcher) Match(actual interface{}) (success bool, er
     return reflect.DeepEqual(decodedObject, matcher.expected), nil
 }
 
-func (matcher *representJSONMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *representJSONMatcher) FailureMessage(actual any) (message string) {
     return fmt.Sprintf("Expected\n\t%#v\nto contain the JSON representation of\n\t%#v", actual, matcher.expected)
 }
 
-func (matcher *representJSONMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *representJSONMatcher) NegatedFailureMessage(actual any) (message string) {
     return fmt.Sprintf("Expected\n\t%#v\nnot to contain the JSON representation of\n\t%#v", actual, matcher.expected)
 }
 ```
 
 Let's break this down:
 
-- Most matchers have a constructor function that returns an instance of the matcher.  In this case we've created `RepresentJSONifiedObject`.  Where possible, your constructor function should take explicit types or interfaces.  For our use case, however, we need to accept any possible expected type so `RepresentJSONifiedObject` takes an argument with the generic `interface{}` type.
+- Most matchers have a constructor function that returns an instance of the matcher.  In this case we've created `RepresentJSONifiedObject`.  Where possible, your constructor function should take explicit types or interfaces.  For our use case, however, we need to accept any possible expected type so `RepresentJSONifiedObject` takes an argument with the generic `any` type.
 - The constructor function then initializes and returns an instance of our matcher: the `representJSONMatcher`.  These rarely need to be exported outside of your matcher package.
 - The `representJSONMatcher` must satisfy the `GomegaMatcher` interface.  It does this by implementing the `Match`, `FailureMessage`, and `NegatedFailureMessage` method:
     - If the `GomegaMatcher` receives invalid inputs `Match` returns a non-nil error explaining the problems with the input.  This allows Gomega to fail the assertion whether the assertion is for the positive or negative case.
@@ -1874,7 +1874,7 @@ import (
     "reflect"
 )
 
-func RepresentJSONifiedObject(expected interface{}) types.GomegaMatcher {
+func RepresentJSONifiedObject(expected any) types.GomegaMatcher {
     return gcustom.MakeMatcher(func(response *http.Response) (bool, err) {
         pointerToObjectOfExpectedType := reflect.New(reflect.TypeOf(matcher.expected)).Interface()
         err = json.NewDecoder(response.Body).Decode(pointerToObjectOfExpectedType)
@@ -2015,7 +2015,7 @@ Eventually(myChannel).Should(Receive(Equal("bar")))
 To get around this, a matcher can optionally implement:
 
 ```go
-MatchMayChangeInTheFuture(actual interface{}) bool
+MatchMayChangeInTheFuture(actual any) bool
 ```
 
 This is not part of the `GomegaMatcher` interface and, in general, most matchers do not need to implement `MatchMayChangeInTheFuture`.
@@ -2063,7 +2063,7 @@ type gomegaWrapper struct {
 func (g *gomegaWrapper) Inner() gomega.Gomega {
     return g.inner
 }
-func (g *gomegaWrapper) Ω(actual interface{}, extra ...interface{}) types.Assertion {
+func (g *gomegaWrapper) Ω(actual any, extra ...any) types.Assertion {
     // You now have an opportunity to add a random delay to help identify any timing
     // dependencies in your tests or can add additional logging.
     return g.inner.Ω(actual, extra...)
@@ -2834,7 +2834,7 @@ actual := []string{
     "B: once upon a time",
     "C: the end",
 }
-id := func(element interface{}) string {
+id := func(element any) string {
     return string(element.(string)[0])
 }
 Expect(actual).To(MatchAllElements(id, Elements{
@@ -2868,7 +2868,7 @@ Expect(actual).To(MatchElements(id, IgnoreMissing, Elements{
 You can also use the flag `AllowDuplicates` to permit multiple elements in your slice to map to a single key and matcher in your fields (this flag is not meaningful when applied to structs).
 
 ```go
-everyElementID := func(element interface{}) string {
+everyElementID := func(element any) string {
     return "a constant" // Every element will map to the same key in this case; you can group them into multiple keys, however.
 }
 Expect(actual).To(MatchElements(everyElementID, AllowDuplicates, Elements{
@@ -2889,7 +2889,7 @@ actual := []string{
     "B: once upon a time",
     "C: the end",
 }
-id := func(index int, _ interface{}) string {
+id := func(index int, _ any) string {
     return strconv.Itoa(index)
 }
 Expect(actual).To(MatchAllElementsWithIndex(id, Elements{
@@ -2952,7 +2952,7 @@ The `gstruct` matchers are intended to be composable, and can be combined to app
 Example:
 
 ```go
-coreID := func(element interface{}) string {
+coreID := func(element any) string {
     return strconv.Itoa(element.(CoreStats).Index)
 }
 Expect(actual).To(MatchAllFields(Fields{
@@ -3031,7 +3031,7 @@ Finally, `gmeasure` provides a mechanism to cache `Experiment`s to disk with a s
 
 ### Measuring Values
 
-`Experiment`s can record arbitrary `float64` values.  You can do this by directly providing a `float64` via `experiment.RecordValue(measurementName string, value float64, decorators ...interface{})` or by providing a callback that returns a float64 via `experiment.MeasureValue(measurementName string, callback func() float64, decorators ...interface{})`.
+`Experiment`s can record arbitrary `float64` values.  You can do this by directly providing a `float64` via `experiment.RecordValue(measurementName string, value float64, decorators ...any)` or by providing a callback that returns a float64 via `experiment.MeasureValue(measurementName string, callback func() float64, decorators ...any)`.
 
 You can apply `Units`, `Style`, and `Precision` decorators to control the appearance of the `Measurement` when reports are generated.  These decorators must be applied when the first data point is recorded but can be elided thereafter.  You can also associate an `Annotation` decoration with any recorded data point.
 
@@ -3039,7 +3039,7 @@ You can apply `Units`, `Style`, and `Precision` decorators to control the appear
 
 ### Measuring Durations
 
-`Experiment`s can record arbitrary `time.Duration` durations.  You can do this by directly providing a `time.Duration` via `experiment.RecordDuration(measurementName string, duration time.Duration, decorators ...interface{})` or by providing a callback via `experiment.MeasureDuration(measurementName string, callback func(), decorators ...interface{})`.  `gmeasure` will run the callback and measure how long it takes to complete.
+`Experiment`s can record arbitrary `time.Duration` durations.  You can do this by directly providing a `time.Duration` via `experiment.RecordDuration(measurementName string, duration time.Duration, decorators ...any)` or by providing a callback via `experiment.MeasureDuration(measurementName string, callback func(), decorators ...any)`.  `gmeasure` will run the callback and measure how long it takes to complete.
 
 You can apply `Style` and `Precision` decorators to control the appearance of the `Measurement` when reports are generated.  These decorators must be applied when the first data point is recorded but can be elided thereafter.  You can also associate an `Annotation` decoration with any recorded data point.
 
@@ -3067,10 +3067,10 @@ The basic sampling method is `experiment.Sample(callback func(idx int), sampling
 A common use-case, however, is to invoke a callback repeatedly to measure its duration or record its returned value and thereby generate an ensemble of data-points.  This is supported via the `SampleX` family of methods built on top of `Sample`:
 
 ```go
-experiment.SampleValue(measurementName string, callback func(idx int) float64, samplingConfig SamplingConfig, decorations ...interface{})
-experiment.SampleDuration(measurementName string, callback func(idx int), samplingConfig SamplingConfig, decorations ...interface{})
-experiment.SampleAnnotatedValue(measurementName string, callback func(idx int) (float64, Annotation), samplingConfig SamplingConfig, decorations ...interface{})
-experiment.SampleAnnotatedDuration(measurementName string, callback func(idx int) Annotation, samplingConfig SamplingConfig, decorations ...interface{})
+experiment.SampleValue(measurementName string, callback func(idx int) float64, samplingConfig SamplingConfig, decorations ...any)
+experiment.SampleDuration(measurementName string, callback func(idx int), samplingConfig SamplingConfig, decorations ...any)
+experiment.SampleAnnotatedValue(measurementName string, callback func(idx int) (float64, Annotation), samplingConfig SamplingConfig, decorations ...any)
+experiment.SampleAnnotatedDuration(measurementName string, callback func(idx int) Annotation, samplingConfig SamplingConfig, decorations ...any)
 ```
 
 each of these will contribute data points to the `Measurement` with name `measurementName`.  `SampleValue` records the `float64` values returned by its callback.  `SampleDuration` times each invocation of its callback and records the measured duration.  `SampleAnnotatedValue` and `SampleAnnotatedDuration` expect their callbacks to return `Annotation`s.  These are attached to each generated data point.

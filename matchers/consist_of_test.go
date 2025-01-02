@@ -63,7 +63,7 @@ var _ = Describe("ConsistOf", func() {
 		When("a matcher errors", func() {
 			It("should soldier on", func() {
 				Expect([]string{"foo", "bar", "baz"}).ShouldNot(ConsistOf(BeFalse(), "foo", "bar"))
-				Expect([]interface{}{"foo", "bar", false}).Should(ConsistOf(BeFalse(), ContainSubstring("foo"), "bar"))
+				Expect([]any{"foo", "bar", false}).Should(ConsistOf(BeFalse(), ContainSubstring("foo"), "bar"))
 			})
 		})
 	})
@@ -173,9 +173,9 @@ the extra elements were
 		})
 
 		When("the expected values are different types", func() {
-			It("uses interface{} for the expectation slice", func() {
+			It("uses any for the expectation slice", func() {
 				failures := InterceptGomegaFailures(func() {
-					Expect([]interface{}{1, true}).To(ConsistOf(1, "C"))
+					Expect([]any{1, true}).To(ConsistOf(1, "C"))
 				})
 
 				expected := `to consist of
@@ -187,9 +187,9 @@ the extra elements were
 				Expect(failures).To(ConsistOf(MatchRegexp(expected)))
 			})
 
-			It("uses interface{} for the negated expectation slice", func() {
+			It("uses any for the negated expectation slice", func() {
 				failures := InterceptGomegaFailures(func() {
-					Expect([]interface{}{1, "B"}).NotTo(ConsistOf(1, "B"))
+					Expect([]any{1, "B"}).NotTo(ConsistOf(1, "B"))
 				})
 
 				expected := `not to consist of\n\s*<\[\]interface {} \| len:2, cap:2>: \[<int>1, <string>"B"\]`

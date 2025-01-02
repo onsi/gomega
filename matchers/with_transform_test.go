@@ -13,7 +13,7 @@ var _ = Describe("WithTransformMatcher", func() {
 	var plus1 = func(i int) int { return i + 1 }
 
 	Context("Panic if transform function invalid", func() {
-		panicsWithTransformer := func(transform interface{}) {
+		panicsWithTransformer := func(transform any) {
 			Expect(func() { WithTransform(transform, nil) }).WithOffset(1).To(Panic())
 		}
 		It("nil", func() {
@@ -37,7 +37,7 @@ var _ = Describe("WithTransformMatcher", func() {
 		})
 		Context("Invalid number of return values, but correct number of arguments", func() {
 			It("Two return values, but second return value not an error", func() {
-				panicsWithTransformer(func(interface{}) (int, int) { return 5, 6 })
+				panicsWithTransformer(func(any) (int, int) { return 5, 6 })
 			})
 		})
 	})

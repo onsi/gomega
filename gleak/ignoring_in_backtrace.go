@@ -19,7 +19,7 @@ type ignoringInBacktraceMatcher struct {
 }
 
 // Match succeeds if actual's backtrace contains the specified function name.
-func (matcher *ignoringInBacktraceMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *ignoringInBacktraceMatcher) Match(actual any) (success bool, err error) {
 	g, err := G(actual, "IgnoringInBacktrace")
 	if err != nil {
 		return false, err
@@ -29,12 +29,12 @@ func (matcher *ignoringInBacktraceMatcher) Match(actual interface{}) (success bo
 
 // FailureMessage returns a failure message if the actual's backtrace does not
 // contain the specified function name.
-func (matcher *ignoringInBacktraceMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringInBacktraceMatcher) FailureMessage(actual any) (message string) {
 	return format.Message(actual, fmt.Sprintf("to contain %q in the goroutine's backtrace", matcher.fname))
 }
 
 // NegatedFailureMessage returns a failure message if the actual's backtrace
 // does contain the specified function name.
-func (matcher *ignoringInBacktraceMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringInBacktraceMatcher) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, fmt.Sprintf("not to contain %q in the goroutine's backtrace", matcher.fname))
 }

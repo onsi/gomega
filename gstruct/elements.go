@@ -17,7 +17,7 @@ import (
 // MatchAllElements succeeds if every element of a slice matches the element matcher it maps to
 // through the id function, and every element matcher is matched.
 //
-//	idFn := func(element interface{}) string {
+//	idFn := func(element any) string {
 //	    return fmt.Sprintf("%v", element)
 //	}
 //
@@ -35,7 +35,7 @@ func MatchAllElements(identifier Identifier, elements Elements) types.GomegaMatc
 // MatchAllElementsWithIndex succeeds if every element of a slice matches the element matcher it maps to
 // through the id with index function, and every element matcher is matched.
 //
-//	idFn := func(index int, element interface{}) string {
+//	idFn := func(index int, element any) string {
 //	    return strconv.Itoa(index)
 //	}
 //
@@ -53,7 +53,7 @@ func MatchAllElementsWithIndex(identifier IdentifierWithIndex, elements Elements
 // MatchElements succeeds if each element of a slice matches the element matcher it maps to
 // through the id function. It can ignore extra elements and/or missing elements.
 //
-//	idFn := func(element interface{}) string {
+//	idFn := func(element any) string {
 //	    return fmt.Sprintf("%v", element)
 //	}
 //
@@ -80,7 +80,7 @@ func MatchElements(identifier Identifier, options Options, elements Elements) ty
 // MatchElementsWithIndex succeeds if each element of a slice matches the element matcher it maps to
 // through the id with index function. It can ignore extra elements and/or missing elements.
 //
-//	idFn := func(index int, element interface{}) string {
+//	idFn := func(index int, element any) string {
 //	    return strconv.Itoa(index)
 //	}
 //
@@ -128,35 +128,35 @@ type ElementsMatcher struct {
 type Elements map[string]types.GomegaMatcher
 
 // Function for identifying (mapping) elements.
-type Identifier func(element interface{}) string
+type Identifier func(element any) string
 
 // Calls the underlying function with the provided params.
 // Identifier drops the index.
-func (i Identifier) WithIndexAndElement(index int, element interface{}) string {
+func (i Identifier) WithIndexAndElement(index int, element any) string {
 	return i(element)
 }
 
 // Uses the index and element to generate an element name
-type IdentifierWithIndex func(index int, element interface{}) string
+type IdentifierWithIndex func(index int, element any) string
 
 // Calls the underlying function with the provided params.
 // IdentifierWithIndex uses the index.
-func (i IdentifierWithIndex) WithIndexAndElement(index int, element interface{}) string {
+func (i IdentifierWithIndex) WithIndexAndElement(index int, element any) string {
 	return i(index, element)
 }
 
 // Interface for identifying the element
 type Identify interface {
-	WithIndexAndElement(i int, element interface{}) string
+	WithIndexAndElement(i int, element any) string
 }
 
 // IndexIdentity is a helper function for using an index as
 // the key in the element map
-func IndexIdentity(index int, _ interface{}) string {
+func IndexIdentity(index int, _ any) string {
 	return strconv.Itoa(index)
 }
 
-func (m *ElementsMatcher) Match(actual interface{}) (success bool, err error) {
+func (m *ElementsMatcher) Match(actual any) (success bool, err error) {
 	if reflect.TypeOf(actual).Kind() != reflect.Slice {
 		return false, fmt.Errorf("%v is type %T, expected slice", actual, actual)
 	}
@@ -168,7 +168,7 @@ func (m *ElementsMatcher) Match(actual interface{}) (success bool, err error) {
 	return true, nil
 }
 
-func (m *ElementsMatcher) matchElements(actual interface{}) (errs []error) {
+func (m *ElementsMatcher) matchElements(actual any) (errs []error) {
 	// Provide more useful error messages in the case of a panic.
 	defer func() {
 		if err := recover(); err != nil {
@@ -221,12 +221,12 @@ func (m *ElementsMatcher) matchElements(actual interface{}) (errs []error) {
 	return errs
 }
 
-func (m *ElementsMatcher) FailureMessage(actual interface{}) (message string) {
+func (m *ElementsMatcher) FailureMessage(actual any) (message string) {
 	failure := errorsutil.AggregateError(m.failures)
 	return format.Message(actual, fmt.Sprintf("to match elements: %v", failure))
 }
 
-func (m *ElementsMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (m *ElementsMatcher) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, "not to match elements")
 }
 

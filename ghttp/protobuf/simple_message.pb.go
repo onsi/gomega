@@ -111,7 +111,7 @@ func file_ghttp_protobuf_simple_message_proto_rawDescGZIP() []byte {
 }
 
 var file_ghttp_protobuf_simple_message_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_ghttp_protobuf_simple_message_proto_goTypes = []interface{}{
+var file_ghttp_protobuf_simple_message_proto_goTypes = []any{
 	(*SimpleMessage)(nil), // 0: protobuf.SimpleMessage
 }
 var file_ghttp_protobuf_simple_message_proto_depIdxs = []int32{
@@ -128,7 +128,7 @@ func file_ghttp_protobuf_simple_message_proto_init() {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_ghttp_protobuf_simple_message_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_ghttp_protobuf_simple_message_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*SimpleMessage); i {
 			case 0:
 				return &v.state

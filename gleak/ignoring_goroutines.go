@@ -28,7 +28,7 @@ type ignoringGoroutinesMatcher struct {
 
 // Match succeeds if actual is a Goroutine and its ID is in the set of
 // goroutine IDs to expect and thus to ignore in leak checks.
-func (matcher *ignoringGoroutinesMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *ignoringGoroutinesMatcher) Match(actual any) (success bool, err error) {
 	g, err := G(actual, "IgnoringGoroutines")
 	if err != nil {
 		return false, err
@@ -39,13 +39,13 @@ func (matcher *ignoringGoroutinesMatcher) Match(actual interface{}) (success boo
 
 // FailureMessage returns a failure message if the actual goroutine isn't in the
 // set of goroutines to be ignored.
-func (matcher *ignoringGoroutinesMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringGoroutinesMatcher) FailureMessage(actual any) (message string) {
 	return format.Message(actual, "to be contained in the list of expected goroutine IDs", matcher.expectedGoids())
 }
 
 // NegatedFailureMessage returns a negated failure message if the actual
 // goroutine actually is in the set of goroutines to be ignored.
-func (matcher *ignoringGoroutinesMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *ignoringGoroutinesMatcher) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, "not to be contained in the list of expected goroutine IDs", matcher.expectedGoids())
 }
 

@@ -12,7 +12,7 @@ import (
 	"github.com/onsi/gomega/format"
 )
 
-var interfaceType = reflect.TypeOf((*interface{})(nil)).Elem()
+var interfaceType = reflect.TypeOf((*any)(nil)).Elem()
 var errInterface = reflect.TypeOf((*error)(nil)).Elem()
 
 var defaultTemplate = template.Must(ParseTemplate("{{if .Failure}}Custom matcher failed for:{{else}}Custom matcher succeeded (but was expected to fail) for:{{end}}\n{{.FormattedActual}}"))

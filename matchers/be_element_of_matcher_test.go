@@ -44,7 +44,7 @@ var _ = Describe("BeElementOf", func() {
 
 	When("passed an unsupported type", func() {
 		It("should error", func() {
-			success, err := (&BeElementOfMatcher{Elements: []interface{}{0}}).Match(nil)
+			success, err := (&BeElementOfMatcher{Elements: []any{0}}).Match(nil)
 			Expect(success).Should(BeFalse())
 			Expect(err).Should(HaveOccurred())
 

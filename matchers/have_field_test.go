@@ -71,7 +71,7 @@ var _ = Describe("HaveField", func() {
 	})
 
 	DescribeTable("traversing the struct works",
-		func(field string, expected interface{}) {
+		func(field string, expected any) {
 			Ω(book).Should(HaveField(field, expected))
 		},
 		Entry("Top-level field with default submatcher", "Title", "Les Miserables"),
@@ -84,7 +84,7 @@ var _ = Describe("HaveField", func() {
 	)
 
 	DescribeTable("negation works",
-		func(field string, expected interface{}) {
+		func(field string, expected any) {
 			Ω(book).ShouldNot(HaveField(field, expected))
 		},
 		Entry("Top-level field with default submatcher", "Title", "Les Mis"),
@@ -163,7 +163,7 @@ var _ = Describe("HaveField", func() {
 
 	Describe("receiver lookup", func() {
 		DescribeTable("(pointer) receiver lookup on book pointer works",
-			func(field string, expected interface{}) {
+			func(field string, expected any) {
 				Ω(&book).Should(HaveField(field, expected))
 			},
 			Entry("non-pointer receiver", "ReceiverTitle()", "Les Miserables"),
