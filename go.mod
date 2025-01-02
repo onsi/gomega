@@ -6,7 +6,7 @@ toolchain go1.22.10
 
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/onsi/ginkgo/v2 v2.22.1
+	github.com/onsi/ginkgo/v2 v2.22.2
 	golang.org/x/net v0.33.0
 	google.golang.org/protobuf v1.36.1
 	gopkg.in/yaml.v3 v3.0.1
