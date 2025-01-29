@@ -14,7 +14,8 @@ type HavePrefixMatcher struct {
 func (matcher *HavePrefixMatcher) Match(actual interface{}) (success bool, err error) {
 	actualString, ok := toString(actual)
 	if !ok {
-		return false, fmt.Errorf("HavePrefix matcher requires a string or stringer.  Got:\n%s", format.Object(actual, 1))
+		return false, fmt.Errorf("HavePrefix matcher requires a string, stringer, []bytes, or json.RawMessage. "+
+			"Got:\n%s", format.Object(actual, 1))
 	}
 	prefix := matcher.prefix()
 	return len(actualString) >= len(prefix) && actualString[0:len(prefix)] == prefix, nil

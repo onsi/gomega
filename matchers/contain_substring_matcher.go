@@ -17,7 +17,8 @@ type ContainSubstringMatcher struct {
 func (matcher *ContainSubstringMatcher) Match(actual interface{}) (success bool, err error) {
 	actualString, ok := toString(actual)
 	if !ok {
-		return false, fmt.Errorf("ContainSubstring matcher requires a string or stringer.  Got:\n%s", format.Object(actual, 1))
+		return false, fmt.Errorf("ContainSubstring matcher requires a string, stringer, []bytes, or json.RawMessage. "+
+			"Got:\n%s", format.Object(actual, 1))
 	}
 
 	return strings.Contains(actualString, matcher.stringToMatch()), nil
