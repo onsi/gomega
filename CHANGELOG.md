@@ -1,3 +1,19 @@
+## 1.36.3
+
+### Maintenance
+
+- bump all the things [adb8b49]
+- chore: replace `interface{}` with `any` [7613216]
+- Bump google.golang.org/protobuf from 1.36.1 to 1.36.5 (#822) [9fe5259]
+- remove spurious "toolchain" from go.mod (#819) [a0e85b9]
+- Bump golang.org/x/net from 0.33.0 to 0.35.0 (#823) [604a8b1]
+- Bump activesupport from 6.0.6.1 to 6.1.7.5 in /docs (#772) [36fbc84]
+- Bump github-pages from 231 to 232 in /docs (#778) [ced70d7]
+- Bump rexml from 3.2.6 to 3.3.9 in /docs (#788) [c8b4a07]
+- Bump github.com/onsi/ginkgo/v2 from 2.22.1 to 2.22.2 (#812) [06431b9]
+- Bump webrick from 1.8.1 to 1.9.1 in /docs (#800) [b55a92d]
+- Fix typos (#813) [a1d518b]
+
 ## 1.36.2
 
 ### Maintenance
