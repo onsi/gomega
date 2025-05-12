@@ -178,7 +178,7 @@ func ensureDefaultGomegaIsConfigured() {
 // All subsequent arguments will be required to be nil/zero.
 //
 // This is convenient if you want to make an assertion on a method/function that returns
-// a value and an error - a common patter in Go.
+// a value and an error - a common pattern in Go.
 //
 // For example, given a function with signature:
 //
