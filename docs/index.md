@@ -2786,7 +2786,14 @@ Due to the global nature of these methods, keep in mind that signaling processes
 
 ### Testing type `struct`
 
-`gstruct` provides the `FieldsMatcher` through the `MatchAllFields` and `MatchFields` functions for applying a separate matcher to each field of a struct:
+`gstruct` provides the `FieldsMatcher` through the `MatchAllFields` and `MatchFields` functions for applying a separate matcher to each field of a struct.
+
+To match a subset or superset of a struct, you should use the `MatchFields` function with the `IgnoreExtras`, `IgnoreUnexportedExtras` and `IgnoreMissing` options.
+The options can be combined with the binary or, for instance : `IgnoreMissing|IgnoreExtras`.
+
+#### Match all fields
+
+`MatchAllFields` requires that every field is matched, and each matcher is mapped to a field. This is useful for test maintainability, as it ensures that all fields are tested, and will fail in the future if you add or remove a field and forget to update the test, e.g.
 
 ```go
 actual := struct{
@@ -2801,7 +2808,9 @@ Expect(actual).To(MatchAllFields(Fields{
 }))
 ```
 
-`MatchAllFields` requires that every field is matched, and each matcher is mapped to a field. To match a subset or superset of a struct, you should use the `MatchFields` function with the `IgnoreExtras` and `IgnoreMissing` options. `IgnoreExtras` will ignore fields that don't map to a matcher, e.g.
+#### Ignore extra fields
+
+`IgnoreExtras` will ignore fields that don't map to a matcher, e.g.
 
 ```go
 Expect(actual).To(MatchFields(IgnoreExtras, Fields{
@@ -2810,6 +2819,28 @@ Expect(actual).To(MatchFields(IgnoreExtras, Fields{
     // Ignore lack of "C" in the matcher.
 }))
 ```
+
+Using IgnoreExtras will ignore any new field that you will add to the struct in the future, you might want to consider using `gstruct.Ignore()` instead if you want to ignore only specific fields.
+
+#### Ignore unexported extra fields
+
+`IgnoreUnexportedExtras` will ignore fields that don't map to a matcher, but only if they are unexported e.g.
+
+```go
+Expect(actual).To(MatchFields(IgnoreUnexportedExtras, Fields{
+    "A": BeNumerically("<", 10),
+    "B": BeTrue(),
+    // Ignore lack of "c" in the matcher.
+	// But does not ignore "C" in the matcher, because it is exported.
+}))
+```
+
+This is useful because gstruct uses the `reflect` package to access the fields of a struct, and it will not be able to access unexported fields. 
+This is a compromise between using MatchAllFields and MatchFields with IgnoreExtras, as it allows you to ignore unexported fields without having to specify them in the matcher.
+If you prefer to list the unexported fields you want to ignore, you can use `gstruct.Ignore()` instead, the matcher will make sure to not use reflect on those fields.
+
+
+#### Ignore missing fields
 
 `IgnoreMissing` will ignore matchers that don't map to a field, e.g.
 
@@ -2821,8 +2852,6 @@ Expect(actual).To(MatchFields(IgnoreMissing, Fields{
     "D": Equal("bar"), // Ignored, since actual.D does not exist.
 }))
 ```
-
-The options can be combined with the binary or: `IgnoreMissing|IgnoreExtras`.
 
 ### Testing type slice
 
