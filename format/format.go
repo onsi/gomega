@@ -464,6 +464,17 @@ func formatStruct(v reflect.Value, indentation uint) string {
 	longest := 0
 	for i := 0; i < l; i++ {
 		structField := t.Field(i)
+		tagValue, ok := structField.Tag.Lookup("gomega")
+		if ok && tagValue == "omit" {
+			var representation string
+			if structField.Type.Kind() == reflect.Pointer {
+				representation = fmt.Sprintf("%s: %s", structField.Name, fmt.Sprintf("<0x%x omitted by tag>", v.Field(i).Pointer()))
+			} else {
+				representation = fmt.Sprintf("%s: %s", structField.Name, "<omitted by tag>")
+			}
+			result = append(result, representation)
+			continue
+		}
 		fieldEntry := v.Field(i)
 		representation := fmt.Sprintf("%s: %s", structField.Name, formatValue(fieldEntry, indentation+1))
 		result = append(result, representation)
