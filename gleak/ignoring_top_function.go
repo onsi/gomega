@@ -25,12 +25,17 @@ import (
 // matches a goroutine where the name of the top function is "foo.bar" and the
 // goroutine's state starts with "running".
 func IgnoringTopFunction(topfname string) types.GomegaMatcher {
-	if brIndex := strings.Index(topfname, "["); brIndex >= 0 {
-		expectedState := strings.Trim(topfname[brIndex:], "[]")
-		expectedTopFunction := strings.Trim(topfname[:brIndex], " ")
-		return &ignoringTopFunctionMatcher{
-			expectedTopFunction: expectedTopFunction,
-			expectedState:       expectedState,
+	if lbrIndex := strings.LastIndex(topfname, "["); lbrIndex >= 0 {
+		// If the last ] is the last character, then there is a state,
+		// otherwise assume it was part of a type definition, eg "foo.bar(*implementation[...]).baz"
+		if rbrIndex := strings.LastIndex(topfname, "]"); rbrIndex == len(topfname)-1 {
+			expectedState := strings.Trim(topfname[lbrIndex:rbrIndex], "[]")
+			expectedTopFunction := strings.Trim(topfname[:lbrIndex], " ")
+
+			return &ignoringTopFunctionMatcher{
+				expectedTopFunction: expectedTopFunction,
+				expectedState:       expectedState,
+			}
 		}
 	}
 	if strings.HasSuffix(topfname, "...") {

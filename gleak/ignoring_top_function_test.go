@@ -20,12 +20,31 @@ var _ = Describe("IgnoringTopFunction matcher", func() {
 		Expect(m.Match(Goroutine{
 			TopFunction: "main.main",
 		})).To(BeFalse())
+
+		m = IgnoringTopFunction("foo.bar(*implementation[...]).baz")
+		Expect(m.Match(Goroutine{
+			TopFunction: "foo.bar(*implementation[...]).baz",
+		})).To(BeTrue())
+		Expect(m.Match(Goroutine{
+			TopFunction: "main.main",
+		})).To(BeFalse())
 	})
 
 	It("matches a toplevel function by prefix", func() {
 		m := IgnoringTopFunction("foo...")
 		Expect(m.Match(Goroutine{
 			TopFunction: "foo.bar",
+		})).To(BeTrue())
+		Expect(m.Match(Goroutine{
+			TopFunction: "foo",
+		})).To(BeFalse())
+		Expect(m.Match(Goroutine{
+			TopFunction: "spanish.inquisition",
+		})).To(BeFalse())
+
+		m = IgnoringTopFunction("foo.bar(*implementation[...])...")
+		Expect(m.Match(Goroutine{
+			TopFunction: "foo.bar(*implementation[...]).baz",
 		})).To(BeTrue())
 		Expect(m.Match(Goroutine{
 			TopFunction: "foo",
@@ -43,6 +62,16 @@ var _ = Describe("IgnoringTopFunction matcher", func() {
 		})).To(BeTrue())
 		Expect(m.Match(Goroutine{
 			TopFunction: "foo.bar",
+			State:       "uneasy, anxious",
+		})).To(BeFalse())
+
+		m = IgnoringTopFunction("foo.bar(*implementation[...]) [worried]")
+		Expect(m.Match(Goroutine{
+			TopFunction: "foo.bar(*implementation[...])",
+			State:       "worried, stalled",
+		})).To(BeTrue())
+		Expect(m.Match(Goroutine{
+			TopFunction: "foo.bar(*implementation[...])",
 			State:       "uneasy, anxious",
 		})).To(BeFalse())
 	})
