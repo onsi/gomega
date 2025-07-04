@@ -25,9 +25,9 @@ import (
 // matches a goroutine where the name of the top function is "foo.bar" and the
 // goroutine's state starts with "running".
 func IgnoringTopFunction(topfname string) types.GomegaMatcher {
-	if brIndex := strings.Index(topfname, "["); brIndex >= 0 {
-		expectedState := strings.Trim(topfname[brIndex:], "[]")
-		expectedTopFunction := strings.Trim(topfname[:brIndex], " ")
+	if brIndex := strings.Index(topfname, " ["); brIndex >= 0 {
+		expectedState := strings.Trim(topfname[brIndex+1:], "[]")
+		expectedTopFunction := strings.Trim(topfname[:brIndex+1], " ")
 		return &ignoringTopFunctionMatcher{
 			expectedTopFunction: expectedTopFunction,
 			expectedState:       expectedState,
