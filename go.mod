@@ -7,9 +7,9 @@ toolchain go1.24.1
 require (
 	github.com/google/go-cmp v0.7.0
 	github.com/onsi/ginkgo/v2 v2.23.4
+	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/net v0.43.0
 	google.golang.org/protobuf v1.36.7
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
