@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/onsi/ginkgo/v2 v2.25.1
+	github.com/onsi/ginkgo/v2 v2.25.3
 	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/net v0.43.0
 	google.golang.org/protobuf v1.36.7
