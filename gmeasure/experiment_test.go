@@ -180,7 +180,7 @@ var _ = Describe("Experiment", func() {
 
 		ints := func(n int) []int {
 			out := []int{}
-			for i := 0; i < n; i++ {
+			for i := range n {
 				out = append(out, i)
 			}
 			return out

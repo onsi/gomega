@@ -105,7 +105,7 @@ var _ = Describe("Bipartitegraph", func() {
 		)
 
 		BeforeEach(func() {
-			for i := 0; i < len(half); i++ {
+			for i := range half {
 				half[i] = i
 			}
 			discrete, _ = NewBipartiteGraph(half, half, discreteNeighbours)
@@ -152,7 +152,7 @@ var _ = Describe("Bipartitegraph", func() {
 		)
 
 		BeforeEach(func() {
-			for i := 0; i < len(half); i++ {
+			for i := range half {
 				half[i] = i
 			}
 			graph1, _ = NewBipartiteGraph(half, half, neighbours1)

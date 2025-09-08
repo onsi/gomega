@@ -32,7 +32,7 @@ func (f FakeReader) Read(p []byte) (int, error) {
 		return 0, f.err
 	}
 
-	for i := 0; i < len(p); i++ {
+	for i := range p {
 		p[i] = 'a'
 	}
 
