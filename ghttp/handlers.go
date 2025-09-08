@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -219,9 +220,7 @@ func (g GHTTPWithGomega) VerifyProtoRepresenting(expected protoiface.MessageV1) 
 }
 
 func copyHeader(src http.Header, dst http.Header) {
-	for key, value := range src {
-		dst[key] = value
-	}
+	maps.Copy(dst, src)
 }
 
 /*
