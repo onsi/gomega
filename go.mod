@@ -7,7 +7,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.25.3
 	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/net v0.43.0
-	google.golang.org/protobuf v1.36.7
+	google.golang.org/protobuf v1.36.8
 )
 
 require (
