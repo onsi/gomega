@@ -873,7 +873,7 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` mu
 - An error (i.e. anything satisfying Go's `error` interface).  In which case the matcher:
     - First checks if `errors.Is(ACTUAL, EXPECTED)` returns `true`
     - If not, it checks if `ACTUAL` or any of the errors it wraps (directly or indirectly) equals `EXPECTED` via `reflect.DeepEqual()`.
-- A matcher, in which case `ACTUAL.Error()` is tested against the matcher, for example `Expect(err).Should(MatchError(ContainSubstring("sprocket not found")))`  will pass if `err.Error()` has the substring "sprocke tnot found"
+- A matcher, in which case `ACTUAL.Error()` is tested against the matcher, for example `Expect(err).Should(MatchError(ContainSubstring("sprocket not found")))`  will pass if `err.Error()` has the substring "sprocket not found"
 - A function with signature `func(error) bool`.  The matcher then passes if `f(ACTUAL)` returns `true`.  If using a function in this way you are required to pass a `FUNCTION_ERROR_DESCRIPTION` argument to `MatchError` that describes the function.  This description is used in the failure message.  For example: `Expect(err).To(MatchError(os.IsNotExist, "IsNotExist))`
 
 Any other type for `EXPECTED` is an error. It is also an error for `ACTUAL` to be nil.  Note that `FUNCTION_ERROR_DESCRIPTION` is a description of the error function, if used.  This is required when passing a function but is ignored in all other cases.
@@ -1604,7 +1604,7 @@ Here are some examples:
 - `Expect(resp).To(HaveHTTPHeaderWithValue("Content-Type", "application/json"))`:
     asserts that the `Content-Type` header has exactly the value `application/json`.
 
-- `Expect(resp).To(HaveHTTPHeaderWithValue(ContainSubstring("json")))`:
+- `Expect(resp).To(HaveHTTPHeaderWithValue("Content-Type", ContainSubstring("json")))`:
     asserts that the `Content-Type` header contains the substring `json`.
 
 ### Asserting on Panics
@@ -2414,7 +2414,7 @@ Describe("CRUDing sprockes", func() {
             ghttp.RespondWith(http.StatusOK, "your-auth-token"),
         ))
     })
-    Context("GETting sprockets", func() {
+    Context("GETing sprockets", func() {
         var returnedSprockets []Sprocket
 
         BeforeEach(func() {
