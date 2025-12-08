@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 	. "github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
 )
@@ -404,7 +405,7 @@ var _ = Describe("Format", func() {
 			When("the slice is made of printable bytes", func() {
 				It("should present it as string", func() {
 					b := []byte("a b c")
-					Expect(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
+					Expect(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `\"a b c\"`))
 				})
 			})
 			When("the slice contains non-printable bytes", func() {
@@ -560,7 +561,7 @@ var _ = Describe("Format", func() {
 		Describe("formatting aliased types", func() {
 			It("should print out the correct alias type", func() {
 				Expect(Object(StringAlias("alias"), 1)).Should(match("format_test.StringAlias", `alias`))
-				Expect(Object(ByteAlias("alias"), 1)).Should(matchRegexp(`format_test\.ByteAlias \| len:5, cap:\d+`, `alias`))
+				Expect(Object(ByteAlias("alias"), 1)).Should(matchRegexp(`format_test\.ByteAlias \| len:5, cap:\d+`, `\"alias\"`))
 				Expect(Object(IntAlias(3), 1)).Should(match("format_test.IntAlias", "3"))
 			})
 		})
@@ -770,16 +771,16 @@ var _ = Describe("Format", func() {
 			It("pases objects through the custom formatter and uses the returned format, if handled", func() {
 				cf := CustomFormatted{"bob", 17}
 				ncf := NotCustomFormatted{"bob", 17}
-				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: bob, Count: 17}"))
-				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
+				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: \"bob\", Count: 17}"))
+				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: \"bob\", Count: 17}"))
 
 				key := RegisterCustomFormatter(customFormatter)
 				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: bob (17)"))
-				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
+				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: \"bob\", Count: 17}"))
 
 				UnregisterCustomFormatter(key)
-				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: bob, Count: 17}"))
-				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: bob, Count: 17}"))
+				Expect(Object(cf, 0)).To(Equal("<format_test.CustomFormatted>: {Data: \"bob\", Count: 17}"))
+				Expect(Object(ncf, 0)).To(Equal("<format_test.NotCustomFormatted>: {Data: \"bob\", Count: 17}"))
 			})
 
 			It("indents CustomFormatter output correctly", func() {
@@ -836,6 +837,21 @@ var _ = Describe("Format", func() {
 			It("Prints the context", func() {
 				Expect(Object(objWithContext, 1)).ShouldNot(ContainSubstring("<suppressed context>"))
 			})
+		})
+	})
+
+	Describe("when using format directly", func() {
+		It("always formats strings with quotes consistently", func() {
+			var err error = fmt.Errorf("fake")
+			indented := format.Object(err, 1)
+			unindented := format.Object(err, 0)
+
+			indentedLines := strings.Split(indented, "\n")
+			unindentedLines := strings.Split(unindented, "\n")
+
+			for i := range indentedLines {
+				Expect(strings.Trim(indentedLines[i], " ")).To(Equal(strings.Trim(unindentedLines[i], " ")))
+			}
 		})
 	})
 })
