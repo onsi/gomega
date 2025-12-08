@@ -128,9 +128,9 @@ var _ = Describe("HaveHTTPStatus", func() {
 			Expect(failures).To(HaveLen(1))
 			Expect(failures[0]).To(Equal(`Expected
     <*http.Response>: {
-        Status:     <string>: "502 Bad Gateway"
+        Status:     <string>: 502 Bad Gateway
         StatusCode: <int>: 502
-        Body:       <string>: "did not like it"
+        Body:       <string>: did not like it
     }
 to have HTTP status
     <int>: 200`), failures[0])
@@ -148,9 +148,9 @@ to have HTTP status
 			Expect(failures).To(HaveLen(1))
 			Expect(failures[0]).To(Equal(`Expected
     <*http.Response>: {
-        Status:     <string>: "502 Bad Gateway"
+        Status:     <string>: 502 Bad Gateway
         StatusCode: <int>: 502
-        Body:       <string>: "did not like it"
+        Body:       <string>: did not like it
     }
 to have HTTP status
     <int>: 200
@@ -172,9 +172,9 @@ to have HTTP status
 			Expect(failures).To(HaveLen(1))
 			Expect(failures[0]).To(Equal(`Expected
     <*http.Response>: {
-        Status:     <string>: "200 OK"
+        Status:     <string>: 200 OK
         StatusCode: <int>: 200
-        Body:       <string>: "got it!"
+        Body:       <string>: got it!
     }
 not to have HTTP status
     <int>: 200`), failures[0])
@@ -192,9 +192,9 @@ not to have HTTP status
 			Expect(failures).To(HaveLen(1))
 			Expect(failures[0]).To(Equal(`Expected
     <*http.Response>: {
-        Status:     <string>: "200 OK"
+        Status:     <string>: 200 OK
         StatusCode: <int>: 200
-        Body:       <string>: "got it!"
+        Body:       <string>: got it!
     }
 not to have HTTP status
     <int>: 200

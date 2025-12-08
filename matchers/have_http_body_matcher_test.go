@@ -136,9 +136,9 @@ to equal
 				})
 				Expect(failures).To(HaveLen(1))
 				Expect(failures[0]).To(MatchRegexp(`^Expected
-    <\[\]uint8 \| len:\d+, cap:\d+>: this is the body
+    <\[\]uint8 \| len:\d+, cap:\d+>: \"this is the body\"
 to equal
-    <\[\]uint8 ]| len:\d+, cap:\d+>: this is a different body$`))
+    <\[\]uint8 ]| len:\d+, cap:\d+>: \"this is a different body\"$`))
 			})
 		})
 
@@ -186,9 +186,9 @@ not to equal
 				})
 				Expect(failures).To(HaveLen(1))
 				Expect(failures[0]).To(MatchRegexp(`^Expected
-    <\[\]uint8 \| len:\d+, cap:\d+>: this is the body
+    <\[\]uint8 \| len:\d+, cap:\d+>: \"this is the body\"
 not to equal
-    <\[\]uint8 \| len:\d+, cap:\d+>: this is the body$`))
+    <\[\]uint8 \| len:\d+, cap:\d+>: \"this is the body\"$`))
 			})
 		})
 
