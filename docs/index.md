@@ -878,6 +878,14 @@ succeeds if `ACTUAL` is a non-nil `error` that matches `EXPECTED`. `EXPECTED` mu
 
 Any other type for `EXPECTED` is an error. It is also an error for `ACTUAL` to be nil.  Note that `FUNCTION_ERROR_DESCRIPTION` is a description of the error function, if used.  This is required when passing a function but is ignored in all other cases.
 
+#### MatchErrorStrictly(expected any)
+
+```go
+Ω(ACTUAL).Should(MatchErrorSTrictly(EXEPCTED))
+```
+
+succeeds if and only if `ACTUAL` and  `EXPECTED` are non-nil and `errors.Is(ACTUAL, EXPECTED)` returns `true`.  This is stricter than `MatchError` which will fall back on string comparison.
+
 ### Working with Channels
 
 #### BeClosed()
