@@ -19,6 +19,8 @@ Just `go get` it:
 $ go get github.com/onsi/gomega/...
 ```
 
+> A note about the Gomega release.  Versioned releases are shipped wtih git tags.  These tags point to versions of Gomega that live on the `master-lite` branch and have had their tests stripped out.  This ensures that no Ginkgo dependency (whether direct or indirect) is pulled in when users pull in Gomega.  It is a limitation of the Go package ecosystem that the test dependencies of your dependency become indirect dependencies of your project.  By stripping tests out we keep (independent) dependency bloat to a minimum - particularly for test suites that don't use ginkgo but do use gomega.
+
 ## Getting Gomega as needed
 
 Instead of getting all of Gomega and it's dependency tree, you can use the go command to get the dependencies as needed.
