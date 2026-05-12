@@ -724,7 +724,20 @@ var _ = Describe("Format", func() {
 			complexObject.Value = make(map[any]int)
 
 			complexObject.Value[&complexObject] = 2
-			Expect(Object(complexObject, 1)).Should(ContainSubstring("..."))
+			Expect(Object(complexObject, 1)).Should(ContainSubstring("cyclic reference"))
+		})
+
+		It("detects cycles through pointers and stops descending", func() {
+			type node struct {
+				Name string
+				Next *node
+			}
+
+			n := &node{Name: "a"}
+			n.Next = n
+			output := Object(n, 1)
+			Expect(output).Should(ContainSubstring("cyclic reference"))
+			Expect(output).ShouldNot(ContainSubstring("..."))
 		})
 	})
 
