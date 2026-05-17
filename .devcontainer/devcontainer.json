@@ -1,0 +1,39 @@
+{
+    "name": "gomega",
+    "portsAttributes": {
+        "4000": {
+            "label": "Github pages documentation",
+            "protocol": "http"
+        },
+        "6060": {
+            "label": "Gomega package documentation",
+            "onAutoForward": "silent",
+            "protocol": "http"
+        }
+    },
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+    "features": {
+        "ghcr.io/thediveo/devcontainer-features/local-pkgsite:0": {},
+        "ghcr.io/thediveo/devcontainer-features/lazygit:0": {},
+        "ghcr.io/rails/devcontainer/features/ruby:2": {
+            "version": "3"
+        }
+    },
+    "remoteEnv": {
+        "GOPATH": "/home/vscode/go",
+        "PATH": "/home/vscode/.local/bin:/home/vscode/go/bin:/go/bin:/usr/local/go/bin:/home/vscode/.local/share/mise/installs/ruby/3/bin:${localEnv:PATH}",
+        "RUBYOPT": "-rbigdecimal"
+    },
+    "postCreateCommand": {
+        "finalizing-devcontainer": "sudo .devcontainer/install.sh",
+        "off-rails": "cd docs && bundle install && gem install bigdecimal"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dnut.rewrap-revived",
+                "mhutchie.git-graph"
+            ]
+        }
+    }
+}
