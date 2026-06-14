@@ -1,7 +1,7 @@
 {
   "name": "gomega",
   "description": "Write expressive, correct Gomega assertions in Go. Skills for the Expect/Ω model, synchronous and asynchronous (Eventually/Consistently) assertions, the full matcher catalog, composing and authoring custom matchers, and the gstruct, ghttp, gexec, gbytes, gleak, and gmeasure sub-libraries.",
-  "version": "0.1.0",
+  "version": "1.42.0",
   "author": {
     "name": "Onsi Fakhouri",
     "url": "https://github.com/onsi"
