@@ -71,6 +71,34 @@ func TestFarmHasCow(t *testing.T) {
 
 `NewWithT(t)` wraps a `*testing.T` and returns a struct that supports `Expect`, `Eventually`, and `Consistently`.
 
+## Using Gomega with Claude Code
+
+Gomega ships a set of [Claude Code](https://claude.com/claude-code) skills as a **plugin**, so an agent writing assertions against *your* code has Gomega's idioms on hand.  The Gomega repo doubles as the plugin marketplace, so installation is two commands.  From inside Claude Code:
+
+```
+/plugin marketplace add onsi/gomega
+/plugin install gomega@gomega
+```
+
+(The same can be done non-interactively with `claude plugin marketplace add onsi/gomega` and `claude plugin install gomega@gomega`.)
+
+This installs a family of `gomega:*` skills that activate automatically while you write tests:
+
+| Skill | What it's for |
+|---|---|
+| `gomega:overview` | The mental model — `Expect`/`Ω`, matchers-as-values, sync vs. async, and a map of the whole library. |
+| `gomega:assertions` | Synchronous assertions: the multi-return error idiom, `Succeed`/`HaveOccurred`, annotations, output tuning, and asserting inside helpers. |
+| `gomega:async` | `Eventually`/`Consistently`: polling functions, the `g Gomega` callback, contexts, timeouts, and `StopTrying`/`TryAgainAfter`. |
+| `gomega:matchers` | The full matcher catalog, grouped, with the gotchas flagged. |
+| `gomega:composing-matchers` | Combining matchers: `And`/`Or`/`Not`, `WithTransform`, `HaveField`, `HaveValue`, and nesting matchers as arguments. |
+| `gomega:custom-matchers` | Writing your own matcher with the `GomegaMatcher` interface and `gcustom`. |
+| `gomega:gstruct` | Deep, partial matching of nested structs, slices, and maps. |
+| `gomega:ghttp` | Testing code that makes outbound HTTP requests. |
+| `gomega:gexec` | Building, running, signaling, and asserting on external processes. |
+| `gomega:gbytes` | Asserting on streaming or incremental output. |
+| `gomega:gleak` | Verifying a test left no goroutines leaked. |
+| `gomega:gmeasure` | Human-readable benchmarks, performance reports, and regression baselines. |
+
 ## Making Assertions
 
 Gomega provides two notations for making assertions.  These notations are functionally equivalent and their differences are purely aesthetic.
@@ -2758,7 +2786,7 @@ wait for the process to exit and then make assertions against the entire content
 ```go
 gexec.Kill() //sends SIGKILL to all processes
 gexec.Terminate() //sends SIGTERM to all processes
-gexec.Signal(int)  //sends the passed in os.Signal signal to all the processes
+gexec.Signal(os.Signal)  //sends the passed in os.Signal signal to all the processes
 gexec.Interrupt() //sends SIGINT to all processes
 ```
 
@@ -3451,7 +3479,7 @@ Describe("server performance", func() {
                 currentStats := experiment.GetStats(m)
 
                 //make sure the mean of the current performance measure is within one standard deviation of the baseline
-                Expect(currentStats.DurationFor(gmeasure.StatMean)).To(BeNumerically("~", baselineStats.DurationFor(gmeasure.StatsMean), baselineStats.DurationFor(gmeasure.StatsStdDev)), m)
+                Expect(currentStats.DurationFor(gmeasure.StatMean)).To(BeNumerically("~", baselineStats.DurationFor(gmeasure.StatMean), baselineStats.DurationFor(gmeasure.StatStdDev)), m)
             }
         }
     })        
