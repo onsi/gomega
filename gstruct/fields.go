@@ -151,7 +151,7 @@ func (m *FieldsMatcher) matchFields(actual any) (errs []error) {
 				if nesting, ok := matcher.(errorsutil.NestingMatcher); ok {
 					return errorsutil.AggregateError(nesting.Failures())
 				}
-				return errors.New(matcher.FailureMessage(field))
+				return errors.New(matcher.FailureMessage(actual))
 			}
 			return nil
 		}()
@@ -174,7 +174,7 @@ func (m *FieldsMatcher) FailureMessage(actual any) (message string) {
 	for i := range m.failures {
 		failures[i] = m.failures[i].Error()
 	}
-	return format.Message(reflect.TypeOf(actual).Name(),
+	return format.Message(actual,
 		fmt.Sprintf("to match fields: {\n%v\n}\n", strings.Join(failures, "\n")))
 }
 
