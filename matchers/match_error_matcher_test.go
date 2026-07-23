@@ -27,15 +27,15 @@ func (t *ComplexError) Error() string {
 var _ = Describe("MatchErrorMatcher", func() {
 	Context("When asserting against an error", func() {
 		When("passed an error", func() {
-			It("should succeed when errors are deeply equal", func() {
+			It("should succeed when errors.Is matches (not merely equal text)", func() {
 				err := errors.New("an error")
-				fmtErr := fmt.Errorf("an error")
 				customErr := CustomError{}
 
-				Expect(err).Should(MatchError(errors.New("an error")))
+				// Same sentinel instance / value that implements equality via errors.Is.
+				Expect(err).Should(MatchError(err))
+				Expect(err).ShouldNot(MatchError(errors.New("an error"))) // different instance, same text (#876)
 				Expect(err).ShouldNot(MatchError(errors.New("another error")))
 
-				Expect(fmtErr).Should(MatchError(errors.New("an error")))
 				Expect(customErr).Should(MatchError(CustomError{}))
 			})
 
@@ -46,10 +46,11 @@ var _ = Describe("MatchErrorMatcher", func() {
 				Expect(outerErr).Should(MatchError(innerErr))
 			})
 
-			It("uses deep equality with unwrapped errors", func() {
+			It("does not treat independently constructed equal values as the same sentinel", func() {
+				// #876: DeepEqual on unwrapped errors hid missing errors.Is wiring.
 				innerErr := &ComplexError{Key: "abc"}
 				outerErr := fmt.Errorf("outer error wrapping: %w", &ComplexError{Key: "abc"})
-				Expect(outerErr).To(MatchError(innerErr))
+				Expect(outerErr).NotTo(MatchError(innerErr))
 			})
 		})
 

@@ -29,17 +29,10 @@ func (matcher *MatchErrorMatcher) Match(actual any) (success bool, err error) {
 	expected := matcher.Expected
 
 	if isError(expected) {
-		// first try the built-in errors.Is
-		if errors.Is(actualErr, expected.(error)) {
-			return true, nil
-		}
-		// if not, try DeepEqual along the error chain
-		for unwrapped := actualErr; unwrapped != nil; unwrapped = errors.Unwrap(unwrapped) {
-			if reflect.DeepEqual(unwrapped, expected) {
-				return true, nil
-			}
-		}
-		return false, nil
+		// Only errors.Is — do not DeepEqual error values. Two independently
+		// constructed errors.New("same text") are DeepEqual but not the same
+		// sentinel, so DeepEqual would hide missing errors.Is wiring (#876).
+		return errors.Is(actualErr, expected.(error)), nil
 	}
 
 	if isString(expected) {
