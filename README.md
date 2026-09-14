@@ -3,7 +3,7 @@
   <img alt="Gomega: Ginkgo's Preferred Matcher Library" src="docs/images/gomega.png">
 </picture>
 
-[![test](https://github.com/onsi/gomega/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/onsi/gomega/actions/workflows/test.yml?query=branch%3Amaster) [![Gomega Docs](docs/images/docs-badge.svg)](https://onsi.github.io/gomega/)
+[![test](https://github.com/onsi/gomega/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/onsi/gomega/actions/workflows/test.yml?query=branch%3Amaster) [![Gomega Docs](docs/images/docs-badge.svg)](https://onsi.github.io/gomega/) [![Sponsor onsi](docs/images/sponsor-badge.svg)](https://github.com/sponsors/onsi)
 
 Jump straight to the [docs](http://onsi.github.io/gomega/) to learn about Gomega, including a list of [all available matchers](http://onsi.github.io/gomega/#provided-matchers).
 
