@@ -1,6 +1,10 @@
 name: test
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # The Release workflow calls this one, so nothing is released unless all of it passes.
+  workflow_call:
 
 jobs:
   mod:
@@ -12,6 +16,9 @@ jobs:
         go-version: 'oldstable'
     - uses: actions/checkout@v5
     - run: go mod tidy && git diff --exit-code go.mod go.sum
+    # master is the full tree: it has tests and requires Ginkgo.  Releases ship a stripped tree on
+    # master-lite, and merging that back would silently delete both; this says so plainly.
+    - run: scripts/check-full-tree.sh
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -25,3 +32,14 @@ jobs:
     - uses: actions/checkout@v5
     - run: go vet ./...
     - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going --label-filter="!network"
+  lite:
+    runs-on: ubuntu-latest
+    name: Check the released (lite) tree
+    steps:
+    - uses: actions/setup-go@v6
+      with:
+        go-version: 'stable'
+    - uses: actions/checkout@v5
+    # Releases ship the tree with the tests stripped out; this proves it still builds and still
+    # doesn't require Ginkgo, on every push rather than on release day.
+    - run: scripts/strip-tests.sh

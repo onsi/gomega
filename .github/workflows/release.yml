@@ -1,0 +1,39 @@
+# Release Gomega: Actions -> Release -> Run workflow -> bump: patch | minor.
+# Runs the full test workflow, then scripts/release.sh.  See RELEASING.md.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump
+        type: choice
+        options: [patch, minor]
+
+concurrency: release
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push master, master-lite and the tag, create the GitHub release
+    steps:
+    # fetch-depth: 0 so the release commit can be merged onto master-lite's history.
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
+    - run: scripts/release.sh "$BUMP"
+      env:
+        BUMP: ${{ inputs.bump }}
+        GH_TOKEN: ${{ github.token }}
