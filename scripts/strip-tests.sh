@@ -14,8 +14,9 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-echo "deleting $(find . -path ./.git -prune -o -name '*_test.go' -print | wc -l | tr -d ' ') _test.go files"
-find . -path ./.git -prune -o -name '*_test.go' -delete
+# -not -path rather than -prune: GNU find's -delete implies -depth, which -prune cannot be used with.
+echo "deleting $(find . -name '*_test.go' -not -path './.git/*' -print | wc -l | tr -d ' ') _test.go files"
+find . -name '*_test.go' -not -path './.git/*' -delete
 go mod tidy
 # The whole point: the released module must build, and must not require Ginkgo.
 go build ./...

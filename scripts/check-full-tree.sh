@@ -19,5 +19,5 @@ fail() {
 	exit 1
 }
 
-[[ -n "$(find . -path ./.git -prune -o -name '*_test.go' -print -quit)" ]] || fail "there are no _test.go files"
+[[ -n "$(find . -name '*_test.go' -not -path './.git/*' -print -quit)" ]] || fail "there are no _test.go files"
 grep -q 'onsi/ginkgo' go.mod || fail "go.mod does not require Ginkgo"
