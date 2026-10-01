@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"sync/atomic"
 
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
@@ -421,4 +422,54 @@ func RespondWithJSONEncodedPtr(statusCode *int, object any, optionalHeader ...ht
 
 func RespondWithProto(statusCode int, message protoadapt.MessageV1, optionalHeader ...http.Header) http.HandlerFunc {
 	return NewGHTTPWithGomega(gomega.Default).RespondWithProto(statusCode, message, optionalHeader...)
+}
+
+var noOpHandler = func(_ http.ResponseWriter, _ *http.Request) {
+	// empty function for Nop
+}
+
+//RespondWithMultiple
+//This function combines a set of handlers into a handler such that each handler gets called in succession until
+//the last handler. In this case when the last handler is reached it will keep responding with this handler.
+//In the case of the RoundRobinWithMultiple combination handler the once the last handler is reached it will
+//start at the beginning again. This is useful for testing retry behaviour of clients.
+//I.E. A sequence of 500 500 500 200.... should be good enough for a retry to succeed.
+func RespondWithMultiple(handlers ...http.HandlerFunc) http.HandlerFunc {
+	var responseNumber int32 = 0
+	if len(handlers) > 0 {
+		return func(w http.ResponseWriter, req *http.Request) {
+			responseNum := atomic.LoadInt32(&responseNumber)
+			handlerNumber := min(responseNum, int32(len(handlers)-1))
+			handlers[handlerNumber](w, req)
+			atomic.AddInt32(&responseNumber, 1)
+		}
+	}
+	return noOpHandler
+}
+
+//RoundRobinWithMultiple
+//This function combines a set of handlers into a single handler such that each handler gets called in succession until
+//the last handler. Once the last handler is reached it will start at the beginning.
+//In the case of the RespondWithMultiple combination handler the once the last handler is reached it will
+//keep responding with the last handler.
+// This is useful for stress testing retry behaviour over time.
+//I.E. A sequence of 200 200 500 500 200 repeating can be called by many routines at the same time to
+//imitate more complex behavior
+func RoundRobinWithMultiple(handlers ...http.HandlerFunc) http.HandlerFunc {
+	var responseNumber int32 = 0
+	if len(handlers) > 0 {
+		return func(w http.ResponseWriter, req *http.Request) {
+			handlerNumber := atomic.LoadInt32(&responseNumber) % int32(len(handlers))
+			handlers[handlerNumber](w, req)
+			atomic.AddInt32(&responseNumber, 1)
+		}
+	}
+	return noOpHandler
+}
+
+func min(one, two int32) int32 {
+	if one < two {
+		return one
+	}
+	return two
 }
