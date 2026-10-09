@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"maps"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
@@ -351,6 +353,43 @@ func (g GHTTPWithGomega) RespondWithProto(statusCode int, message protoadapt.Mes
 	}
 }
 
+// OrderedHandlers returns a handler that executes the passed in handlers sequentially
+// on successive requests.
+//
+// When all handlers are exhausted, subsequent requests fail with an unhandled request assertion.
+func (g GHTTPWithGomega) OrderedHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	var lock sync.Mutex
+	count := 0
+
+	return func(w http.ResponseWriter, req *http.Request) {
+		lock.Lock()
+		var handler http.HandlerFunc
+		if count < len(handlers) {
+			handler = handlers[count]
+			count++
+		}
+		lock.Unlock()
+
+		if handler != nil {
+			handler(w, req)
+			return
+		}
+
+		if req != nil {
+			formatted, err := httputil.DumpRequest(req, true)
+			g.gomega.Expect(err).NotTo(HaveOccurred(), "Encountered error while dumping HTTP request")
+			g.gomega.Expect(string(formatted)).Should(BeNil(), "Received Unhandled Request: OrderedHandlers exhausted")
+		} else {
+			g.gomega.Expect("").Should(BeNil(), "Received Unhandled Request: OrderedHandlers exhausted")
+		}
+	}
+}
+
+// ConsecutiveHandlers is an alias for OrderedHandlers.
+func (g GHTTPWithGomega) ConsecutiveHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	return g.OrderedHandlers(handlers...)
+}
+
 func VerifyRequest(method string, path any, rawQuery ...string) http.HandlerFunc {
 	return NewGHTTPWithGomega(gomega.Default).VerifyRequest(method, path, rawQuery...)
 }
@@ -422,3 +461,17 @@ func RespondWithJSONEncodedPtr(statusCode *int, object any, optionalHeader ...ht
 func RespondWithProto(statusCode int, message protoadapt.MessageV1, optionalHeader ...http.Header) http.HandlerFunc {
 	return NewGHTTPWithGomega(gomega.Default).RespondWithProto(statusCode, message, optionalHeader...)
 }
+
+// OrderedHandlers returns a handler that executes the passed in handlers sequentially
+// on successive requests.
+//
+// When all handlers are exhausted, subsequent requests fail with an unhandled request assertion.
+func OrderedHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	return NewGHTTPWithGomega(gomega.Default).OrderedHandlers(handlers...)
+}
+
+// ConsecutiveHandlers is an alias for OrderedHandlers.
+func ConsecutiveHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	return NewGHTTPWithGomega(gomega.Default).ConsecutiveHandlers(handlers...)
+}
+

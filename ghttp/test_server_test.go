@@ -2,10 +2,13 @@ package ghttp_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"regexp"
+	"sync"
 
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp/protobuf"
@@ -1249,4 +1252,193 @@ var _ = Describe("TestServer", func() {
 			Expect(s.ReceivedRequests()[0].URL.Path).Should(Equal("/routed"))
 		})
 	})
+
+	Describe("OrderedHandlers", func() {
+		Context("with routed endpoints", func() {
+			It("reproduces issue 742 by responding with sub-handlers in order across successive calls", func() {
+				s.RouteToHandler("GET", "/foo/bar", OrderedHandlers(
+					RespondWithJSONEncoded(http.StatusOK, map[string]int{"data": 1}),
+					RespondWithJSONEncoded(http.StatusOK, map[string]int{"data": 2}),
+				))
+				s.RouteToHandler("GET", "/baz/bax", OrderedHandlers(
+					RespondWithJSONEncoded(http.StatusOK, map[string]int{"data2": 3}),
+					RespondWithJSONEncoded(http.StatusOK, map[string]int{"data2": 4}),
+				))
+
+				resp, err = http.Get(s.URL() + "/foo/bar")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(resp.StatusCode).Should(Equal(http.StatusOK))
+				Expect(gutil.ReadAll(resp.Body)).Should(MatchJSON(`{"data": 1}`))
+
+				resp, err = http.Get(s.URL() + "/baz/bax")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(resp.StatusCode).Should(Equal(http.StatusOK))
+				Expect(gutil.ReadAll(resp.Body)).Should(MatchJSON(`{"data2": 3}`))
+
+				resp, err = http.Get(s.URL() + "/foo/bar")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(resp.StatusCode).Should(Equal(http.StatusOK))
+				Expect(gutil.ReadAll(resp.Body)).Should(MatchJSON(`{"data": 2}`))
+
+				resp, err = http.Get(s.URL() + "/baz/bax")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(resp.StatusCode).Should(Equal(http.StatusOK))
+				Expect(gutil.ReadAll(resp.Body)).Should(MatchJSON(`{"data2": 4}`))
+			})
+
+			It("executes combined handlers sequentially", func() {
+				s.RouteToHandler("GET", "/steps", OrderedHandlers(
+					CombineHandlers(
+						VerifyHeaderKV("X-Step", "1"),
+						RespondWith(http.StatusOK, "step-one"),
+					),
+					CombineHandlers(
+						VerifyHeaderKV("X-Step", "2"),
+						RespondWith(http.StatusAccepted, "step-two"),
+					),
+				))
+
+				req1, reqErr := http.NewRequest("GET", s.URL()+"/steps", nil)
+				Expect(reqErr).ShouldNot(HaveOccurred())
+				req1.Header.Set("X-Step", "1")
+				resp1, doErr := http.DefaultClient.Do(req1)
+				Expect(doErr).ShouldNot(HaveOccurred())
+				Expect(resp1.StatusCode).Should(Equal(http.StatusOK))
+				Expect(gutil.ReadAll(resp1.Body)).Should(Equal([]byte("step-one")))
+
+				req2, reqErr := http.NewRequest("GET", s.URL()+"/steps", nil)
+				Expect(reqErr).ShouldNot(HaveOccurred())
+				req2.Header.Set("X-Step", "2")
+				resp2, doErr := http.DefaultClient.Do(req2)
+				Expect(doErr).ShouldNot(HaveOccurred())
+				Expect(resp2.StatusCode).Should(Equal(http.StatusAccepted))
+				Expect(gutil.ReadAll(resp2.Body)).Should(Equal([]byte("step-two")))
+			})
+
+			It("fails with an unhandled request assertion when exhausted", func() {
+				s.RouteToHandler("GET", "/exhaust", OrderedHandlers(
+					RespondWith(http.StatusOK, "only-one"),
+				))
+
+				resp, err = http.Get(s.URL() + "/exhaust")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("only-one")))
+
+				failures := InterceptGomegaFailures(func() {
+					http.Get(s.URL() + "/exhaust")
+				})
+				Expect(failures).Should(HaveLen(1))
+				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
+
+				failures = InterceptGomegaFailures(func() {
+					http.Get(s.URL() + "/exhaust")
+				})
+				Expect(failures).Should(HaveLen(1))
+				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
+			})
+
+			It("fails immediately when initialized with zero handlers", func() {
+				s.RouteToHandler("GET", "/empty", OrderedHandlers())
+
+				failures := InterceptGomegaFailures(func() {
+					http.Get(s.URL() + "/empty")
+				})
+				Expect(failures).Should(HaveLen(1))
+				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
+			})
+
+			It("works identically with ConsecutiveHandlers alias", func() {
+				s.RouteToHandler("GET", "/consecutive", ConsecutiveHandlers(
+					RespondWith(http.StatusOK, "first"),
+					RespondWith(http.StatusOK, "second"),
+				))
+
+				resp, err = http.Get(s.URL() + "/consecutive")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("first")))
+
+				resp, err = http.Get(s.URL() + "/consecutive")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("second")))
+			})
+
+			It("handles concurrent requests safely without data races", func() {
+				const total = 50
+				handlers := make([]http.HandlerFunc, total)
+				for i := 0; i < total; i++ {
+					val := fmt.Sprintf("%d", i)
+					handlers[i] = RespondWith(http.StatusOK, val)
+				}
+
+				s.RouteToHandler("GET", "/concurrent", OrderedHandlers(handlers...))
+
+				results := make(chan string, total)
+				var wg sync.WaitGroup
+				for i := 0; i < total; i++ {
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						r, getErr := http.Get(s.URL() + "/concurrent")
+						if getErr != nil {
+							return
+						}
+						body, _ := gutil.ReadAll(r.Body)
+						r.Body.Close()
+						results <- string(body)
+					}()
+				}
+
+				wg.Wait()
+				close(results)
+
+				expectedValues := make([]any, total)
+				for i := 0; i < total; i++ {
+					expectedValues[i] = fmt.Sprintf("%d", i)
+				}
+
+				var receivedValues []string
+				for v := range results {
+					receivedValues = append(receivedValues, v)
+				}
+
+				Expect(receivedValues).Should(ConsistOf(expectedValues...))
+			})
+		})
+
+		Context("invoking handler directly", func() {
+			It("handles direct calls and nil request on exhaustion cleanly", func() {
+				handler := OrderedHandlers(
+					func(w http.ResponseWriter, req *http.Request) {
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte("direct"))
+					},
+				)
+
+				rec := httptest.NewRecorder()
+				req, _ := http.NewRequest("GET", "/direct", nil)
+				handler(rec, req)
+				Expect(rec.Code).Should(Equal(http.StatusOK))
+				Expect(rec.Body.String()).Should(Equal("direct"))
+
+				failures := InterceptGomegaFailures(func() {
+					handler(nil, nil)
+				})
+				Expect(failures).Should(HaveLen(1))
+				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
+			})
+
+			It("routes assertions through custom Gomega instance", func() {
+				customGomega := NewGomega(func(message string, callerSkip ...int) {
+					panic("custom-gomega: " + message)
+				})
+				customGHTTP := NewGHTTPWithGomega(customGomega)
+				handler := customGHTTP.OrderedHandlers()
+
+				Expect(func() {
+					handler(nil, nil)
+				}).Should(PanicWith(ContainSubstring("custom-gomega: Received Unhandled Request: OrderedHandlers exhausted")))
+			})
+		})
+	})
 })
+
