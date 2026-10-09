@@ -486,6 +486,20 @@ func HaveKeyWithValue(key any, value any) types.GomegaMatcher {
 	}
 }
 
+// ContainMap succeeds if actual is a map or iter.Seq2 that contains all key:value pairs
+// from the passed in map or iter.Seq2. Actual may contain additional keys.
+// By default ContainMap uses Equal() to perform the match for keys and values,
+// however matchers can be passed in instead:
+//
+//	Expect(map[string]int{"a": 1, "b": 2, "c": 3}).Should(ContainMap(map[string]int{"a": 1, "b": 2}))
+//	Expect(map[string]int{"a": 1, "b": 2}).Should(ContainMap(map[string]any{"a": BeNumerically(">", 0)}))
+func ContainMap(expected any) types.GomegaMatcher {
+	return &matchers.ContainMapMatcher{
+		Expected: expected,
+	}
+}
+
+
 // HaveField succeeds if actual is a struct and the value at the passed in field
 // matches the passed in matcher.  By default HaveField used Equal() to perform the match,
 // however a matcher can be passed in in stead.

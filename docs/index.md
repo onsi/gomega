@@ -1426,6 +1426,21 @@ By default `HaveKeyWithValue()` uses the `Equal()` matcher under the hood to ass
 Ω(map[string]int{"Foo": 3, "BazFoo": 4}).Should(HaveKeyWithValue(MatchRegexp(`.+Foo$`), BeNumerically(">", 3)))
 ```
 
+#### ContainMap(expected any)
+
+```go
+Ω(ACTUAL).Should(ContainMap(EXPECTED))
+```
+
+succeeds if `ACTUAL` is a map (or, starting with Go 1.23, an iterator assignable to `iter.Seq2`) that contains all key:value pairs present in `EXPECTED` (which must also be a `map` or `iter.Seq2`). `ACTUAL` may contain additional key:value pairs. It is an error for either `ACTUAL` or `EXPECTED` to have any type other than `map` or `iter.Seq2`.
+
+By default `ContainMap()` uses `Equal()` to match keys and values. Gomega matchers can be used as keys or values in `EXPECTED`. For example:
+
+```go
+Ω(map[string]int{"Foo": 3, "Bar": 5, "Baz": 10}).Should(ContainMap(map[string]int{"Foo": 3, "Baz": 10}))
+Ω(map[string]int{"Foo": 3, "Bar": 5}).Should(ContainMap(map[string]any{"Bar": BeNumerically(">", 4)}))
+```
+
 ### Working with Structs
 
 #### HaveField(field any, value any)
