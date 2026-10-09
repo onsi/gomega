@@ -442,15 +442,16 @@ func formatSlice(v reflect.Value, indentation uint, visited map[uintptr]struct{}
 }
 
 func formatMap(v reflect.Value, indentation uint, visited map[uintptr]struct{}) string {
-	l := v.Len()
-	result := make([]string, l)
+	keys := v.MapKeys()
+	result := make([]string, 0, len(keys))
 
 	longest := 0
-	for i, key := range v.MapKeys() {
+	for _, key := range keys {
 		value := v.MapIndex(key)
-		result[i] = fmt.Sprintf("%s: %s", formatValue(key, indentation+1, false, visited), formatValue(value, indentation+1, false, visited))
-		if len(result[i]) > longest {
-			longest = len(result[i])
+		entry := fmt.Sprintf("%s: %s", formatValue(key, indentation+1, false, visited), formatValue(value, indentation+1, false, visited))
+		result = append(result, entry)
+		if len(entry) > longest {
+			longest = len(entry)
 		}
 	}
 

@@ -494,6 +494,33 @@ var _ = Describe("Format", func() {
 				Expect(Object(m, 1)).Should(matchRegexp(`map\[int\]bool \| len:2`, hashMatchingRegexp("3: true", "4: false")))
 			})
 
+			It("should format empty maps", func() {
+				m := map[string]int{}
+				Expect(Object(m, 1)).Should(match("map[string]int | len:0", "{}"))
+			})
+
+			It("should format single-element maps", func() {
+				m := map[string]int{"alpha": 1}
+				Expect(Object(m, 1)).Should(match("map[string]int | len:1", `{"alpha": 1}`))
+			})
+
+			It("should format maps with nil pointer values", func() {
+				m := map[string]*int{"nilKey": nil}
+				Expect(Object(m, 1)).Should(match("map[string]*int | len:1", `{"nilKey": nil}`))
+			})
+
+			It("should format maps across varying sizes without out of range indexing", func() {
+				m := make(map[int]int)
+				for i := range 50 {
+					m[i] = i * 2
+					Expect(func() { _ = Object(m, 1) }).ShouldNot(Panic())
+				}
+				for i := range 50 {
+					delete(m, i)
+					Expect(func() { _ = Object(m, 1) }).ShouldNot(Panic())
+				}
+			})
+
 			When("the slice contains long entries", func() {
 				It("should format the entries with newlines", func() {
 					m := map[string][]byte{}
