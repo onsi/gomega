@@ -53,6 +53,67 @@ var _ = Describe("HaveLen", func() {
 		})
 	})
 
+	When("passed a matcher", func() {
+		It("should evaluate strings, arrays, slices, maps, channels with sub-matchers", func() {
+			Expect("").Should(HaveLen(BeNumerically("==", 0)))
+			Expect("AA").Should(HaveLen(BeNumerically("==", 2)))
+			Expect("AA").Should(HaveLen(BeNumerically(">", 1)))
+			Expect("AA").ShouldNot(HaveLen(BeNumerically(">", 2)))
+
+			Expect([0]int{}).Should(HaveLen(BeNumerically("==", 0)))
+			Expect([2]int{1, 2}).Should(HaveLen(BeNumerically("==", 2)))
+			Expect([2]int{1, 2}).Should(HaveLen(BeNumerically("<", 5)))
+			Expect([2]int{1, 2}).ShouldNot(HaveLen(BeNumerically("==", 0)))
+
+			Expect([]int{}).Should(HaveLen(BeNumerically("==", 0)))
+			Expect([]int{1, 2, 3}).Should(HaveLen(BeNumerically("==", 3)))
+			Expect([]int{1, 2, 3}).Should(HaveLen(BeNumerically(">", 2)))
+			Expect([]int{1, 2, 3}).Should(HaveLen(Equal(3)))
+			Expect([]int{1, 2, 3}).ShouldNot(HaveLen(BeNumerically("<", 2)))
+
+			Expect(map[string]int{}).Should(HaveLen(BeNumerically("==", 0)))
+			Expect(map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}).Should(HaveLen(BeNumerically("==", 4)))
+			Expect(map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}).Should(HaveLen(BeNumerically(">=", 4)))
+			Expect(map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}).ShouldNot(HaveLen(BeNumerically("==", 0)))
+
+			c := make(chan bool, 3)
+			Expect(c).Should(HaveLen(BeNumerically("==", 0)))
+			c <- true
+			c <- true
+			Expect(c).Should(HaveLen(BeNumerically("==", 2)))
+			Expect(c).Should(HaveLen(BeNumerically(">", 1)))
+			Expect(c).ShouldNot(HaveLen(BeNumerically("==", 0)))
+		})
+
+		It("should support non-int integer types", func() {
+			Expect([]int{1, 2}).Should(HaveLen(int64(2)))
+			Expect([]int{1, 2}).Should(HaveLen(uint(2)))
+			Expect([]int{1, 2}).Should(HaveLen(int32(2)))
+		})
+
+		It("should report meaningful failure and negated failure messages", func() {
+			m := HaveLen(BeNumerically(">", 5))
+			Expect(m.FailureMessage([]int{1, 2})).To(ContainSubstring("to have length matching"))
+			Expect(m.NegatedFailureMessage([]int{1, 2})).To(ContainSubstring("not to have length matching"))
+
+			mInt := HaveLen(2)
+			Expect(mInt.FailureMessage([]int{1})).To(Equal("Expected\n    <[]int | len:1, cap:1>: [1]\nto have length 2"))
+			Expect(mInt.NegatedFailureMessage([]int{1, 2})).To(Equal("Expected\n    <[]int | len:2, cap:2>: [1, 2]\nnot to have length 2"))
+		})
+
+		It("should propagate sub-matcher errors", func() {
+			success, err := HaveLen(BeNumerically("invalid-op", 1)).Match([]int{1})
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(HaveOccurred())
+		})
+
+		It("should error when passed an invalid count argument", func() {
+			success, err := HaveLen("invalid").Match([]int{1})
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError(ContainSubstring("HaveLen matcher expects an int or GomegaMatcher")))
+		})
+	})
+
 	Context("iterators", func() {
 		BeforeEach(func() {
 			if !miter.HasIterators() {
@@ -63,9 +124,12 @@ var _ = Describe("HaveLen", func() {
 		When("passed an iterator type", func() {
 			It("should do the right thing", func() {
 				Expect(emptyIter).To(HaveLen(0))
+				Expect(emptyIter).To(HaveLen(BeNumerically("==", 0)))
 				Expect(emptyIter2).To(HaveLen(0))
 
 				Expect(universalIter).To(HaveLen(len(universalElements)))
+				Expect(universalIter).To(HaveLen(BeNumerically("==", len(universalElements))))
+				Expect(universalIter).To(HaveLen(BeNumerically(">", 0)))
 				Expect(universalIter2).To(HaveLen(len(universalElements)))
 			})
 		})

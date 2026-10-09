@@ -327,14 +327,16 @@ func BeEmpty() types.GomegaMatcher {
 }
 
 // HaveLen succeeds if actual has the passed-in length.  Actual must be of type string, array, map, chan, or slice.
-func HaveLen(count int) types.GomegaMatcher {
+// count can be an integer or a GomegaMatcher.
+func HaveLen(count any) types.GomegaMatcher {
 	return &matchers.HaveLenMatcher{
 		Count: count,
 	}
 }
 
 // HaveCap succeeds if actual has the passed-in capacity.  Actual must be of type array, chan, or slice.
-func HaveCap(count int) types.GomegaMatcher {
+// count can be an integer or a GomegaMatcher.
+func HaveCap(count any) types.GomegaMatcher {
 	return &matchers.HaveCapMatcher{
 		Count: count,
 	}

@@ -14,6 +14,7 @@ package matchers
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"reflect"
 
@@ -69,6 +70,25 @@ func toFloat(a any) float64 {
 		return reflect.ValueOf(a).Float()
 	}
 	panic(fmt.Sprintf("Expected a number!  Got <%T> %#v", a, a))
+}
+
+func toInt(a any) (int, bool) {
+	if a == nil {
+		return 0, false
+	}
+	val := reflect.ValueOf(a)
+	switch val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return int(val.Int()), true
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		u := val.Uint()
+		if u > math.MaxInt {
+			return 0, false
+		}
+		return int(u), true
+	default:
+		return 0, false
+	}
 }
 
 func isError(a any) bool {
