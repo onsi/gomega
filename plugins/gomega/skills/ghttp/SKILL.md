@@ -50,18 +50,22 @@ These return handlers that fail the test if the request doesn't match:
 ```go
 ghttp.VerifyRequest("GET", "/sprockets")                       // method + path
 ghttp.VerifyRequest("GET", "/sprockets", "category=encabulators") // + RawQuery
+ghttp.VerifyRequest("GET", MatchRegexp(`^/sprockets/\d+$`))     // path via a matcher
 ghttp.VerifyHeader(http.Header{"X-API-Version": []string{"1.0"}})
 ghttp.VerifyHeaderKV("X-API-Version", "1.0")                   // convenience for one key
-ghttp.VerifyContentType("application/json")
+ghttp.VerifyHost("api.example.com")                            // req.Host; string or matcher
+ghttp.VerifyContentType("application/json")                    // exact Content-Type, params included
+ghttp.VerifyMimeType("application/json")                       // ignores params like "; charset=utf-8"
 ghttp.VerifyBasicAuth("gopher", "tacoshell")
 ghttp.VerifyBody([]byte("raw body"))
 ghttp.VerifyJSON(`{"name":"foo"}`)                             // semantic JSON compare
 ghttp.VerifyJSONRepresenting(Sprocket{Name: "foo"})           // marshal obj, then compare
 ghttp.VerifyForm(url.Values{"q": []string{"x"}})              // parsed form values
 ghttp.VerifyFormKV("q", "x")                                  // convenience for one key
+ghttp.VerifyProtoRepresenting(expectedMsg)                     // protobuf body, proto.Equal compare
 ```
 
-The `path` argument to `VerifyRequest` accepts a string or a `*regexp.Regexp`. You can write **your own** verify handler — pass any `http.HandlerFunc` that makes assertions against the `*http.Request`.
+The `path` argument to `VerifyRequest` is a string (exact match) or a Gomega matcher such as `MatchRegexp(...)` or `HavePrefix(...)` — *not* a `*regexp.Regexp` (that's `RouteToHandler`). The optional query string is parsed and compared as `url.Values`: parameter order doesn't matter, but the parameters must match exactly. `VerifyJSON`/`VerifyJSONRepresenting` also require the `application/json` mime type, and `VerifyProtoRepresenting` requires `Content-Type: application/x-protobuf`. You can write **your own** verify handler — pass any `http.HandlerFunc` that makes assertions against the `*http.Request`.
 
 ## Combining handlers for one request
 
@@ -81,12 +85,15 @@ server.AppendHandlers(
 ## Providing responses
 
 ```go
-ghttp.RespondWith(http.StatusOK, `[{"name":"foo"}]`)          // status + body (+ optional http.Header)
+ghttp.RespondWith(http.StatusOK, `[{"name":"foo"}]`)          // status + body (string or []byte) (+ optional http.Header)
 ghttp.RespondWith(http.StatusOK, body, http.Header{"X-Foo": []string{"bar"}})
 ghttp.RespondWithJSONEncoded(http.StatusOK, anyObject)        // JSON-encodes the object for you
 ghttp.RespondWithJSONEncodedPtr(&statusCode, &object)         // reads through pointers at request time
-ghttp.RespondWithPtr(&statusCode, &body)
+ghttp.RespondWithPtr(&statusCode, &body)                      // body is a *string or *[]byte
+ghttp.RespondWithProto(http.StatusOK, msg)                    // protobuf-encodes a protoadapt.MessageV1
 ```
+
+`RespondWithJSONEncoded(Ptr)` and `RespondWithProto` set `Content-Type` (`application/json` / `application/x-protobuf`) unless the optional `http.Header` already does.
 
 ## End-to-end example
 
@@ -165,7 +172,7 @@ Because the server fails when requests exceed handlers, this also asserts the cl
 ```go
 server.SetHandler(0, newHandler)            // replace handler at index
 h := server.GetHandler(0)                   // read it back
-server.WrapHandler(0, extraVerifyHandler)   // run an extra handler around the existing one
+server.WrapHandler(0, extraVerifyHandler)   // run an extra handler after the existing one
 ```
 
 ## MUXing unordered routes
@@ -200,3 +207,20 @@ Unhandled requests are still recorded in `server.ReceivedRequests()`, so you can
 ```go
 httpClient := &http.Client{Transport: server.RoundTripper(nil)}
 ```
+
+`RoundTripper` rewrites every request to plain `http://` at the server's address, so it doesn't work with `NewTLSServer`.
+
+## Using a specific Gomega instance
+
+The package-level handlers assert through the global Gomega. If you're not using it — e.g. `g := NewWithT(t)` under plain `go test`, or a Gomega with a custom fail handler — build handlers from `ghttp.NewGHTTPWithGomega(g)`, which has the same `Verify*`/`RespondWith*` methods (combine them with the package-level `CombineHandlers`):
+
+```go
+g := NewWithT(t)
+gh := ghttp.NewGHTTPWithGomega(g)
+server.AppendHandlers(ghttp.CombineHandlers(
+	gh.VerifyRequest("GET", "/sprockets"),
+	gh.RespondWithJSONEncoded(http.StatusOK, sprockets),
+))
+```
+
+The server's own unhandled-request check still goes through the global Gomega: without `RegisterTestingT(t)` an unhandled request just gets a 500 response and nothing fails, so also assert on `server.ReceivedRequests()`.
