@@ -294,7 +294,7 @@ func (g GHTTPWithGomega) RespondWithJSONEncoded(statusCode int, object any, opti
 	if _, found := headers["Content-Type"]; !found {
 		headers["Content-Type"] = []string{"application/json"}
 	}
-	return RespondWith(statusCode, string(data), headers)
+	return g.RespondWith(statusCode, string(data), headers)
 }
 
 /*
