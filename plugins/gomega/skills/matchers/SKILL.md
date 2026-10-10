@@ -84,6 +84,7 @@ Actual may be array/slice/map (and, on Go 1.23+, `iter.Seq`/`iter.Seq2` iterator
 - `HaveEach(element)` — every element matches (errors on empty collection).
 - `HaveKey(key)` — map has a matching key.
 - `HaveKeyWithValue(key, value)` — map has a matching key mapped to a matching value.
+- `ContainMap(expected)` — map (or `iter.Seq2`) contains every key:value pair of the `expected` map (extras allowed). Keys/values in `expected` may be matchers (use `map[string]any`/`map[any]any`); nest `ContainMap` for partial matching of nested maps. Prefer it to looping over `HaveKeyWithValue`.
 
 For deep/nested collection matching see `gomega:gstruct`; to compose element matchers see `gomega:composing-matchers`.
 

@@ -100,6 +100,8 @@ Expect(actual).To(MatchKeys(IgnoreMissing, Keys{
 }))
 ```
 
+For a flat "these entries are present" check, core `ContainMap(map[string]any{...})` is lighter than `MatchKeys(IgnoreExtras, Keys{...})`; reach for `MatchKeys` when you need `IgnoreMissing`, an exact key set, or deep nesting.
+
 ## Pointers — `PointTo`
 
 `PointTo(matcher)` dereferences a pointer and applies `matcher` to the pointed-to value. It fails if the pointer is `nil`.

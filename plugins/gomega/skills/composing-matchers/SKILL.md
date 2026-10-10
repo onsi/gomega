@@ -110,6 +110,7 @@ Expect(books).To(ConsistOf(
 ))
 Expect(m).To(HaveKeyWithValue("user", HaveField("Active", BeTrue())))
 Eventually(ch).Should(Receive(HaveField("Kind", "sesame")))
+Expect(m).To(ContainMap(map[string]any{"user": HaveField("Active", BeTrue()), "count": BeNumerically(">", 0)}))
 ```
 
 This composes cleanly with `Eventually`/`Consistently` too → `gomega:async`.
