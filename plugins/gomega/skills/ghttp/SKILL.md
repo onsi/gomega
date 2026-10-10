@@ -1,6 +1,6 @@
 ---
 name: ghttp
-description: The ghttp test HTTP server for testing HTTP clients — NewServer/NewTLSServer, AppendHandlers, the Verify* assertions (VerifyRequest/VerifyHeader/VerifyHeaderKV/VerifyJSON/VerifyForm/VerifyBasicAuth/VerifyContentType/VerifyBody), RespondWith/RespondWithJSONEncoded(Ptr), CombineHandlers, RouteToHandler for unordered MUXed routes, AllowUnhandledRequests, RoundTripper, and TLS. Use when testing code that makes outbound HTTP requests.
+description: The ghttp test HTTP server for testing HTTP clients — NewServer/NewTLSServer, AppendHandlers, the Verify* assertions (VerifyRequest/VerifyHeader/VerifyHeaderKV/VerifyJSON/VerifyForm/VerifyBasicAuth/VerifyContentType/VerifyBody), RespondWith/RespondWithJSONEncoded(Ptr), CombineHandlers, RouteToHandler for unordered MUXed routes, OrderedHandlers for per-route response sequences, AllowUnhandledRequests, RoundTripper, and TLS. Use when testing code that makes outbound HTTP requests.
 ---
 
 # ghttp: testing HTTP clients
@@ -39,7 +39,7 @@ server.AppendHandlers(
 ```
 
 **Gotchas (the core mental model):**
-- **AppendHandlers is strictly ordered.** Requests must arrive in exactly the registered order.
+- **AppendHandlers is strictly ordered.** Requests must arrive in exactly the registered order (for per-route ordering see `OrderedHandlers` below).
 - **Each handler handles exactly one request.** To run several checks against a *single* request, combine them with `ghttp.CombineHandlers` (below).
 - **The request count is asserted by default.** If the client sends more requests than there are handlers (or hits an unregistered route), the test fails. Guard the trivial false-positive (client made no request) with `Expect(server.ReceivedRequests()).To(HaveLen(1))`.
 
@@ -180,6 +180,24 @@ server.RouteToHandler("POST", "/login", ghttp.CombineHandlers(
 ```
 
 **Routing precedence:** on each request the server first checks `RouteToHandler` routes; if none match it pops the next `AppendHandlers` handler; if that stack is empty it consults the unhandled-request policy below. You can mix both: ordered assertions via `AppendHandlers` for the requests you care about, MUXed routes for incidental traffic (auth, health checks) that interleaves.
+
+### Different responses on successive calls to one route
+
+A `RouteToHandler` handler serves *every* matching request. When the same route must answer differently on successive calls (polling until a job finishes, retry-after-error, token refresh) — and its order relative to *other* routes doesn't matter — wrap one handler per call in `ghttp.OrderedHandlers`. Call N to that route is served by handler N, independently of `AppendHandlers` and of other routes:
+
+```go
+server.RouteToHandler("GET", "/jobs/42", ghttp.OrderedHandlers(
+	ghttp.RespondWithJSONEncoded(http.StatusOK, Job{State: "pending"}),
+	ghttp.CombineHandlers(
+		ghttp.VerifyHeaderKV("If-None-Match", "v1"),
+		ghttp.RespondWithJSONEncoded(http.StatusOK, Job{State: "done"}),
+	),
+))
+```
+
+- Use `AppendHandlers` when order across *all* requests matters; `OrderedHandlers` when only the order *per route* matters.
+- Once exhausted, further requests to that route **fail the test — even with `SetAllowUnhandledRequests(true)`** (that policy only covers requests no route or appended handler matches).
+- The call counter lives in the returned handler: build it in `BeforeEach`/`It`, not in a shared package-level var.
 
 ## Allowing unhandled requests
 

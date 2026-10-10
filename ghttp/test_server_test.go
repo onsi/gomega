@@ -1347,19 +1347,21 @@ var _ = Describe("TestServer", func() {
 				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
 			})
 
-			It("works identically with ConsecutiveHandlers alias", func() {
-				s.RouteToHandler("GET", "/consecutive", ConsecutiveHandlers(
-					RespondWith(http.StatusOK, "first"),
-					RespondWith(http.StatusOK, "second"),
+			It("still fails when exhausted even if unhandled requests are allowed", func() {
+				s.SetAllowUnhandledRequests(true)
+				s.RouteToHandler("GET", "/exhaust", OrderedHandlers(
+					RespondWith(http.StatusOK, "only-one"),
 				))
 
-				resp, err = http.Get(s.URL() + "/consecutive")
+				resp, err = http.Get(s.URL() + "/exhaust")
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("first")))
+				Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("only-one")))
 
-				resp, err = http.Get(s.URL() + "/consecutive")
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(gutil.ReadAll(resp.Body)).Should(Equal([]byte("second")))
+				failures := InterceptGomegaFailures(func() {
+					http.Get(s.URL() + "/exhaust")
+				})
+				Expect(failures).Should(HaveLen(1))
+				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
 			})
 
 			It("handles concurrent requests safely without data races", func() {
@@ -1406,7 +1408,7 @@ var _ = Describe("TestServer", func() {
 		})
 
 		Context("invoking handler directly", func() {
-			It("handles direct calls and nil request on exhaustion cleanly", func() {
+			It("serves direct calls in order and fails once exhausted", func() {
 				handler := OrderedHandlers(
 					func(w http.ResponseWriter, req *http.Request) {
 						w.WriteHeader(http.StatusOK)
@@ -1415,13 +1417,12 @@ var _ = Describe("TestServer", func() {
 				)
 
 				rec := httptest.NewRecorder()
-				req, _ := http.NewRequest("GET", "/direct", nil)
-				handler(rec, req)
+				handler(rec, httptest.NewRequest("GET", "/direct", nil))
 				Expect(rec.Code).Should(Equal(http.StatusOK))
 				Expect(rec.Body.String()).Should(Equal("direct"))
 
 				failures := InterceptGomegaFailures(func() {
-					handler(nil, nil)
+					handler(httptest.NewRecorder(), httptest.NewRequest("GET", "/direct", nil))
 				})
 				Expect(failures).Should(HaveLen(1))
 				Expect(failures[0]).Should(ContainSubstring("Received Unhandled Request: OrderedHandlers exhausted"))
@@ -1435,10 +1436,9 @@ var _ = Describe("TestServer", func() {
 				handler := customGHTTP.OrderedHandlers()
 
 				Expect(func() {
-					handler(nil, nil)
+					handler(httptest.NewRecorder(), httptest.NewRequest("GET", "/direct", nil))
 				}).Should(PanicWith(ContainSubstring("custom-gomega: Received Unhandled Request: OrderedHandlers exhausted")))
 			})
 		})
 	})
 })
-

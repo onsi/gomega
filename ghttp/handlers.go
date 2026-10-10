@@ -353,10 +353,13 @@ func (g GHTTPWithGomega) RespondWithProto(statusCode int, message protoadapt.Mes
 	}
 }
 
-// OrderedHandlers returns a handler that executes the passed in handlers sequentially
-// on successive requests.
+// OrderedHandlers returns a handler that dispatches successive requests to the passed-in handlers in turn:
+// the first request goes to handlers[0], the second to handlers[1], and so on.
+// It is intended for use with Server.RouteToHandler when a route must respond differently on successive calls.
+// (To run several handlers against a single request use CombineHandlers.)
 //
-// When all handlers are exhausted, subsequent requests fail with an unhandled request assertion.
+// Once exhausted, further requests fail the test, regardless of the server's AllowUnhandledRequests setting.
+// The call count lives in the returned handler, so construct a fresh one per spec.
 func (g GHTTPWithGomega) OrderedHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
 	var lock sync.Mutex
 	count := 0
@@ -375,19 +378,10 @@ func (g GHTTPWithGomega) OrderedHandlers(handlers ...http.HandlerFunc) http.Hand
 			return
 		}
 
-		if req != nil {
-			formatted, err := httputil.DumpRequest(req, true)
-			g.gomega.Expect(err).NotTo(HaveOccurred(), "Encountered error while dumping HTTP request")
-			g.gomega.Expect(string(formatted)).Should(BeNil(), "Received Unhandled Request: OrderedHandlers exhausted")
-		} else {
-			g.gomega.Expect("").Should(BeNil(), "Received Unhandled Request: OrderedHandlers exhausted")
-		}
+		formatted, err := httputil.DumpRequest(req, true)
+		g.gomega.Expect(err).NotTo(HaveOccurred(), "Encountered error while dumping HTTP request")
+		g.gomega.Expect(string(formatted)).Should(BeNil(), "Received Unhandled Request: OrderedHandlers exhausted")
 	}
-}
-
-// ConsecutiveHandlers is an alias for OrderedHandlers.
-func (g GHTTPWithGomega) ConsecutiveHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
-	return g.OrderedHandlers(handlers...)
 }
 
 func VerifyRequest(method string, path any, rawQuery ...string) http.HandlerFunc {
@@ -462,16 +456,13 @@ func RespondWithProto(statusCode int, message protoadapt.MessageV1, optionalHead
 	return NewGHTTPWithGomega(gomega.Default).RespondWithProto(statusCode, message, optionalHeader...)
 }
 
-// OrderedHandlers returns a handler that executes the passed in handlers sequentially
-// on successive requests.
+// OrderedHandlers returns a handler that dispatches successive requests to the passed-in handlers in turn:
+// the first request goes to handlers[0], the second to handlers[1], and so on.
+// It is intended for use with Server.RouteToHandler when a route must respond differently on successive calls.
+// (To run several handlers against a single request use CombineHandlers.)
 //
-// When all handlers are exhausted, subsequent requests fail with an unhandled request assertion.
+// Once exhausted, further requests fail the test, regardless of the server's AllowUnhandledRequests setting.
+// The call count lives in the returned handler, so construct a fresh one per spec.
 func OrderedHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
 	return NewGHTTPWithGomega(gomega.Default).OrderedHandlers(handlers...)
 }
-
-// ConsecutiveHandlers is an alias for OrderedHandlers.
-func ConsecutiveHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
-	return NewGHTTPWithGomega(gomega.Default).ConsecutiveHandlers(handlers...)
-}
-

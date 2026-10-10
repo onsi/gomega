@@ -2518,6 +2518,8 @@ server.RouteToHandler("GET", "/foo/bar", ghttp.OrderedHandlers(
 
 Each successive request invokes the next handler in order. Once all configured handlers are exhausted, subsequent requests fail with an unhandled request assertion.
 
+Note that `SetAllowUnhandledRequests` does not apply here: the route is still handled, so an exhausted `OrderedHandlers` fails the test. Construct `OrderedHandlers` in a `BeforeEach` (or `It`) so each spec starts from the first handler.
+
 ### Allowing unhandled requests
 
 By default, `ghttp`'s server marks the test as failed if a request is made for which there is no registered handler.
