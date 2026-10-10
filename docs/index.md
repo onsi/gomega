@@ -647,7 +647,7 @@ var _ = Describe("Turbo-encabulator", func() {
         teComponents, err := turboEncabulator.GetComponents()
         Expect(err).NotTo(HaveOccurred())
 
-        Expect(teComponents).To(HaveLen(components))
+        Expect(teComponents).To(HaveLen(len(components)))
         for _, component := range components {
             Expect(teComponents).To(ContainElement(component))
         }
@@ -669,7 +669,7 @@ func assertTurboEncabulatorContains(components ...string) {
     teComponents, err := turboEncabulator.GetComponents()
     Expect(err).NotTo(HaveOccurred())
 
-    Expect(teComponents).To(HaveLen(components))
+    Expect(teComponents).To(HaveLen(len(components)))
     for _, component := range components {
         Expect(teComponents).To(ContainElement(component))
     }
@@ -687,7 +687,7 @@ func assertTurboEncabulatorContains(components ...string) {
     teComponents, err := turboEncabulator.GetComponents()
     ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
-    ExpectWithOffset(1, teComponents).To(HaveLen(components))
+    ExpectWithOffset(1, teComponents).To(HaveLen(len(components)))
     for _, component := range components {
       ExpectWithOffset(1, teComponents).To(ContainElement(component))
     }
@@ -703,7 +703,7 @@ func assertTurboEncabulatorContains(components ...string) {
     teComponents, err := turboEncabulator.GetComponents()
     Expect(err).WithOffset(1).NotTo(HaveOccurred())
 
-    Expect(teComponents).WithOffset(1).To(HaveLen(components))
+    Expect(teComponents).WithOffset(1).To(HaveLen(len(components)))
     for _, component := range components {
       Expect(teComponents).WithOffset(1).To(ContainElement(component))
     }
@@ -1160,21 +1160,39 @@ It is an error for either `ACTUAL` or `EXPECTED` to be invalid YAML.
 
 succeeds if `ACTUAL` is, in fact, empty. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`. Starting with Go 1.23, `ACTUAL` can be also an iterator assignable to `iter.Seq` or `iter.Seq2`. It is an error for `ACTUAL` to have any other type.
 
-#### HaveLen(count int)
+#### HaveLen(count any)
 
 ```go
 Ω(ACTUAL).Should(HaveLen(INT))
+Ω(ACTUAL).Should(HaveLen(MATCHER))
 ```
 
 succeeds if the length of `ACTUAL` is `INT`. `ACTUAL` must be of type `string`, `array`, `map`, `chan`, or `slice`.  Starting with Go 1.23, `ACTUAL` can be also an iterator assignable to `iter.Seq` or `iter.Seq2`. It is an error for `ACTUAL` to have any other type.
 
-#### HaveCap(count int)
+`count` may be any integer type, or a matcher that is applied to the length of `ACTUAL` (an `int`).  For example:
+
+```go
+Ω([]int{1, 2, 3}).Should(HaveLen(BeNumerically(">=", 2)))
+```
+
+Prefer `BeNumerically` over `Equal` when passing a matcher: the length is always an `int`, so `HaveLen(Equal(int64(3)))` will never match.  It is an error for `count` to be anything other than an integer or a matcher.
+
+#### HaveCap(count any)
 
 ```go
 Ω(ACTUAL).Should(HaveCap(INT))
+Ω(ACTUAL).Should(HaveCap(MATCHER))
 ```
 
 succeeds if the capacity of `ACTUAL` is `INT`. `ACTUAL` must be of type `array`, `chan`, or `slice`.  It is an error for it to have any other type.
+
+As with `HaveLen`, `count` may be any integer type, or a matcher that is applied to the capacity of `ACTUAL` (an `int`).  For example:
+
+```go
+Ω(make([]int, 0, 10)).Should(HaveCap(BeNumerically(">", 5)))
+```
+
+Prefer `BeNumerically` over `Equal` when passing a matcher: `HaveCap(Equal(int64(10)))` will never match.  It is an error for `count` to be anything other than an integer or a matcher.
 
 #### ContainElement(element any)
 

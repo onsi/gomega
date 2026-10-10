@@ -1,6 +1,6 @@
 ---
 name: composing-matchers
-description: Build compound Gomega assertions by combining matchers — And/SatisfyAll (all pass), Or/SatisfyAny (any pass), Not (negate), WithTransform to map the actual before matching, Satisfy for an ad-hoc predicate, HaveValue to dereference pointers/interfaces, HaveField for struct fields and method results, HaveEach for every element, plus the matchers-as-arguments idiom that lets you nest matchers inside ContainElement/ConsistOf/HaveKeyWithValue/Receive. Use when one Expect needs several requirements at once, or you want to assert deep into a value without writing a custom matcher.
+description: Build compound Gomega assertions by combining matchers — And/SatisfyAll (all pass), Or/SatisfyAny (any pass), Not (negate), WithTransform to map the actual before matching, Satisfy for an ad-hoc predicate, HaveValue to dereference pointers/interfaces, HaveField for struct fields and method results, HaveEach for every element, plus the matchers-as-arguments idiom that lets you nest matchers inside ContainElement/ConsistOf/HaveKeyWithValue/HaveLen/Receive. Use when one Expect needs several requirements at once, or you want to assert deep into a value without writing a custom matcher.
 ---
 
 # Composing and transforming matchers
@@ -52,6 +52,8 @@ func HaveSprocketName(name string) GomegaMatcher {
 
 This is the standard pattern for distilling a `WithTransform` into a reusable named matcher.
 
+Don't `WithTransform` to `len(x)` — `HaveLen(MATCHER)`/`HaveCap(MATCHER)` already accept a matcher and work across strings, maps, channels and iterators.
+
 ## Satisfy — an ad-hoc boolean predicate
 
 `Satisfy(predicate any)` passes when `predicate(ACTUAL)` returns `true`. The predicate takes one argument and returns one `bool`.
@@ -102,6 +104,7 @@ Expect([]string{"Foo", "FooBar"}).To(HaveEach(ContainSubstring("Foo")))
 Nearly every collection/channel matcher accepts matchers where it accepts values, so you compose by nesting rather than learning new operators:
 
 ```go
+Expect(xs).To(HaveLen(BeNumerically(">", 2)))
 Expect(xs).To(ContainElement(HaveField("Name", "gomega")))
 Expect(xs).To(ContainElement(HaveField("Name", BeKeyOf(names)), &found)) // matcher + capture pointer
 Expect(books).To(ConsistOf(

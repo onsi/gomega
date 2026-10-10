@@ -58,7 +58,7 @@ var _ = Describe("AndMatcher", func() {
 		When("match succeeds, but expected it to fail", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Not(And(true1, true2)), input,
-					`To not satisfy all of these matchers: [%!s(*matchers.HaveLenMatcher=&{2}) %!s(*matchers.EqualMatcher=&{hi})]`)
+					`To not satisfy all of these matchers: [%!s(*matchers.HaveLenMatcher=&{2 2}) %!s(*matchers.EqualMatcher=&{hi})]`)
 			})
 		})
 	})

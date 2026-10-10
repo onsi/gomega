@@ -72,6 +72,8 @@ func toFloat(a any) float64 {
 	panic(fmt.Sprintf("Expected a number!  Got <%T> %#v", a, a))
 }
 
+// toInt converts any integer, or any integral float, to an int.  It returns false if a is
+// not a number, is a non-integral float, or does not fit in an int.
 func toInt(a any) (int, bool) {
 	if a == nil {
 		return 0, false
@@ -79,13 +81,25 @@ func toInt(a any) (int, bool) {
 	val := reflect.ValueOf(a)
 	switch val.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return int(val.Int()), true
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		i := val.Int()
+		if i < math.MinInt || i > math.MaxInt {
+			return 0, false
+		}
+		return int(i), true
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		u := val.Uint()
 		if u > math.MaxInt {
 			return 0, false
 		}
 		return int(u), true
+	case reflect.Float32, reflect.Float64:
+		f := val.Float()
+		// float64(math.MaxInt) rounds up to 2^63 (on 64-bit platforms), so compare against
+		// -float64(math.MinInt) (exactly 2^63 or 2^31) with >= instead.  NaN fails the Trunc check.
+		if f != math.Trunc(f) || f < float64(math.MinInt) || f >= -float64(math.MinInt) {
+			return 0, false
+		}
+		return int(f), true
 	default:
 		return 0, false
 	}

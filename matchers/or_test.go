@@ -41,7 +41,7 @@ var _ = Describe("OrMatcher", func() {
 		When("match fails", func() {
 			It("gives a descriptive message", func() {
 				verifyFailureMessage(Or(false1, false2), input,
-					"To satisfy at least one of these matchers: [%!s(*matchers.HaveLenMatcher=&{1}) %!s(*matchers.EqualMatcher=&{hip})]")
+					"To satisfy at least one of these matchers: [%!s(*matchers.HaveLenMatcher=&{1 2}) %!s(*matchers.EqualMatcher=&{hip})]")
 			})
 		})
 
