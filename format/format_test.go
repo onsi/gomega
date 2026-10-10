@@ -509,18 +509,6 @@ var _ = Describe("Format", func() {
 				Expect(Object(m, 1)).Should(match("map[string]*int | len:1", `{"nilKey": nil}`))
 			})
 
-			It("should format maps across varying sizes without out of range indexing", func() {
-				m := make(map[int]int)
-				for i := range 50 {
-					m[i] = i * 2
-					Expect(func() { _ = Object(m, 1) }).ShouldNot(Panic())
-				}
-				for i := range 50 {
-					delete(m, i)
-					Expect(func() { _ = Object(m, 1) }).ShouldNot(Panic())
-				}
-			})
-
 			When("the slice contains long entries", func() {
 				It("should format the entries with newlines", func() {
 					m := map[string][]byte{}

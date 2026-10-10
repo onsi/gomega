@@ -442,6 +442,8 @@ func formatSlice(v reflect.Value, indentation uint, visited map[uintptr]struct{}
 }
 
 func formatMap(v reflect.Value, indentation uint, visited map[uintptr]struct{}) string {
+	// size the result from MapKeys() rather than v.Len(): if the caller mutates the map concurrently
+	// (a data race in caller code) the two can disagree, and indexing by v.Len() would panic
 	keys := v.MapKeys()
 	result := make([]string, 0, len(keys))
 
