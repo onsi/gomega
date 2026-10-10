@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"maps"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
@@ -351,6 +353,37 @@ func (g GHTTPWithGomega) RespondWithProto(statusCode int, message protoadapt.Mes
 	}
 }
 
+// OrderedHandlers returns a handler that dispatches successive requests to the passed-in handlers in turn:
+// the first request goes to handlers[0], the second to handlers[1], and so on.
+// It is intended for use with Server.RouteToHandler when a route must respond differently on successive calls.
+// (To run several handlers against a single request use CombineHandlers.)
+//
+// Once exhausted, further requests fail the test, regardless of the server's AllowUnhandledRequests setting.
+// The call count lives in the returned handler, so construct a fresh one per spec.
+func (g GHTTPWithGomega) OrderedHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	var lock sync.Mutex
+	count := 0
+
+	return func(w http.ResponseWriter, req *http.Request) {
+		lock.Lock()
+		var handler http.HandlerFunc
+		if count < len(handlers) {
+			handler = handlers[count]
+			count++
+		}
+		lock.Unlock()
+
+		if handler != nil {
+			handler(w, req)
+			return
+		}
+
+		formatted, err := httputil.DumpRequest(req, true)
+		g.gomega.Expect(err).NotTo(HaveOccurred(), "Encountered error while dumping HTTP request")
+		g.gomega.Expect(string(formatted)).Should(BeNil(), "Received Unhandled Request: OrderedHandlers exhausted")
+	}
+}
+
 func VerifyRequest(method string, path any, rawQuery ...string) http.HandlerFunc {
 	return NewGHTTPWithGomega(gomega.Default).VerifyRequest(method, path, rawQuery...)
 }
@@ -421,4 +454,15 @@ func RespondWithJSONEncodedPtr(statusCode *int, object any, optionalHeader ...ht
 
 func RespondWithProto(statusCode int, message protoadapt.MessageV1, optionalHeader ...http.Header) http.HandlerFunc {
 	return NewGHTTPWithGomega(gomega.Default).RespondWithProto(statusCode, message, optionalHeader...)
+}
+
+// OrderedHandlers returns a handler that dispatches successive requests to the passed-in handlers in turn:
+// the first request goes to handlers[0], the second to handlers[1], and so on.
+// It is intended for use with Server.RouteToHandler when a route must respond differently on successive calls.
+// (To run several handlers against a single request use CombineHandlers.)
+//
+// Once exhausted, further requests fail the test, regardless of the server's AllowUnhandledRequests setting.
+// The call count lives in the returned handler, so construct a fresh one per spec.
+func OrderedHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	return NewGHTTPWithGomega(gomega.Default).OrderedHandlers(handlers...)
 }

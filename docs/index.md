@@ -2507,6 +2507,19 @@ Here, saving a sprocket triggers authentication, which is handled by the registe
 
 > `RouteToHandler` can take either a string as a route (as seen in this example) or a `regexp.Regexp`.
 
+If you need a routed endpoint to respond with different handlers on successive requests to the same route, use `ghttp.OrderedHandlers`:
+
+```go
+server.RouteToHandler("GET", "/foo/bar", ghttp.OrderedHandlers(
+    ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]int{"data": 1}),
+    ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]int{"data": 2}),
+))
+```
+
+Each successive request invokes the next handler in order. Once all configured handlers are exhausted, subsequent requests fail with an unhandled request assertion.
+
+Note that `SetAllowUnhandledRequests` does not apply here: the route is still handled, so an exhausted `OrderedHandlers` fails the test. Construct `OrderedHandlers` in a `BeforeEach` (or `It`) so each spec starts from the first handler.
+
 ### Allowing unhandled requests
 
 By default, `ghttp`'s server marks the test as failed if a request is made for which there is no registered handler.
