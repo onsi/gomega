@@ -66,14 +66,14 @@ String matchers accept `string`/`[]byte`/`Stringer`. The `args...` forms run `fm
 - `MatchJSON(expected)` — actual and expected are the same JSON object (ignores whitespace/formatting/key order).
 - `MatchXML(expected)` — actual and expected are the same XML object (ignores whitespace/formatting).
 - `MatchYAML(expected)` — actual and expected are the same YAML object (ignores whitespace/formatting/key order).
-- `HaveLen(count)` — string (or collection) has the given length.
+- `HaveLen(count)` — string (or collection) has the given length; `count` may also be a matcher applied to the `int` length, e.g. `HaveLen(BeNumerically(">", 0))`.
 
 ## Working with Collections
 
 Actual may be array/slice/map (and, on Go 1.23+, `iter.Seq`/`iter.Seq2` iterators). For maps, element matchers search **values**. Elements passed in may themselves be matchers.
 
-- `HaveLen(count)` — length is `count`.
-- `HaveCap(count)` — capacity is `count` (array/chan/slice).
+- `HaveLen(count)` — length is `count`, or pass a matcher applied to the `int` length: `HaveLen(BeNumerically(">=", 3))`. Use `BeNumerically`, not `Equal(int64(n))`, which never matches.
+- `HaveCap(count)` — capacity is `count` (array/chan/slice); like `HaveLen`, `count` may be a matcher: `HaveCap(BeNumerically(">", 5))`.
 - `BeEmpty()` — length zero.
 - `ContainElement(element, [&pointer])` — contains a matching element. With a pointer second arg, **extracts** matches into it (scalar for one, slice/map for many).
 - `ContainElements(elements...)` — contains all of the given elements (order-independent; extras allowed). Pass a single slice arg if needed.

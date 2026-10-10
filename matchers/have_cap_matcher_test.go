@@ -47,4 +47,82 @@ var _ = Describe("HaveCap", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 	})
+
+	When("passed a matcher", func() {
+		It("should evaluate arrays, slices, and channels with sub-matchers", func() {
+			Expect([0]int{}).Should(HaveCap(BeNumerically("==", 0)))
+			Expect([2]int{1}).Should(HaveCap(BeNumerically("==", 2)))
+			Expect([2]int{1}).Should(HaveCap(BeNumerically(">", 1)))
+			Expect([2]int{1}).ShouldNot(HaveCap(BeNumerically("<", 2)))
+
+			Expect([]int{}).Should(HaveCap(BeNumerically("==", 0)))
+			Expect([]int{1, 2, 3, 4, 5}[:2]).Should(HaveCap(BeNumerically("==", 5)))
+			Expect([]int{1, 2, 3, 4, 5}[:2]).Should(HaveCap(BeNumerically(">", 3)))
+			Expect([]int{1, 2, 3, 4, 5}[:2]).ShouldNot(HaveCap(BeNumerically("<", 5)))
+			Expect(make([]int, 0, 5)).Should(HaveCap(BeNumerically("==", 5)))
+			Expect(make([]int, 0, 5)).Should(HaveCap(Equal(5)))
+			Expect(make([]int, 0, 5)).ShouldNot(HaveCap(BeNumerically(">", 5)))
+
+			c := make(chan bool, 3)
+			Expect(c).Should(HaveCap(BeNumerically("==", 3)))
+			Expect(c).Should(HaveCap(BeNumerically(">=", 3)))
+			Expect(c).ShouldNot(HaveCap(BeNumerically("==", 0)))
+		})
+
+		It("should report the capacity and the sub-matcher's failure message", func() {
+			m := HaveCap(BeNumerically(">", 5))
+			Expect(m.Match(make([]int, 0, 2))).To(BeFalse())
+			Expect(m.FailureMessage(make([]int, 0, 2))).To(Equal("Capacity 2 of\n    <[]int | len:0, cap:2>: []\nfailed to satisfy matcher:\n    Expected\n        <int>: 2\n    to be >\n        <int>: 5"))
+
+			m = HaveCap(BeNumerically(">", 1))
+			Expect(m.Match(make([]int, 0, 2))).To(BeTrue())
+			Expect(m.NegatedFailureMessage(make([]int, 0, 2))).To(Equal("Capacity 2 of\n    <[]int | len:0, cap:2>: []\nsatisfied matcher, but should not have:\n    Expected\n        <int>: 2\n    not to be >\n        <int>: 1"))
+		})
+
+		It("should propagate sub-matcher errors", func() {
+			success, err := HaveCap(BeNumerically("invalid-op", 1)).Match([]int{1})
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	When("passed a non-int count", func() {
+		It("should support other integer types", func() {
+			Expect(make([]int, 0, 5)).Should(HaveCap(int64(5)))
+			Expect(make([]int, 0, 5)).Should(HaveCap(uint(5)))
+			Expect(make([]int, 0, 5)).Should(HaveCap(int32(5)))
+			Expect(make([]int, 0, 5)).ShouldNot(HaveCap(int64(4)))
+		})
+
+		It("should support integral floats, so that untyped float constants keep working", func() {
+			const N = 5.0
+			Expect(make([]int, 0, 5)).Should(HaveCap(N))
+			Expect(make([]int, 0, 5)).Should(HaveCap(5.0))
+			Expect(make([]int, 0, 5)).ShouldNot(HaveCap(4.0))
+		})
+
+		It("should report the plain-integer failure messages", func() {
+			Expect(HaveCap(5).FailureMessage(make([]int, 0, 2))).To(Equal("Expected\n    <[]int | len:0, cap:2>: []\nto have capacity 5"))
+			Expect(HaveCap(5).NegatedFailureMessage(make([]int, 0, 5))).To(Equal("Expected\n    <[]int | len:0, cap:5>: []\nnot to have capacity 5"))
+			Expect(HaveCap(uint(5)).FailureMessage(make([]int, 0, 2))).To(Equal("Expected\n    <[]int | len:0, cap:2>: []\nto have capacity 5"))
+		})
+
+		It("should error when passed a non-integral float", func() {
+			success, err := HaveCap(2.5).Match(make([]int, 0, 2))
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError("HaveCap matcher expects an integer or a GomegaMatcher.  Got:\n    <float64>: 2.5"))
+		})
+
+		It("should error when passed an integer that does not fit in an int", func() {
+			success, err := HaveCap(^uint64(0)).Match([]int{1})
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError(ContainSubstring("HaveCap matcher expects an integer or a GomegaMatcher.")))
+		})
+
+		It("should error when passed anything else", func() {
+			success, err := HaveCap("invalid").Match([]int{1})
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError("HaveCap matcher expects an integer or a GomegaMatcher.  Got:\n    <string>: invalid"))
+		})
+	})
 })
