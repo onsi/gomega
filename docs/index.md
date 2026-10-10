@@ -1441,6 +1441,30 @@ By default `ContainMap()` uses `Equal()` to match keys and values. Gomega matche
 Ω(map[string]int{"Foo": 3, "Bar": 5}).Should(ContainMap(map[string]any{"Bar": BeNumerically(">", 4)}))
 ```
 
+A few things to keep in mind:
+
+- To use matchers as values, `EXPECTED` must have an interface value type (e.g. `map[string]any`).  To use matchers as keys, it must have an interface key type (e.g. `map[any]int` or `map[any]any`).
+- A `nil` value in `EXPECTED` is matched with `BeNil()`, so `ContainMap(map[string]any{"err": nil})` succeeds if `ACTUAL` has an `"err"` key whose value is `nil`.  (This differs from `HaveKeyWithValue("err", nil)`, which uses `Equal(nil)` and so errors instead.)
+- Keys and values that are not matchers are compared with `Equal()`, so types must match exactly: `ContainMap(map[string]int{"count": 3})` will not match a `map[string]int64`.  Use `BeNumerically` when the types may differ: `ContainMap(map[string]any{"count": BeNumerically("==", 3)})`.
+- Each entry in `EXPECTED` must be satisfied by a *distinct* entry in `ACTUAL`.  This only matters when matcher keys are involved: `ContainMap(map[any]int{"a": 1, MatchRegexp("^a"): 1})` fails against `map[string]int{"a": 1}` but succeeds against `map[string]int{"a": 1, "ab": 1}`.
+
+`ContainMap` can itself be used as a value matcher to make partial assertions about nested maps:
+
+```go
+config := map[string]any{
+    "name": "gomega",
+    "server": map[string]any{
+        "port": 8080,
+        "tls":  true,
+    },
+}
+Ω(config).Should(ContainMap(map[string]any{
+    "server": ContainMap(map[string]any{"port": 8080}),
+}))
+```
+
+When `ContainMap` fails it reports the keys that are missing from `ACTUAL`, the keys that are present but whose values did not match (along with the value matcher's failure message), and any entries with matcher keys that could not be matched.
+
 ### Working with Structs
 
 #### HaveField(field any, value any)

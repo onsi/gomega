@@ -3,6 +3,7 @@ package matchers_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/matchers/internal/miter"
 )
 
@@ -144,7 +145,7 @@ var _ = Describe("ContainMap", func() {
 			// One entry cannot satisfy two expected entries
 			singleEntryMap := map[string]int{"a": 1}
 			Expect(singleEntryMap).ShouldNot(ContainMap(map[any]int{
-				MatchRegexp(`^a$`): 1,
+				MatchRegexp(`^a$`):    1,
 				ContainSubstring("a"): 1,
 			}))
 		})
@@ -207,66 +208,258 @@ var _ = Describe("ContainMap", func() {
 	}
 
 	When("passed invalid actual or expected arguments", func() {
-		It("fails when actual is not a map or iter.Seq2", func() {
-			failures := InterceptGomegaFailures(func() {
-				Expect("not a map").Should(ContainMap(mapB))
-			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("ContainMap matcher expects a map/iter.Seq2"))
+		It("errors when actual is not a map or iter.Seq2", func() {
+			success, err := ContainMap(mapB).Match("not a map")
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError("ContainMap matcher expects a map/iter.Seq2.  Got:\n    <string>: not a map"))
 
-			failures = InterceptGomegaFailures(func() {
-				Expect([]string{"a", "b"}).Should(ContainMap(mapB))
-			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("ContainMap matcher expects a map/iter.Seq2"))
+			_, err = ContainMap(mapB).Match([]string{"a", "b"})
+			Expect(err).Should(MatchError(HavePrefix("ContainMap matcher expects a map/iter.Seq2.  Got:\n")))
 
-			failures = InterceptGomegaFailures(func() {
-				Expect(nil).Should(ContainMap(mapB))
-			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("ContainMap matcher expects a map/iter.Seq2"))
+			_, err = ContainMap(mapB).Match(nil)
+			Expect(err).Should(MatchError("ContainMap matcher expects a map/iter.Seq2.  Got:\n    <nil>: nil"))
 		})
 
-		It("fails when expected is not a map or iter.Seq2", func() {
-			failures := InterceptGomegaFailures(func() {
-				Expect(mapA).Should(ContainMap("not a map"))
-			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("ContainMap matcher expects a map/iter.Seq2"))
+		It("errors when actual is a pointer to a map", func() {
+			success, err := ContainMap(mapB).Match(&mapA)
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError(HavePrefix("ContainMap matcher expects a map/iter.Seq2.  Got:\n    <*map[string]string | 0x")))
+		})
 
-			failures = InterceptGomegaFailures(func() {
-				Expect(mapA).Should(ContainMap([]string{"a"}))
-			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("ContainMap matcher expects a map/iter.Seq2"))
+		It("errors, with a different message, when expected is not a map or iter.Seq2", func() {
+			success, err := ContainMap("not a map").Match(mapA)
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError("ContainMap matcher expects the expected value to be a map/iter.Seq2.  Got:\n    <string>: not a map"))
 
-			failures = InterceptGomegaFailures(func() {
-				Expect(mapA).Should(ContainMap(nil))
+			_, err = ContainMap([]string{"a"}).Match(mapA)
+			Expect(err).Should(MatchError(HavePrefix("ContainMap matcher expects the expected value to be a map/iter.Seq2.  Got:\n")))
+
+			_, err = ContainMap(nil).Match(mapA)
+			Expect(err).Should(MatchError("ContainMap matcher expects the expected value to be a map/iter.Seq2.  Got:\n    <nil>: nil"))
+
+			_, err = ContainMap(&mapB).Match(mapA)
+			Expect(err).Should(MatchError(HavePrefix("ContainMap matcher expects the expected value to be a map/iter.Seq2.  Got:\n    <*map[string]string | 0x")))
+		})
+	})
+
+	When("a value matcher for a plain key errors", func() {
+		It("returns the error", func() {
+			success, err := ContainMap(map[string]any{"a": BeNumerically("~~", 1)}).Match(map[string]int{"a": 1})
+			Expect(success).Should(BeFalse())
+			Expect(err).Should(MatchError("ContainMap's value matcher for key\n    <string>: a\nfailed with:\n    Unknown comparator: ~~"))
+		})
+
+		It("reports the same error regardless of map iteration order", func() {
+			for range 50 {
+				_, err := ContainMap(map[string]any{
+					"c": BeNumerically("~~", 3),
+					"a": BeNumerically("~~", 1),
+					"b": BeNumerically("~~", 2),
+				}).Match(map[string]int{"a": 1, "b": 2, "c": 3})
+				Expect(err).Should(MatchError(HavePrefix("ContainMap's value matcher for key\n    <string>: a\n")))
+			}
+		})
+
+		It("does not run the value matcher, or error, when the key is missing", func() {
+			success, err := ContainMap(map[string]any{"b": BeNumerically("~~", 1)}).Match(map[string]int{"a": 1})
+			Expect(success).Should(BeFalse())
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Describe("matching each expected entry to a distinct actual entry", func() {
+		It("does not let a plain key and a matcher key claim the same actual entry", func() {
+			expected := map[any]any{
+				"a":                  1,
+				MatchRegexp(`^a`):    1,
+				HavePrefix("b"):      BeNumerically(">", 0),
+				ContainSubstring(""): 3,
+			}
+			for range 100 {
+				Expect(map[string]int{"a": 1, "b": 2, "c": 3}).ShouldNot(ContainMap(expected))
+				Expect(map[string]int{"a": 1, "ab": 1, "b": 2, "c": 3}).Should(ContainMap(expected))
+				Expect(map[string]int{"a": 1, "ab": 2, "b": 2, "c": 3}).ShouldNot(ContainMap(expected))
+			}
+		})
+
+		It("finds an assignment regardless of map iteration order when matcher keys overlap", func() {
+			actual := map[string]int{"a": 1, "ab": 1, "abc": 1}
+			expected := map[any]any{
+				MatchRegexp(`^a`):    1,
+				MatchRegexp(`^ab`):   1,
+				MatchRegexp(`^abc$`): 1,
+				MatchRegexp(`^abcd`): BeNil(),
+			}
+			for range 100 {
+				Expect(actual).Should(ContainMap(map[any]any{
+					MatchRegexp(`^a`):    1,
+					MatchRegexp(`^ab`):   1,
+					MatchRegexp(`^abc$`): 1,
+				}))
+				Expect(actual).ShouldNot(ContainMap(expected))
+			}
+		})
+
+		It("compares plain keys with Equal semantics, including for pointer and named-type keys", func() {
+			type Pair [2]int
+			Expect(map[Pair]int{{1, 2}: 3}).Should(ContainMap(map[Pair]int{{1, 2}: 3}))
+			Expect(map[Pair]int{{1, 2}: 3}).ShouldNot(ContainMap(map[[2]int]int{{1, 2}: 3}))
+			Expect(map[any]int{1: 1}).Should(ContainMap(map[any]int{1: 1}))
+			Expect(map[any]int{1: 1}).ShouldNot(ContainMap(map[any]int{int64(1): 1}))
+			Expect(map[string]int64{"a": 1}).ShouldNot(ContainMap(map[string]int{"a": 1}))
+			Expect(map[string]int64{"a": 1}).Should(ContainMap(map[string]any{"a": BeNumerically("==", 1)}))
+		})
+
+		if miter.HasIterators() {
+			It("handles repeated keys in iter.Seq2s", func() {
+				actual := func(yield func(string, int) bool) {
+					_ = yield("a", 1) && yield("a", 2) && yield("b", 3)
+				}
+				expected := func(yield func(string, any) bool) {
+					_ = yield("a", BeNumerically(">=", 1)) && yield("a", 1)
+				}
+				Expect(actual).Should(ContainMap(expected))
+
+				expected = func(yield func(string, any) bool) {
+					_ = yield("a", 1) && yield("a", 1)
+				}
+				Expect(actual).ShouldNot(ContainMap(expected))
+				Expect(map[string]int{"a": 1}).ShouldNot(ContainMap(expected))
+
+				expected = func(yield func(string, any) bool) {
+					_ = yield("a", 2) && yield("b", 3)
+				}
+				Expect(actual).Should(ContainMap(expected))
 			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("ContainMap matcher expects a map/iter.Seq2"))
+		}
+	})
+
+	When("used as a value matcher inside ContainMap", func() {
+		It("matches nested maps partially", func() {
+			config := map[string]any{
+				"name": "gomega",
+				"server": map[string]any{
+					"port": 8080,
+					"tls":  true,
+				},
+			}
+			Expect(config).Should(ContainMap(map[string]any{
+				"server": ContainMap(map[string]any{"port": 8080}),
+			}))
+			Expect(config).ShouldNot(ContainMap(map[string]any{
+				"server": ContainMap(map[string]any{"port": 9090}),
+			}))
+		})
+
+		It("nests the inner failure message", func() {
+			actual := map[string]any{"server": map[string]int{"port": 8080}}
+			m := ContainMap(map[string]any{"server": ContainMap(map[string]int{"port": 9090})})
+			Expect(m.Match(actual)).Should(BeFalse())
+			Expect(m.FailureMessage(actual)).Should(HaveSuffix(`the mismatched values were
+    <string>: server
+        Expected
+            <map[string]int | len:1>: {"port": 8080}
+        to contain map
+            <map[string]int | len:1>: {"port": 9090}
+        the mismatched values were
+            <string>: port
+                Expected
+                    <int>: 8080
+                to equal
+                    <int>: 9090`))
 		})
 	})
 
 	Describe("FailureMessage", func() {
-		It("formats the failure message with missing entries", func() {
-			failures := InterceptGomegaFailures(func() {
-				Expect(map[string]int{"a": 1}).Should(ContainMap(map[string]int{"a": 1, "b": 2}))
+		It("reports missing keys", func() {
+			m := ContainMap(map[string]int{"b": 2})
+			Expect(m.Match(map[string]int{"a": 1})).Should(BeFalse())
+			Expect(m.FailureMessage(map[string]int{"a": 1})).Should(Equal(`Expected
+    <map[string]int | len:1>: {"a": 1}
+to contain map
+    <map[string]int | len:1>: {"b": 2}
+the missing keys were
+    <[]string | len:1, cap:1>: ["b"]`))
+		})
+
+		It("reports keys that are present with a mismatched value, with the value matcher's failure message", func() {
+			m := ContainMap(map[string]int{"a": 2})
+			Expect(m.Match(map[string]int{"a": 1})).Should(BeFalse())
+			Expect(m.FailureMessage(map[string]int{"a": 1})).Should(Equal(`Expected
+    <map[string]int | len:1>: {"a": 1}
+to contain map
+    <map[string]int | len:1>: {"a": 2}
+the mismatched values were
+    <string>: a
+        Expected
+            <int>: 1
+        to equal
+            <int>: 2`))
+
+			m = ContainMap(map[string]any{"a": BeNumerically(">", 5)})
+			Expect(m.Match(map[string]int{"a": 1})).Should(BeFalse())
+			Expect(m.FailureMessage(map[string]int{"a": 1})).Should(HaveSuffix(`
+the mismatched values were
+    <string>: a
+        Expected
+            <int>: 1
+        to be >
+            <int>: 5`))
+		})
+
+		It("reports matcher keys that could not be matched", func() {
+			keyMatcher := MatchRegexp(`^b`)
+			expected := map[any]int{keyMatcher: 1}
+			m := ContainMap(expected)
+			Expect(m.Match(map[string]int{"a": 1})).Should(BeFalse())
+			Expect(m.FailureMessage(map[string]int{"a": 1})).Should(Equal(`Expected
+    <map[string]int | len:1>: {"a": 1}
+to contain map
+` + format.Object(expected, 1) + `
+the entries with no matching (distinct) entry in actual were
+` + format.Object(keyMatcher, 1) + `
+        <int>: 1`))
+		})
+
+		It("reports every kind of failure, sorted by key", func() {
+			actual := map[string]int{"a": 1, "b": 2, "c": 3}
+			m := ContainMap(map[any]any{
+				"a":             1,
+				"z":             1,
+				"y":             2,
+				"c":             4,
+				"b":             BeNumerically("<", 0),
+				HavePrefix("x"): 3,
 			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("to contain map"))
-			Expect(failures[0]).Should(ContainSubstring("the missing entries were"))
-			Expect(failures[0]).Should(ContainSubstring(`"b": 2`))
+			Expect(m.Match(actual)).Should(BeFalse())
+			Expect(m.FailureMessage(actual)).Should(MatchRegexp(`(?s)
+the missing keys were
+    <\[\]interface {} \| len:2, cap:2>: \[<string>"y", <string>"z"\]
+the mismatched values were
+    <string>: b
+        Expected
+            <int>: 2
+        to be <
+            <int>: 0
+    <string>: c
+        Expected
+            <int>: 3
+        to equal
+            <int>: 4
+the entries with no matching \(distinct\) entry in actual were
+    <\*matchers.HavePrefixMatcher \| 0x[0-9a-f]+>: {Prefix: "x", Args: nil}
+        <int>: 3$`))
 		})
 	})
 
 	Describe("NegatedFailureMessage", func() {
 		It("formats the negated failure message", func() {
-			failures := InterceptGomegaFailures(func() {
-				Expect(map[string]int{"a": 1}).ShouldNot(ContainMap(map[string]int{"a": 1}))
-			})
-			Expect(failures).Should(HaveLen(1))
-			Expect(failures[0]).Should(ContainSubstring("not to contain map"))
+			m := ContainMap(map[string]int{"a": 1})
+			Expect(m.Match(map[string]int{"a": 1, "b": 2})).Should(BeTrue())
+			Expect(m.NegatedFailureMessage(map[string]int{"a": 1})).Should(Equal(`Expected
+    <map[string]int | len:1>: {"a": 1}
+not to contain map
+    <map[string]int | len:1>: {"a": 1}`))
 		})
 	})
 })

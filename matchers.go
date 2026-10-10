@@ -493,12 +493,14 @@ func HaveKeyWithValue(key any, value any) types.GomegaMatcher {
 //
 //	Expect(map[string]int{"a": 1, "b": 2, "c": 3}).Should(ContainMap(map[string]int{"a": 1, "b": 2}))
 //	Expect(map[string]int{"a": 1, "b": 2}).Should(ContainMap(map[string]any{"a": BeNumerically(">", 0)}))
+//
+// A nil value in expected is matched with BeNil(), and each expected entry must be
+// satisfied by a distinct entry in actual.
 func ContainMap(expected any) types.GomegaMatcher {
 	return &matchers.ContainMapMatcher{
 		Expected: expected,
 	}
 }
-
 
 // HaveField succeeds if actual is a struct and the value at the passed in field
 // matches the passed in matcher.  By default HaveField used Equal() to perform the match,
