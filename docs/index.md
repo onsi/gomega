@@ -2240,6 +2240,27 @@ Note that you can easily add your own verify handler into the mix.  Just pass in
 
 > It's important to understand that you must pass `AppendHandlers` **one** handler *per* incoming request (see [below](#handling-multiple-requests)).  In order to apply multiple handlers to a single request we must first combine them with `ghttp.CombineHandlers` and then pass that *one* wrapper handler in to `AppendHandlers`.
 
+### Verifying multipart forms
+
+Use `ghttp.VerifyMultipartForm` for `multipart/form-data` requests containing values and uploaded files:
+
+```go
+ghttp.VerifyMultipartForm(
+    url.Values{"description": {"report"}},
+    map[string][]ghttp.MultipartFile{
+        "upload": {{Filename: "report.txt", Content: []byte("report contents")}},
+    },
+    ghttp.MultipartFormOptions{MaxMemory: 1 << 20, Exact: true},
+)
+```
+
+Values and files under each specified key are compared in order. File expectations can also select MIME
+headers to compare. With `Exact: false`, additional field names are allowed; `Exact: true` rejects them.
+Query parameters do not count as body values. `MaxMemory` is passed to Go's multipart parser, which spills
+larger uploads to temporary files. The handler closes the request body and removes temporary files before
+reporting assertions, including for an already parsed form. Place this verifier after handlers that need to
+read the request body.
+
 ### Providing responses
 
 So far, we've only made assertions about the outgoing request.  Clients are also responsible for parsing responses and returning valid data.  Let's say that `FetchSprockets()` returns two things: a slice `[]Sprocket` and an `error`.  Here's what a happy path test that asserts the correct data is returned might look like:
