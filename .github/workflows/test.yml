@@ -14,7 +14,7 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version: 'oldstable'
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - run: go mod tidy && git diff --exit-code go.mod go.sum
     # master is the full tree: it has tests and requires Ginkgo.  Releases ship a stripped tree on
     # master-lite, and merging that back would silently delete both; this says so plainly.
@@ -29,7 +29,7 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version: ${{ matrix.version }}
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - run: go vet ./...
     - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going --label-filter="!network"
   lite:
