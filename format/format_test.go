@@ -223,6 +223,13 @@ var _ = Describe("Format", func() {
 			Expect(MessageWithDiff(stringA, "to equal", stringB)).Should(Equal(expectedTruncatedMultiByteFailureMessage))
 		})
 
+		It("keeps multi-byte characters intact around the mismatch", func() {
+			stringA := strings.Repeat("é", 50) + "abc"
+			stringB := strings.Repeat("é", 50) + "abd"
+
+			Expect(MessageWithDiff(stringA, "to equal", stringB)).Should(Equal(expectedTruncatedMultiByteMismatchFailureMessage))
+		})
+
 		It("prints special characters", func() {
 			stringA := "\n"
 			stringB := "something_else"
@@ -324,6 +331,12 @@ var _ = Describe("Format", func() {
 					stringWithB := "aba"
 					stringWithZ := "aza"
 					Expect(MessageWithDiff(stringWithB, "to equal", stringWithZ)).Should(Equal(expectedDiffZeroMismatch))
+				})
+
+				It("does not panic when one long string is a prefix of the other", func() {
+					smallString := strings.Repeat("a", 51)
+					largeString := strings.Repeat("a", 52)
+					Expect(func() { MessageWithDiff(smallString, "to equal", largeString) }).NotTo(Panic())
 				})
 			})
 
@@ -913,9 +926,15 @@ to equal                   |
 `)
 var expectedTruncatedMultiByteFailureMessage = strings.TrimSpace(`
 Expected
-    <string>: "...tuvwxyz1"
-to equal                 |
-    <string>: "...tuvwxyz"
+    <string>: "...vwxyz1"
+to equal               |
+    <string>: "...vwxyz"
+`)
+var expectedTruncatedMultiByteMismatchFailureMessage = strings.TrimSpace(`
+Expected
+    <string>: "...éééabc"
+to equal               |
+    <string>: "...éééabd"
 `)
 var expectedFullFailureDiff = strings.TrimSpace(`
 Expected

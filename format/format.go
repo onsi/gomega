@@ -180,6 +180,10 @@ func truncateAndFormat(str string, index int) string {
 	leftPadding := `...`
 	rightPadding := `...`
 
+	// index counts characters, not bytes (see findFirstMismatch), so slice by
+	// character to keep multi-byte characters intact
+	chars := strings.Split(str, "")
+
 	start := index - int(CharactersAroundMismatchToInclude)
 	if start < 0 {
 		start = 0
@@ -189,12 +193,14 @@ func truncateAndFormat(str string, index int) string {
 	// slice index must include the mis-matched character
 	lengthOfMismatchedCharacter := 1
 	end := index + int(CharactersAroundMismatchToInclude) + lengthOfMismatchedCharacter
-	if end > len(str) {
-		end = len(str)
+	if end > len(chars) {
+		end = len(chars)
 		rightPadding = ""
 
 	}
-	return fmt.Sprintf("\"%s\"", leftPadding+str[start:end]+rightPadding)
+	// the mismatch can lie past the end of str when str is a prefix of the other string
+	start = min(start, end)
+	return fmt.Sprintf("\"%s\"", leftPadding+strings.Join(chars[start:end], "")+rightPadding)
 }
 
 func findFirstMismatch(a, b string) int {
@@ -210,8 +216,8 @@ func findFirstMismatch(a, b string) int {
 		}
 	}
 
-	if len(b) > len(a) {
-		return len(a) + 1
+	if len(bSlice) > len(aSlice) {
+		return len(aSlice) + 1
 	}
 
 	return 0
