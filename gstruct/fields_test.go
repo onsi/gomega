@@ -157,10 +157,10 @@ var _ = Describe("Struct", func() {
 		//we do a number of checks to make sure everything's included
 		m.Match(actual)
 		Expect(m.FailureMessage(actual)).Should(HavePrefix(
-			"Expected\n    <string>: \nto match fields: {\n",
+			"Expected\n    <struct>: \nto match fields: {\n",
 		))
 		Expect(m.FailureMessage(actual)).Should(ContainSubstring(
-			".A:\n	Expected\n	    <string>: b\n	to equal\n	    <string>: a\n",
+			".A:\n	Expected\n	    <struct>: b\n	to equal\n	    <string>: a\n",
 		))
 		Expect(m.FailureMessage(actual)).Should(ContainSubstring(
 			"missing expected field B\n",
