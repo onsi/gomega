@@ -6,6 +6,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 
 	"testing"
+	"time"
 )
 
 func TestGexec(t *testing.T) {
@@ -13,6 +14,8 @@ func TestGexec(t *testing.T) {
 		gexec.CleanupBuildArtifacts()
 	})
 
+	// Allow for a slow child process startup or exit on loaded machines.
+	SetDefaultEventuallyTimeout(5 * time.Second)
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Gexec Suite")
 }

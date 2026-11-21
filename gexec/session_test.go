@@ -290,12 +290,11 @@ var _ = Describe("Session", func() {
 			var So = It
 
 			So("this means that eventually should short circuit", func() {
-				t := time.Now()
 				failures := InterceptGomegaFailures(func() {
 					Eventually(session).Should(Say("blah blah blah blah blah"))
 				})
-				Expect(time.Since(t)).Should(BeNumerically("<", time.Second))
-				Expect(failures).Should(HaveLen(1))
+				Expect(failures).Should(ConsistOf(ContainSubstring("No future change is possible.")))
+				Expect(session.Out.Closed()).Should(BeTrue())
 			})
 		})
 
