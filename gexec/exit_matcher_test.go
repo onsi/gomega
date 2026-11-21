@@ -2,7 +2,6 @@ package gexec_test
 
 import (
 	"os/exec"
-	"time"
 
 	. "github.com/onsi/gomega/gexec"
 
@@ -104,13 +103,11 @@ var _ = Describe("ExitMatcher", func() {
 
 	Describe("bailing out early", func() {
 		It("should bail out early once the process exits", func() {
-			t := time.Now()
-
 			failures := InterceptGomegaFailures(func() {
 				Eventually(session).Should(Exit(1))
 			})
-			Expect(time.Since(t)).Should(BeNumerically("<=", 500*time.Millisecond))
-			Expect(failures).Should(HaveLen(1))
+			Expect(failures).Should(ConsistOf(ContainSubstring("No future change is possible.")))
+			Expect(session).Should(Exit(0))
 		})
 	})
 })
